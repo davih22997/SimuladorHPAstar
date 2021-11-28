@@ -72,6 +72,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
+		log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
 		logScrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		this.add(logScrollPane, BorderLayout.CENTER);
@@ -118,6 +119,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		btnSave.addActionListener(this);
 
 		// Barra con la dirección del archivo
+		JLabel dirAct = new JLabel("Actual:");
 		direccion = new JTextField(20);
 		direccion.setEditable(false);
 		direccion.setBackground(Color.white);
@@ -126,6 +128,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		btnPanel.add(btnNew);
 		btnPanel.add(btnOpen);
 		btnPanel.add(btnSave);
+		btnPanel.add(dirAct);
 		btnPanel.add(direccion);
 
 		Box vB1 = Box.createVerticalBox();
