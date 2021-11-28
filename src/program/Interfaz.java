@@ -53,9 +53,20 @@ public class Interfaz extends JFrame implements ActionListener {
 	private final static String shutdown = "/images/shutdown.png";
 	private final static String stop = "/images/stop.jpg";
 
+	// Botones para gestor de archivos
 	private final static String save16 = "/images/Save16.gif";
 	private final static String open16 = "/images/Open16.gif";
 	private final static String new16 = "/images/New16.gif";
+
+	private final static String help16 = "/images/Help16.gif";
+	private final static String delete16 = "/images/Delete16.gif";
+	
+	private final static String minus16 = "/images/sign_minus.gif";
+	private final static String plus16 = "/images/sign_plus.gif";
+	
+	// Botones para gestor de simulación
+	private final static String stop16 = "/images/Stop16.gif";
+	private final static String start16 = "/images/arrow-blue-right.jpg";
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
@@ -72,9 +83,9 @@ public class Interfaz extends JFrame implements ActionListener {
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
-		//log.append("Registro de acciones:" + newline + newline);
+		// log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
-		
+
 		Box vB0 = Box.createVerticalBox();
 		JLabel reg = new JLabel("Registro de acciones");
 		reg.setAlignmentX(CENTER_ALIGNMENT);
