@@ -73,6 +73,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
 		JScrollPane logScrollPane = new JScrollPane(log);
+		logScrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		this.add(logScrollPane, BorderLayout.CENTER);
 
 		// Definimos el apartado para gestión de archivos
@@ -264,10 +265,16 @@ public class Interfaz extends JFrame implements ActionListener {
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 
 				File file = fc.getSelectedFile();
-				direccion.setText(file.getAbsolutePath());
 
-				// This is where a real application would open the file.
-				log.append("Abriendo fichero: " + file.getName() + "." + newline);
+				if (!file.exists()) {
+					log.append("No existe el fichero: " + file.getName() + " en la ruta dada." + newline);
+					log.append("Se ha cancelado la apertura de fichero." + newline);
+				} else {
+					direccion.setText(file.getAbsolutePath());
+
+					// Registramos la apertura de fichero
+					log.append("Abriendo fichero: " + file.getName() + "." + newline);
+				}
 			} else {
 				log.append("Se ha cancelado la apertura de fichero." + newline);
 			}
@@ -295,24 +302,23 @@ public class Interfaz extends JFrame implements ActionListener {
 				 */
 
 				if (file.exists()) {
-					int result = JOptionPane.showConfirmDialog(this,
-	                        "El archivo ya existe, ¿sobreescribir?", "Archivo ya existente",
-	                        JOptionPane.YES_NO_OPTION);
-	                switch (result) {
-	                case JOptionPane.YES_OPTION:
-	                	try (FileWriter fw = new FileWriter(file)) {
+					int result = JOptionPane.showConfirmDialog(this, "El archivo ya existe, ¿sobreescribir?",
+							"Archivo ya existente", JOptionPane.YES_NO_OPTION);
+					switch (result) {
+					case JOptionPane.YES_OPTION:
+						try (FileWriter fw = new FileWriter(file)) {
 							fw.write("");
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
-	                	direccion.setText(file.getAbsolutePath());
-						// Texto que aparece cuando guardas el fichero
+						direccion.setText(file.getAbsolutePath());
+						// Texto que aparece cuando sobreescibes el fichero ya existente
 						log.append("Sobreescribiendo fichero: " + file.getName() + "." + newline);
 						break;
-	                case JOptionPane.NO_OPTION:
-	                	log.append("Se ha cancelado el guardado de archivo." + newline);
-	                	break;
-	                }
+					case JOptionPane.NO_OPTION:
+						log.append("Se ha cancelado el guardado de archivo." + newline);
+						break;
+					}
 				} else {
 					try (FileWriter fw = new FileWriter(file)) {
 						fw.write("");
@@ -321,7 +327,7 @@ public class Interfaz extends JFrame implements ActionListener {
 					}
 					direccion.setText(file.getAbsolutePath());
 					// Texto que aparece cuando guardas el fichero
-					log.append("Guardando fichero: " + file.getName() + "." + newline);					
+					log.append("Guardando fichero: " + file.getName() + "." + newline);
 				}
 
 			} else {
