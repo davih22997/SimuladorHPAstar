@@ -72,12 +72,18 @@ public class Interfaz extends JFrame implements ActionListener {
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
-		log.append("Registro de acciones:" + newline + newline);
+		//log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
-		logScrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		this.add(logScrollPane, BorderLayout.CENTER);
+		
+		Box vB0 = Box.createVerticalBox();
+		JLabel reg = new JLabel("Registro de acciones");
+		reg.setAlignmentX(CENTER_ALIGNMENT);
+		vB0.add(reg);
+		vB0.add(logScrollPane);
+		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		this.add(vB0, BorderLayout.SOUTH);
 
-		// Definimos el apartado para gestión de archivos
+		// Definimos el apartado para GESTIÓN DE ARCHIVOS
 
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
@@ -136,10 +142,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		vB1.add(btnPanel);
 		vB1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
-		// this.panel.add(titulo, BorderLayout.NORTH);
 		this.add(vB1, BorderLayout.NORTH);
-		// this.panel.add(direccion, BorderLayout.NORTH);
-		// this.add(logScrollPane, BorderLayout.SOUTH);
 
 		this.pack();
 		this.setVisible(true);
