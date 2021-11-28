@@ -1,13 +1,17 @@
 package program;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.awt.Color;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.Box;
 import javax.swing.ImageIcon;
@@ -15,6 +19,7 @@ import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -74,17 +79,16 @@ public class Interfaz extends JFrame implements ActionListener {
 
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
-		
+
 		// Creamos el filtro para el gestor
 		FileNameExtensionFilter filtro = new FileNameExtensionFilter("Archivos .txt", "txt");
-		
+
 		// Le indicamos el filtro al gestor de archivos
 		fc.setFileFilter(filtro);
-		
-		
+
 		// Creamos el título para ese apartado
 		titulo = new JLabel("Archivos");
-		titulo.setAlignmentX(CENTER_ALIGNMENT); 
+		titulo.setAlignmentX(CENTER_ALIGNMENT);
 		// this.add(titulo, BorderLayout.NORTH);
 
 		// this.add(titulo, BorderLayout.NORTH);
@@ -269,13 +273,57 @@ public class Interfaz extends JFrame implements ActionListener {
 			}
 			log.setCaretPosition(log.getDocument().getLength());
 
-			// Handle save button action.
+			// Si pulsamos en guardar
 		} else if (e.getSource() == btnSave) {
 			int returnVal = fc.showSaveDialog(Interfaz.this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				File file = fc.getSelectedFile();
-				// This is where a real application would save the file.
-				log.append("Guardando fichero: " + file.getName() + "." + newline);
+
+				String name = file.getName();
+				Pattern pat = Pattern.compile(".+[.]+[^.]+$");
+
+				Matcher mat = pat.matcher(name);
+
+				// Mira a ver si es un archivo con terminación en ".algo" y si no lo convierte
+				// en ".txt"
+				if (!mat.find()) {
+					file = new File(file.getAbsolutePath() + ".txt");
+				}
+				/*
+				 * if (!name.endsWith(".txt") || !name.endsWith(".TXT")) { file = new
+				 * File(file.getAbsolutePath() + ".txt"); }
+				 */
+
+				if (file.exists()) {
+					int result = JOptionPane.showConfirmDialog(this,
+	                        "El archivo ya existe, ¿sobreescribir?", "Archivo ya existente",
+	                        JOptionPane.YES_NO_OPTION);
+	                switch (result) {
+	                case JOptionPane.YES_OPTION:
+	                	try (FileWriter fw = new FileWriter(file)) {
+							fw.write("");
+						} catch (IOException e1) {
+							e1.printStackTrace();
+						}
+	                	direccion.setText(file.getAbsolutePath());
+						// Texto que aparece cuando guardas el fichero
+						log.append("Sobreescribiendo fichero: " + file.getName() + "." + newline);
+						break;
+	                case JOptionPane.NO_OPTION:
+	                	log.append("Se ha cancelado el guardado de archivo." + newline);
+	                	break;
+	                }
+				} else {
+					try (FileWriter fw = new FileWriter(file)) {
+						fw.write("");
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+					direccion.setText(file.getAbsolutePath());
+					// Texto que aparece cuando guardas el fichero
+					log.append("Guardando fichero: " + file.getName() + "." + newline);					
+				}
+
 			} else {
 				log.append("Se ha cancelado el guardado de fichero." + newline);
 			}
