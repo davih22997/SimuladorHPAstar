@@ -16,6 +16,7 @@ import java.util.regex.Pattern;
 import javax.swing.Box;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -45,28 +46,17 @@ public class Interfaz extends JFrame implements ActionListener {
 	private JLabel titulo;
 	private JTextField direccion;
 	private Dimension dIcons = new Dimension(16, 16);
+	private JPanel btnPanel;
 
-	// Rutas de las imágenes que se usarán como iconos
-	private final static String start = "/images/start.png";
-	private final static String play = "/images/play.png";
-	private final static String pause = "/images/pause.png";
-	private final static String shutdown = "/images/shutdown.png";
-	private final static String stop = "/images/stop.jpg";
-
-	// Botones para gestor de archivos
-	private final static String save16 = "/images/Save16.gif";
-	private final static String open16 = "/images/Open16.gif";
-	private final static String new16 = "/images/New16.gif";
-
-	private final static String help16 = "/images/Help16.gif";
-	private final static String delete16 = "/images/Delete16.gif";
+	// Parte para la gestión de algoritmo
+	private JLabel titulo2;
+	private JComboBox<String> algCB;
+	private JPanel algPanel;
 	
-	private final static String minus16 = "/images/sign_minus.gif";
-	private final static String plus16 = "/images/sign_plus.gif";
-	
-	// Botones para gestor de simulación
-	private final static String stop16 = "/images/Stop16.gif";
-	private final static String start16 = "/images/arrow-blue-right.jpg";
+	// Parte para la gestión de la velocidad
+	private JLabel titulo3;
+	private JButton btnMinus, btnPlus;
+	private JButton btnstart, btnstop;
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
@@ -108,31 +98,28 @@ public class Interfaz extends JFrame implements ActionListener {
 		// Creamos el título para ese apartado
 		titulo = new JLabel("Archivos");
 		titulo.setAlignmentX(CENTER_ALIGNMENT);
-		// this.add(titulo, BorderLayout.NORTH);
-
-		// this.add(titulo, BorderLayout.NORTH);
 
 		// Añadimos un panel exclusivo para los botones
-		JPanel btnPanel = new JPanel();
+		btnPanel = new JPanel();
 
 		// Damos a cada botón sus características propias:
 
 		// Botón para nuevo archivo
 		btnNew = new JButton();
 		btnNew.setSize(dIcons);
-		btnNew.setIcon(this.createIcon(new16, btnNew));
+		btnNew.setIcon(this.createIcon(Direccion.new16, btnNew));
 		btnNew.addActionListener(this);
 
 		// Botón para abrir archivo
 		btnOpen = new JButton();
 		btnOpen.setSize(dIcons);
-		btnOpen.setIcon(this.createIcon(open16, btnOpen));
+		btnOpen.setIcon(this.createIcon(Direccion.open16, btnOpen));
 		btnOpen.addActionListener(this);
 
 		// Botón para guardar archivo
 		btnSave = new JButton();
 		btnSave.setSize(dIcons);
-		btnSave.setIcon(this.createIcon(save16, btnSave));
+		btnSave.setIcon(this.createIcon(Direccion.save16, btnSave));
 		btnSave.addActionListener(this);
 
 		// Barra con la dirección del archivo
@@ -148,6 +135,7 @@ public class Interfaz extends JFrame implements ActionListener {
 		btnPanel.add(dirAct);
 		btnPanel.add(direccion);
 
+		// Agrupamos cada elemento de manera que esté uno encima de otro
 		Box vB1 = Box.createVerticalBox();
 		vB1.add(titulo);
 		vB1.add(btnPanel);
@@ -155,6 +143,39 @@ public class Interfaz extends JFrame implements ActionListener {
 
 		this.add(vB1, BorderLayout.NORTH);
 
+		// Definimos el apartado para la selección de ALGORITMO
+
+		// Creamos el correspondiente titulo
+		titulo2 = new JLabel("Algoritmo");
+		titulo2.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para la gestión de algoritmo
+
+		algPanel = new JPanel();
+
+		// Añadimos el selector
+		algCB = new JComboBox<>();
+		algCB.addItem("A*");
+		algCB.addItem("HPA*");
+		algCB.setBackground(Color.white);
+		algCB.addActionListener(this);
+
+		// Añadimos al panel el selector
+		algPanel.add(algCB);
+
+		// Agrupamos cada elemento de manera que esté uno encima de otro
+		Box vB2 = Box.createVerticalBox();
+		vB2.add(titulo2);
+		vB2.add(algPanel);
+		vB2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+
+		this.add(vB2, BorderLayout.CENTER);
+		
+		
+		// Definimos el apartado para el CONTROL SIMULACIÓN
+
+		// Empaquetamos y hacemos visible
+		log.append("Iniciamos la interfaz con los valores por defecto." + newline);
 		this.pack();
 		this.setVisible(true);
 
@@ -351,6 +372,13 @@ public class Interfaz extends JFrame implements ActionListener {
 				log.append("Se ha cancelado el guardado de fichero." + newline);
 			}
 			log.setCaretPosition(log.getDocument().getLength());
+		} else if (e.getSource() == algCB) {
+			String option = algCB.getSelectedItem().toString();
+			if (option.equals("A*")) {
+				log.append("Se ha seleccionado el algoritmo A*." + newline);
+			} else if (option.equals("HPA*")) {
+				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
+			}
 		}
 	}
 
