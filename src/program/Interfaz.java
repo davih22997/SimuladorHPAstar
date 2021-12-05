@@ -14,23 +14,31 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.swing.Box;
+import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 // Clase para crear la interfaz gráfica del simulador
-public class Interfaz extends JFrame implements ActionListener {
+public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	static private final String newline = "\n";
+
+	// Lista de las dimensiones posibles a escoger
+	static private final String[] dimensiones = { "40x40", "20x30" };
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -38,24 +46,46 @@ public class Interfaz extends JFrame implements ActionListener {
 	// Control de todas las acciones
 	private JTextArea log;
 
+	// Dimensión para los botones con iconos
+	private Dimension dIcons = new Dimension(16, 16);
+
 	// Parte para la gestión de archivos
 	private File archivo;
 	private JButton btnSave, btnOpen, btnNew;
 	private JFileChooser fc;
 	private JLabel titulo;
 	private JTextField direccion;
-	private Dimension dIcons = new Dimension(16, 16);
+	private JPanel btnPanel;
 
-	// Rutas de las imágenes que se usarán como iconos
-	private final static String start = "/images/start.png";
-	private final static String play = "/images/play.png";
-	private final static String pause = "/images/pause.png";
-	private final static String shutdown = "/images/shutdown.png";
-	private final static String stop = "/images/stop.jpg";
+	// Parte central
+	private JPanel pCentral;
 
-	private final static String save16 = "/images/Save16.gif";
-	private final static String open16 = "/images/Open16.gif";
-	private final static String new16 = "/images/New16.gif";
+	// Parte para la gestión de algoritmo
+	private JLabel titulo2;
+	private JComboBox<String> algCB;
+	private JPanel algPanel;
+
+	// Parte para el control de la simulación
+	private JLabel titulo3;
+	private JButton btnStart, btnStop;
+	// Control de velocidad
+	private JButton btnMinus, btnPlus;
+	private JPanel btnPanel2;
+	// Variable que controla el valor de la velocidad:
+	private int vel = 1;
+
+	// Parte para la configuración del mapa
+	private JLabel titulo4;
+	// Selección de las dimensiones del mapa
+	private JLabel titulo4_1;
+	private JPanel pDims;
+	private JComboBox<String> dims;
+	// Edición malla
+	private JLabel titulo4_2;
+	private JPanel pMalla;
+	private ButtonGroup bGroup;
+	private JRadioButton rInic, rFin, rObs, rCons;
+	private JButton btnReverse;
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
@@ -72,11 +102,18 @@ public class Interfaz extends JFrame implements ActionListener {
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
+		// log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
-		logScrollPane.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		this.add(logScrollPane, BorderLayout.CENTER);
 
-		// Definimos el apartado para gestión de archivos
+		Box vB0 = Box.createVerticalBox();
+		JLabel reg = new JLabel("Registro de acciones");
+		reg.setAlignmentX(CENTER_ALIGNMENT);
+		vB0.add(reg);
+		vB0.add(logScrollPane);
+		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		this.add(vB0, BorderLayout.SOUTH);
+
+		// Definimos el apartado para GESTIÓN DE ARCHIVOS
 
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
@@ -90,34 +127,23 @@ public class Interfaz extends JFrame implements ActionListener {
 		// Creamos el título para ese apartado
 		titulo = new JLabel("Archivos");
 		titulo.setAlignmentX(CENTER_ALIGNMENT);
-		// this.add(titulo, BorderLayout.NORTH);
-
-		// this.add(titulo, BorderLayout.NORTH);
 
 		// Añadimos un panel exclusivo para los botones
-		JPanel btnPanel = new JPanel();
+		btnPanel = new JPanel();
 
 		// Damos a cada botón sus características propias:
 
 		// Botón para nuevo archivo
-		btnNew = new JButton();
-		btnNew.setSize(dIcons);
-		btnNew.setIcon(this.createIcon(new16, btnNew));
-		btnNew.addActionListener(this);
+		btnNew = initButtonIcon(Direccion.new16);
 
 		// Botón para abrir archivo
-		btnOpen = new JButton();
-		btnOpen.setSize(dIcons);
-		btnOpen.setIcon(this.createIcon(open16, btnOpen));
-		btnOpen.addActionListener(this);
+		btnOpen = initButtonIcon(Direccion.open16);
 
 		// Botón para guardar archivo
-		btnSave = new JButton();
-		btnSave.setSize(dIcons);
-		btnSave.setIcon(this.createIcon(save16, btnSave));
-		btnSave.addActionListener(this);
+		btnSave = initButtonIcon(Direccion.save16);
 
 		// Barra con la dirección del archivo
+		JLabel dirAct = new JLabel("Actual:");
 		direccion = new JTextField(20);
 		direccion.setEditable(false);
 		direccion.setBackground(Color.white);
@@ -126,102 +152,172 @@ public class Interfaz extends JFrame implements ActionListener {
 		btnPanel.add(btnNew);
 		btnPanel.add(btnOpen);
 		btnPanel.add(btnSave);
+		btnPanel.add(dirAct);
 		btnPanel.add(direccion);
 
+		// Agrupamos cada elemento de manera que esté uno encima de otro
 		Box vB1 = Box.createVerticalBox();
 		vB1.add(titulo);
 		vB1.add(btnPanel);
 		vB1.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
-		// this.panel.add(titulo, BorderLayout.NORTH);
 		this.add(vB1, BorderLayout.NORTH);
-		// this.panel.add(direccion, BorderLayout.NORTH);
-		// this.add(logScrollPane, BorderLayout.SOUTH);
 
+		// Parte CENTRAL del simulador
+		// Inicializamos el panel central
+		pCentral = new JPanel();
+		pCentral.setLayout(new BorderLayout());
+
+		// Definimos el apartado para la selección de ALGORITMO
+
+		// Creamos el correspondiente titulo
+		titulo2 = new JLabel("Algoritmo");
+		titulo2.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para la gestión de algoritmo
+
+		algPanel = new JPanel();
+
+		// Añadimos el selector
+		algCB = new JComboBox<>();
+		algCB.addItem("A*");
+		algCB.addItem("HPA*");
+		algCB.setBackground(Color.white);
+		algCB.addActionListener(this);
+
+		// Añadimos al panel el selector
+		algPanel.add(algCB);
+
+		// Agrupamos cada elemento de manera que esté uno encima de otro
+		Box vB2 = Box.createVerticalBox();
+		vB2.add(titulo2);
+		vB2.add(algPanel);
+		vB2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+
+		Box boxizda = Box.createVerticalBox();
+		boxizda.add(vB2);
+		// pCentral.add(vB2, BorderLayout.WEST);
+
+		// Definimos el apartado para el CONTROL SIMULACIÓN
+		titulo3 = new JLabel("Control de la simulación");
+		titulo3.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para los botones
+		btnPanel2 = new JPanel();
+		// Damos a cada botón sus características propias:
+
+		// Botón para empezar la simulación
+		btnStart = initButtonIcon(Direccion.start16);
+
+		// Botón para finalizar la simulación
+		btnStop = initButtonIcon(Direccion.stop16);
+
+		// Parte de la velocidad
+		JLabel vel = new JLabel("Velocidad:");
+
+		// Botón para reducir la velocidad
+		btnMinus = initButtonIcon(Direccion.minus16);
+
+		// Botón para aumentar la velocidad
+		btnPlus = initButtonIcon(Direccion.plus16);
+
+		// Añadimos todo al panel de botones
+		btnPanel2.add(btnStart);
+		btnPanel2.add(btnStop);
+		btnPanel2.add(vel);
+		btnPanel2.add(btnMinus);
+		btnPanel2.add(btnPlus);
+
+		Box vB3 = Box.createVerticalBox();
+		vB3.add(titulo3);
+		vB3.add(btnPanel2);
+		vB3.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+
+		// Lo añadimos al panel central
+
+		boxizda.add(vB3);
+		pCentral.add(boxizda, BorderLayout.WEST);
+
+		// Definimos el apartado para la CONFIGURACIÓN DEL MAPA
+		titulo4 = new JLabel("Configuración del mapa");
+		titulo4.setAlignmentX(CENTER_ALIGNMENT);
+
+		Box vB4 = Box.createVerticalBox();
+		vB4.add(titulo4);
+		vB4.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+
+		// Añadimos el panel para la selección de las dimensiones
+		pDims = new JPanel();
+		titulo4_1 = new JLabel("Dimensiones:");
+		// Añadimos el selector de dimensiones
+		dims = new JComboBox<>();
+		// Añadimos las opciones al selector
+		for (String tam : dimensiones)
+			dims.addItem(tam);
+
+		dims.setBackground(Color.white);
+		dims.addActionListener(this);
+
+		// Añadimos los componentes al panel
+		pDims.add(titulo4_1);
+		pDims.add(dims);
+
+		vB4.add(pDims);
+
+		// Añadimos el panel para la edición de las mallas
+		titulo4_2 = new JLabel("Edición malla");
+		titulo4_2.setAlignmentX(CENTER_ALIGNMENT);
+
+		Box vB4_2 = Box.createVerticalBox();
+		vB4_2.add(titulo4_2);
+
+		// Creamos un panel para los botones de edición de malla
+		pMalla = new JPanel();
+		// Consulta (seleccionado por defecto)
+		rCons = new JRadioButton("Consulta");
+		rCons.addChangeListener(this);
+		rCons.setSelected(true);
+		// Punto inicial
+		rInic = new JRadioButton("Inicial");
+		rInic.addChangeListener(this);
+		// Punto final
+		rFin = new JRadioButton("Final");
+		rFin.addChangeListener(this);
+		// Obstáculo
+		rObs = new JRadioButton("Obstáculo");
+		rObs.addChangeListener(this);
+
+		// Botón para cambiar inicio-fin
+		btnReverse = initButtonIcon(Direccion.refresh16);
+
+		// Añadimos los botones al panel
+		pMalla.add(rCons);
+		pMalla.add(rInic);
+		pMalla.add(rFin);
+		pMalla.add(rObs);
+		pMalla.add(btnReverse);
+
+		// Añadimos todos los RadioButtons al mismo grupo
+		bGroup = new ButtonGroup();
+		bGroup.add(rCons);
+		bGroup.add(rInic);
+		bGroup.add(rFin);
+		bGroup.add(rObs);
+
+		// Lo añadimos al VerticalBox
+		vB4_2.add(pMalla);
+
+		// Finalmente, lo añadimos todo al panel central
+		vB4.add(vB4_2);
+		pCentral.add(vB4, BorderLayout.CENTER);
+
+		// Añadimos el panel central
+		this.add(pCentral, BorderLayout.WEST);
+
+		// Empaquetamos y hacemos visible
+		log.append("Iniciamos la interfaz con los valores por defecto." + newline);
 		this.pack();
 		this.setVisible(true);
-
-		/*
-		 * this.setResizable(false); this.setBounds(100, 100, 600, 350);
-		 * 
-		 * JPanel contentPane = new JPanel(); contentPane.setBorder(new EmptyBorder(5,
-		 * 5, 5, 5)); this.setContentPane(contentPane);
-		 * 
-		 * // Definimos el primer submenú (ALGORITMO): Box vB1 =
-		 * Box.createVerticalBox(); vB1.setBorder(new BevelBorder(BevelBorder.LOWERED,
-		 * null, null, null, null));
-		 * 
-		 * JLabel lbl1 = new JLabel("Algoritmo");
-		 * lbl1.setAlignmentX(Component.CENTER_ALIGNMENT); vB1.add(lbl1);
-		 * 
-		 * JComboBox<String> cb1 = new JComboBox<>(); cb1.addItem("A*");
-		 * cb1.addItem("HPA*"); cb1.setToolTipText(""); vB1.add(cb1);
-		 * 
-		 * // Definimos el segundo submenú (HEURÍSTICO): Box vB2 =
-		 * Box.createVerticalBox(); vB2.setBorder(new BevelBorder(BevelBorder.LOWERED,
-		 * null, null, null, null));
-		 * 
-		 * JLabel lbl2 = new JLabel("Heurístico");
-		 * lbl2.setAlignmentX(Component.CENTER_ALIGNMENT); vB2.add(lbl2);
-		 * 
-		 * JComboBox<String> cb2 = new JComboBox<>(); cb2.addItem("DIST-MANHATAN");
-		 * cb2.addItem("DIST-EUCLIDEA"); cb2.addItem("H=0"); vB2.add(cb2);
-		 * 
-		 * // Definimos el tercer menú (CONTROL SIMULACIÓN): Box vB3 =
-		 * Box.createVerticalBox(); vB3.setBorder(new BevelBorder(BevelBorder.LOWERED,
-		 * null, null, null, null));
-		 * 
-		 * JLabel lbl3 = new JLabel("Control simulación");
-		 * lbl3.setAlignmentX(Component.CENTER_ALIGNMENT); vB3.add(lbl3);
-		 * 
-		 * JPanel p1 = new JPanel(); vB3.add(p1);
-		 * 
-		 * JSplitPane sp1 = new JSplitPane(); p1.add(sp1);
-		 * 
-		 * JButton b1 = new JButton("Play"); sp1.setLeftComponent(b1);
-		 * 
-		 * JButton b2 = new JButton("Stop"); sp1.setRightComponent(b2);
-		 * 
-		 * JLabel jl1 = new JLabel("Velocidad"); p1.add(jl1);
-		 * 
-		 * JSplitPane sp2 = new JSplitPane(); p1.add(sp2);
-		 * 
-		 * JButton b3 = new JButton("-"); sp2.setLeftComponent(b3);
-		 * 
-		 * JButton b4 = new JButton("+"); sp2.setRightComponent(b4);
-		 * 
-		 * // Lo añadimos todo al mismo GroupLayout GroupLayout gl = new
-		 * GroupLayout(contentPane);
-		 * gl.setHorizontalGroup(gl.createParallelGroup(Alignment.LEADING).addGroup(gl.
-		 * createSequentialGroup() .addContainerGap()
-		 * .addGroup(gl.createParallelGroup(Alignment.LEADING).addGroup(gl.
-		 * createSequentialGroup() .addComponent(vB1, GroupLayout.PREFERRED_SIZE, 190,
-		 * GroupLayout.PREFERRED_SIZE).addGap(165) .addComponent(vB2,
-		 * GroupLayout.PREFERRED_SIZE, 200, GroupLayout.PREFERRED_SIZE)).addComponent(
-		 * vB3, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-		 * GroupLayout.PREFERRED_SIZE)) .addContainerGap(GroupLayout.DEFAULT_SIZE,
-		 * Short.MAX_VALUE)));
-		 * gl.setVerticalGroup(gl.createParallelGroup(Alignment.LEADING)
-		 * .addGroup(gl.createSequentialGroup()
-		 * .addGroup(gl.createParallelGroup(Alignment.LEADING) .addComponent(vB2,
-		 * GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-		 * GroupLayout.PREFERRED_SIZE) .addComponent(vB1, GroupLayout.DEFAULT_SIZE,
-		 * GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-		 * .addPreferredGap(ComponentPlacement.RELATED).addComponent(vB3,
-		 * GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE,
-		 * GroupLayout.PREFERRED_SIZE) .addGap(204))); // Lo añadimos como contenido de
-		 * la aplicación: contentPane.setLayout(gl);
-		 * 
-		 */
-		/*
-		 * JButton b = new JButton();
-		 * 
-		 * b.setBounds(100, 100, 100, 40); b.setIcon(this.createIcon(stop, b));
-		 * 
-		 * this.add(b); this.setSize(300, 400);
-		 * 
-		 * this.setLayout(null); this.setVisible(true);
-		 */
 	}
 
 	/**
@@ -244,6 +340,36 @@ public class Interfaz extends JFrame implements ActionListener {
 
 		// Devuelve la imagen reescalada
 		return new ImageIcon(icon.getImage().getScaledInstance(width, height, Image.SCALE_DEFAULT));
+	}
+
+	/**
+	 * Método para crear un botón de un icono
+	 * 
+	 * @param dim Tamaño del botón (dimensiones)
+	 * @param dir Dirección de la imagen del icono
+	 * @return El botón
+	 */
+	protected JButton initButtonIcon(Dimension dim, String dir) {
+		JButton res = new JButton();
+		// Establece el tamaño
+		res.setSize(dim);
+		// Establece el icono
+		res.setIcon(this.createIcon(dir, res));
+		// Además le añade un ActionListener
+		res.addActionListener(this);
+
+		return res;
+	}
+
+	/**
+	 * Método para crear un botón de un icono usando la variable dIcons para las
+	 * dimensiones
+	 * 
+	 * @param dir Dirección de la imagen del icono
+	 * @return El botón
+	 */
+	protected JButton initButtonIcon(String dir) {
+		return initButtonIcon(dIcons, dir);
 	}
 
 	@Override
@@ -334,7 +460,32 @@ public class Interfaz extends JFrame implements ActionListener {
 				log.append("Se ha cancelado el guardado de fichero." + newline);
 			}
 			log.setCaretPosition(log.getDocument().getLength());
+			// Controlador de la parte del algoritmo
+		} else if (e.getSource() == algCB) {
+			String option = algCB.getSelectedItem().toString();
+			if (option.equals("A*")) {
+				log.append("Se ha seleccionado el algoritmo A*." + newline);
+			} else if (option.equals("HPA*")) {
+				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
+			}
+		} else if (e.getSource() == dims) {
+
+			String option = dims.getSelectedItem().toString();
+			if (option.equals(dimensiones[0])) { // 40x40
+
+			} else if (option.equals(dimensiones[1])) { // 20x30
+
+			}
+
+		} else if (e.getSource() == btnReverse) {
+
 		}
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent e) {
+		// TODO Auto-generated method stub
+
 	}
 
 }
