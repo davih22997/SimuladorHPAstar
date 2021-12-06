@@ -562,7 +562,27 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		}
 		// Si se pulsa el botón de cambio de inicio por fin
 		else if (e.getSource() == btnReverse) {
+			if (mapa.pto_final != null && mapa.pto_inicial != null) {
+				Punto aux = mapa.pto_final.clone();
+				mapa.pto_final = mapa.pto_inicial;
+				mapa.pto_inicial = aux;
+				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Color.RED);
+				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Color.GREEN);
 
+				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
+			} else if (mapa.pto_final != null) {
+				mapa.pto_inicial = mapa.pto_final.clone();
+				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Color.GREEN);
+				mapa.pto_final = null;
+				
+				log.append("Se ha convertido el punto final en un punto inicial." + newline);
+			} else if (mapa.pto_inicial != null) {
+				mapa.pto_final = mapa.pto_inicial.clone();
+				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Color.RED);
+				mapa.pto_inicial = null;
+				
+				log.append("Se ha convertido el punto inicial en un punto final." + newline);
+			}
 		}
 	}
 

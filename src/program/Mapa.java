@@ -5,16 +5,16 @@ import java.awt.Dimension;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JSeparator;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 
 public class Mapa {
 
@@ -27,7 +27,7 @@ public class Mapa {
 	// Variable para controlar el tipo del mapa al pulsar un botón
 	private int tipo;
 
-	// Variables b�sicas del mapa:
+	// Variables básicas del mapa:
 	// Cantidad total de filas y de columnas
 	private int dY = 0; // Y -> fils
 	private int dX = 0; // X -> cols
@@ -44,11 +44,16 @@ public class Mapa {
 	protected JPanel tablero;
 	private GroupLayout tableroLayout;
 
-	// Variables de gestión del mapa:
+	// Variables de gestión del mapa (por ahora no lo usamos):
 	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
 	JButton[][] MatrizBotones;
+
+	// Variables para los puntos
+	Punto pto_inicial;
+	Punto pto_final;
+	ArrayList<Punto> obstaculos;
 
 	public Mapa(int fils, int cols) {
 		this(fils, cols, TIPO_CONSULTA);
@@ -58,6 +63,9 @@ public class Mapa {
 		dY = fils;
 		dX = cols;
 		setTipo(tipo);
+		pto_inicial = null;
+		pto_final = null;
+		obstaculos = new ArrayList<>();
 
 		initComponents();
 	}
@@ -163,6 +171,9 @@ public class Mapa {
 	 */
 	public void destruirTablero() {
 		if (hayElementos()) {
+			pto_inicial = null;
+			pto_final = null;
+			obstaculos = new ArrayList<>();
 			// Se eliminan todos los elementos columna - fila
 			for (int x = 0; x < dX; x++)
 				for (int y = 0; y < dY; y++)
@@ -191,15 +202,64 @@ public class Mapa {
 	 * @param btn
 	 */
 	private void Click(JButton btn) {
+		Punto aux = new Punto(btn.getToolTipText());
 		switch (tipo) {
 		case TIPO_CONSULTA: // Consulta
-			JOptionPane.showMessageDialog(new JFrame(), "Boton en la posición: " + btn.getToolTipText());
+			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		case TIPO_INICIAL: // Pto inicial
-			btn.setBackground(Color.GREEN);
+			// Si ya existe pto_inicial
+			if (pto_inicial != null) {
+				// Si el mismo pto coincide
+				if (pto_inicial.equals(aux)) {
+					btn.setBackground(UIManager.getColor("Button.background"));
+					pto_inicial = null;
+				} else {
+					// Si coincide con el pto_final -> Lo borramos
+					if (pto_final != null && pto_final.equals(aux))
+						pto_final = null;
+
+					btn.setBackground(Color.GREEN);
+					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()]
+							.setBackground(UIManager.getColor("Button.background"));
+					pto_inicial = aux;
+				}
+				// Si no existe
+			} else {
+				// Si el pto_final no es null y coincide: Lo borramos
+				if (pto_final != null && pto_final.equals(aux))
+					pto_final = null;
+
+				pto_inicial = aux;
+				btn.setBackground(Color.GREEN);
+			}
 			break;
 		case TIPO_FINAL: // Pto final
-			btn.setBackground(Color.RED);
+			// Si ya existe pto_final
+			if (pto_final != null) {
+				// Si el mismo pto coincide
+				if (pto_final.equals(aux)) {
+					btn.setBackground(UIManager.getColor("Button.background"));
+					pto_final = null;
+				} else {
+					// Si coincide con el pto_inicial -> Lo borramos
+					if (pto_inicial != null && pto_inicial.equals(aux))
+						pto_inicial = null;
+
+					btn.setBackground(Color.RED);
+					MatrizBotones[pto_final.getFila()][pto_final.getCol()]
+							.setBackground(UIManager.getColor("Button.background"));
+					pto_final = aux;
+				}
+				// Si no existe
+			} else {
+				// Si el pto_inicial no es null y coincide: Lo borramos
+				if (pto_inicial != null && pto_inicial.equals(aux))
+					pto_inicial = null;
+
+				pto_final = aux;
+				btn.setBackground(Color.RED);
+			}
 			break;
 		case TIPO_OBSTACULO: // Obstáculo
 			btn.setBackground(Color.BLACK);
