@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.text.DecimalFormat;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -72,7 +73,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private JButton btnMinus, btnPlus;
 	private JPanel btnPanel2;
 	// Variable que controla el valor de la velocidad:
-	private int vel = 1;
+	private float v = 1;
+	// Para mostrar formato decimal
+	private DecimalFormat frmt;
+
+	// JLabel que mostrará el valor de la velocidad
+	private JLabel velocity;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -86,9 +92,18 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private ButtonGroup bGroup;
 	private JRadioButton rInic, rFin, rObs, rCons;
 	private JButton btnReverse;
+	
+	// Parte del Mapa
+	private Mapa mapa;
+	
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
+
+		// Inicializamos el formato decimal
+		frmt = new DecimalFormat();
+		frmt.setMaximumFractionDigits(2);
+		frmt.setMinimumFractionDigits(2);
 		// Definimos los parámetros de la aplicación (título, tamaño...):
 		this.setTitle("Simulador");
 		this.setResizable(false);
@@ -218,6 +233,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Botón para reducir la velocidad
 		btnMinus = initButtonIcon(Direccion.minus16);
 
+		// Indicador de la velocidad
+		velocity = new JLabel(new String("x").concat(frmt.format(v)));
+
 		// Botón para aumentar la velocidad
 		btnPlus = initButtonIcon(Direccion.plus16);
 
@@ -226,6 +244,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		btnPanel2.add(btnStop);
 		btnPanel2.add(vel);
 		btnPanel2.add(btnMinus);
+		btnPanel2.add(velocity);
 		btnPanel2.add(btnPlus);
 
 		Box vB3 = Box.createVerticalBox();
@@ -382,8 +401,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			log.append("Se ha seleccionado reiniciar el contenido." + newline);
 			log.setCaretPosition(log.getDocument().getLength());
-			// Si pulsamos en abrir
-		} else if (e.getSource() == btnOpen) {
+		}
+		// Si pulsamos en abrir
+		else if (e.getSource() == btnOpen) {
 			// Seleccionamos el fichero
 			int returnVal = fc.showOpenDialog(Interfaz.this);
 
@@ -406,8 +426,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			}
 			log.setCaretPosition(log.getDocument().getLength());
 
-			// Si pulsamos en guardar
-		} else if (e.getSource() == btnSave) {
+		} 
+		// Si pulsamos en guardar
+		else if (e.getSource() == btnSave) {
 			int returnVal = fc.showSaveDialog(Interfaz.this);
 			if (returnVal == JFileChooser.APPROVE_OPTION) {
 				File file = fc.getSelectedFile();
@@ -460,15 +481,52 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				log.append("Se ha cancelado el guardado de fichero." + newline);
 			}
 			log.setCaretPosition(log.getDocument().getLength());
-			// Controlador de la parte del algoritmo
-		} else if (e.getSource() == algCB) {
+		}
+		// Controlador de la parte del algoritmo
+		else if (e.getSource() == algCB) {
 			String option = algCB.getSelectedItem().toString();
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
 			}
-		} else if (e.getSource() == dims) {
+		}
+		// Control de la velocidad
+		// Si pulsamos el botón de reducir velocidad
+		else if (e.getSource() == btnMinus) {
+			log.append("Se ha reducido la velocidad de la simulación " + newline);
+
+			v -= 0.25;
+			velocity.setText(new String("x").concat(frmt.format(v)));
+			// No puede bajar de 0.25
+			if (v == 0.25) {
+				btnMinus.setEnabled(false);
+				log.append("Se ha alcanzado el mínimo de velocidad" + newline);
+			}
+
+			// Si el botón de aumentar estaba bloqueado
+			if (!btnPlus.isEnabled())
+				btnPlus.setEnabled(true);
+
+		}
+		// Si pulsamos el botón de aumentar velocidad
+		else if (e.getSource() == btnPlus) {
+			log.append("Se ha aumentado la velocidad de la simulación " + newline);
+
+			v += 0.25;
+			velocity.setText(new String("x").concat(frmt.format(v)));
+			// No puede subir de 2.00
+			if (v == 2) {
+				btnPlus.setEnabled(false);
+				log.append("Se ha alcanzado el máximo de velocidad" + newline);
+			}
+
+			// Si el botón de reducir estaba bloqueado
+			if (!btnMinus.isEnabled())
+				btnMinus.setEnabled(true);
+		}
+		// Controlador del selector de las dimensiones del mapa
+		else if (e.getSource() == dims) {
 
 			String option = dims.getSelectedItem().toString();
 			if (option.equals(dimensiones[0])) { // 40x40
@@ -477,7 +535,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			}
 
-		} else if (e.getSource() == btnReverse) {
+		} 
+		// Si se pulsa el botón de cambio de inicio por fin
+		else if (e.getSource() == btnReverse) {
 
 		}
 	}
