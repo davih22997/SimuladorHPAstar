@@ -205,6 +205,7 @@ public class Mapa {
 		Punto aux = new Punto(btn.getToolTipText());
 		switch (tipo) {
 		case TIPO_CONSULTA: // Consulta
+			Interfaz.log.append("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")\n");
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		case TIPO_INICIAL: // Pto inicial

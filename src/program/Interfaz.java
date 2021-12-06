@@ -45,7 +45,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private JPanel panel;
 
 	// Control de todas las acciones
-	private JTextArea log;
+	protected static JTextArea log;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
