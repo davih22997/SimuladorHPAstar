@@ -39,7 +39,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	static private final String newline = "\n";
 
 	// Lista de las dimensiones posibles a escoger
-	static private final String[] dimensiones = { "40x40", "20x30" };
+	static private final String[] dimensiones = { "40x40", "20x30", "30x20" };
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -92,10 +92,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private ButtonGroup bGroup;
 	private JRadioButton rInic, rFin, rObs, rCons;
 	private JButton btnReverse;
-	
+
 	// Parte del Mapa
-	private Mapa mapa;
-	
+	private Mapa mapa = new Mapa(0, 0);
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
@@ -271,6 +270,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Añadimos el selector de dimensiones
 		dims = new JComboBox<>();
 		// Añadimos las opciones al selector
+
+		dims.addItem("Seleccionar dimensiones");
 		for (String tam : dimensiones)
 			dims.addItem(tam);
 
@@ -329,6 +330,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Finalmente, lo añadimos todo al panel central
 		vB4.add(vB4_2);
 		pCentral.add(vB4, BorderLayout.CENTER);
+
+		// Parte del Mapa
+		// mapa = new Mapa(40, 40);
+		// mapa.crearTablero();
+
+		pCentral.add(mapa.tablero, BorderLayout.SOUTH);
 
 		// Añadimos el panel central
 		this.add(pCentral, BorderLayout.WEST);
@@ -426,7 +433,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			}
 			log.setCaretPosition(log.getDocument().getLength());
 
-		} 
+		}
 		// Si pulsamos en guardar
 		else if (e.getSource() == btnSave) {
 			int returnVal = fc.showSaveDialog(Interfaz.this);
@@ -530,12 +537,29 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			String option = dims.getSelectedItem().toString();
 			if (option.equals(dimensiones[0])) { // 40x40
-
+				if (mapa != null)
+					mapa.destruirTablero();
+				mapa.setDims(40, 40);
+				mapa.crearTablero();
 			} else if (option.equals(dimensiones[1])) { // 20x30
+				if (mapa != null)
+					mapa.destruirTablero();
 
+				mapa.setDims(20, 30);
+				mapa.crearTablero();
+			} else if (option.equals(dimensiones[2])) { // 30x20
+				if (mapa != null)
+					mapa.destruirTablero();
+
+				mapa.setDims(30, 20);
+				mapa.crearTablero();
+			} else { // Seleccionar dimensiones
+				if (mapa != null)
+					mapa.destruirTablero();
+				mapa.setDims(0, 0);
 			}
 
-		} 
+		}
 		// Si se pulsa el botón de cambio de inicio por fin
 		else if (e.getSource() == btnReverse) {
 
@@ -543,8 +567,22 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	}
 
 	@Override
+	/**
+	 * Gestor de los JRadioButtons
+	 */
 	public void stateChanged(ChangeEvent e) {
-		// TODO Auto-generated method stub
+		// Si seleccionamos la opción de consulta
+		if (rCons.isSelected())
+			mapa.setTipo(Mapa.TIPO_CONSULTA);
+		// Si seleccionamos la opción de pto inicial
+		else if (rInic.isSelected())
+			mapa.setTipo(Mapa.TIPO_INICIAL);
+		// Si seleccionamos la opción de pto final
+		else if (rFin.isSelected())
+			mapa.setTipo(Mapa.TIPO_FINAL);
+		// Si seleccionamos la opción de obstáculo
+		else if (rObs.isSelected())
+			mapa.setTipo(Mapa.TIPO_OBSTACULO);
 
 	}
 

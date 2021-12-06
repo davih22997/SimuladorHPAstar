@@ -16,7 +16,7 @@ import javax.swing.JPanel;
 import javax.swing.JSeparator;
 import javax.swing.JTextField;
 
-public class Mapa extends GroupLayout {
+public class Mapa {
 
 	// Enteros para controlar el tipo
 	public static final int TIPO_CONSULTA = 0;
@@ -29,45 +29,38 @@ public class Mapa extends GroupLayout {
 
 	// Variables b�sicas del mapa:
 	// Cantidad total de filas y de columnas
-	int dY = 0; // Y -> fils
-	int dX = 0; // X -> cols
+	private int dY = 0; // Y -> fils
+	private int dX = 0; // X -> cols
 
 	// Dimensiones de cada botón en el mapa
-	int tamY = 0; // Y -> alto
-	int tamX = 0; // X -> ancho
+	private int tamY = 0; // Y -> alto
+	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
 	static final int dimY = 500; // Y -> alto
 	static final int dimX = 500; // X -> ancho
 
 	// Elementos del mapa
-	private static JPanel tablero = new JPanel();
+	protected JPanel tablero;
 	private GroupLayout tableroLayout;
 
 	// Variables de gestión del mapa:
-	private JButton btnCrear, btnDestruir;
-	private JSeparator jSeparator1;
-	private JLabel lblDimX, lblDimY;
-	private JPanel pnlMenu;
 	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
 	JButton[][] MatrizBotones;
-	
+
 	public Mapa(int fils, int cols) {
 		this(fils, cols, TIPO_CONSULTA);
 	}
 
-	
 	public Mapa(int fils, int cols, int tipo) {
-		super(tablero);
 		dY = fils;
 		dX = cols;
 		setTipo(tipo);
 
 		initComponents();
 	}
-	
 
 	/**
 	 * Define el tipo del mapa para gestionar la pulsación de botón
@@ -78,22 +71,32 @@ public class Mapa extends GroupLayout {
 		tipo = n;
 	}
 
+	/**
+	 * Modifica el número de filas y de columnas
+	 * 
+	 * @param fils
+	 * @param cols
+	 */
+	public void setDims(int fils, int cols) {
+		this.dX = cols;
+		this.dY = fils;
+	}
+
 	private void initComponents() {
+		tablero = new JPanel();
 		tablero.setPreferredSize(new Dimension(dimY, dimX));
 
 		tablero.setBackground(new Color(204, 204, 204));
 		tablero.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
 		tablero.setToolTipText("");
-		
-		
-		this.setHorizontalGroup(
-			this.createParallelGroup(GroupLayout.Alignment.LEADING)
-			.addGap(0, 500, Short.MAX_VALUE)
-		);
-		this.setVerticalGroup(
-			this.createParallelGroup(GroupLayout.Alignment.LEADING)
-			.addGap(0, 500, Short.MAX_VALUE)
-		);
+
+		tableroLayout = new GroupLayout(tablero);
+		tablero.setLayout(tableroLayout);
+
+		tableroLayout.setHorizontalGroup(
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
+		tableroLayout.setVerticalGroup(
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
 
 	}
 
@@ -109,7 +112,11 @@ public class Mapa extends GroupLayout {
 
 	public void crearTablero() {
 		// Si las dimensiones son válidas
-		if (validarDims()) {
+
+		// Si hay parámetros de texto, los validamos, si no, validamos los numéricos
+		boolean val = (this.tbxDimX == null || this.tbxDimY == null) ? validarDims2() : validarDims();
+
+		if (val) {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
 			// Se crea el tamaño de gridLayout de nuestro panel del tablero
@@ -246,6 +253,20 @@ public class Mapa extends GroupLayout {
 
 			}
 		}
+
+		return res;
+	}
+
+	/**
+	 * Igual que el anterior pero sin los parámetros de texto
+	 * 
+	 * @return
+	 */
+	private boolean validarDims2() {
+		boolean res = false;
+
+		if (this.dX > 0 && dY > 0)
+			res = true;
 
 		return res;
 	}
