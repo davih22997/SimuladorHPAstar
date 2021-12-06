@@ -18,6 +18,9 @@ import javax.swing.UIManager;
 
 public class Mapa {
 
+	// Para insertar una nueva línea
+	private final static String newline = "\n";
+
 	// Enteros para controlar el tipo
 	public static final int TIPO_CONSULTA = 0;
 	public static final int TIPO_INICIAL = 1;
@@ -37,8 +40,8 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	static final int dimY = 500; // Y -> alto
-	static final int dimX = 500; // X -> ancho
+	private static final int dimY = 500; // Y -> alto
+	private static final int dimX = 500; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -68,6 +71,24 @@ public class Mapa {
 		obstaculos = new ArrayList<>();
 
 		initComponents();
+	}
+
+	/**
+	 * Devuelve el número de filas del mapa
+	 * 
+	 * @return
+	 */
+	public int getFilas() {
+		return dY;
+	}
+
+	/**
+	 * Devuelve el número de columnas del mapa
+	 * 
+	 * @return
+	 */
+	public int getCols() {
+		return dX;
 	}
 
 	/**
@@ -205,7 +226,7 @@ public class Mapa {
 		Punto aux = new Punto(btn.getToolTipText());
 		switch (tipo) {
 		case TIPO_CONSULTA: // Consulta
-			Interfaz.log.append("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")\n");
+			Interfaz.log.append("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")" + newline);
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		case TIPO_INICIAL: // Pto inicial
@@ -215,11 +236,20 @@ public class Mapa {
 				if (pto_inicial.equals(aux)) {
 					btn.setBackground(UIManager.getColor("Button.background"));
 					pto_inicial = null;
+					Interfaz.log.append("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
+							+ aux.toString() + newline);
 				} else {
 					// Si coincide con el pto_final -> Lo borramos
-					if (pto_final != null && pto_final.equals(aux))
+					if (pto_final != null && pto_final.equals(aux)) {
+						Interfaz.log.append("Se quita el punto final establecido." + newline);
 						pto_final = null;
+					} else if (obstaculos.contains(aux)) {
+						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						obstaculos.remove(aux);
+					}
 
+					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
+							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(Color.GREEN);
 					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
@@ -228,8 +258,14 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_final no es null y coincide: Lo borramos
-				if (pto_final != null && pto_final.equals(aux))
+				Interfaz.log.append("Se establece el punto inicial en la posición: " + aux.toString() + "." + newline);
+				if (pto_final != null && pto_final.equals(aux)) {
+					Interfaz.log.append("Se quita el punto final establecido." + newline);
 					pto_final = null;
+				} else if (obstaculos.contains(aux)) {
+					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					obstaculos.remove(aux);
+				}
 
 				pto_inicial = aux;
 				btn.setBackground(Color.GREEN);
@@ -242,11 +278,20 @@ public class Mapa {
 				if (pto_final.equals(aux)) {
 					btn.setBackground(UIManager.getColor("Button.background"));
 					pto_final = null;
+					Interfaz.log.append("Se ha seleccionado quitar el punto final, que estaba en la posición: "
+							+ aux.toString() + "." + newline);
 				} else {
 					// Si coincide con el pto_inicial -> Lo borramos
-					if (pto_inicial != null && pto_inicial.equals(aux))
+					if (pto_inicial != null && pto_inicial.equals(aux)) {
+						Interfaz.log.append("Se quita el punto inicial establecido." + newline);
 						pto_inicial = null;
+					} else if (obstaculos.contains(aux)) {
+						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						obstaculos.remove(aux);
+					}
 
+					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
+							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(Color.RED);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
@@ -255,8 +300,14 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_inicial no es null y coincide: Lo borramos
-				if (pto_inicial != null && pto_inicial.equals(aux))
+				Interfaz.log.append("Se establece el punto final en la posición: " + aux.toString() + "." + newline);
+				if (pto_inicial != null && pto_inicial.equals(aux)) {
+					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
 					pto_inicial = null;
+				} else if (obstaculos.contains(aux)) {
+					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					obstaculos.remove(aux);
+				}
 
 				pto_final = aux;
 				btn.setBackground(Color.RED);
@@ -264,6 +315,25 @@ public class Mapa {
 			break;
 		case TIPO_OBSTACULO: // Obstáculo
 			btn.setBackground(Color.BLACK);
+			// Si la lista de obstaculos contiene el punto seleccionado
+			if (obstaculos.contains(aux)) {
+				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
+				obstaculos.remove(aux);
+				btn.setBackground(UIManager.getColor("Button.background"));
+			} else {
+				// Si coincide con el pto inicial
+				if (pto_inicial != null && pto_inicial.equals(aux)) {
+					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+					pto_inicial = null;
+				} // Si coincide con el pto final
+				else if (pto_final != null && pto_final.equals(aux)) {
+					Interfaz.log.append("Se quita el punto final establecido." + newline);
+					pto_final = null;
+				}
+				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
+				obstaculos.add(aux);
+				btn.setBackground(Color.BLACK);
+			}
 			break;
 		default:
 			break;

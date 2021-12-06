@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -36,10 +37,10 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 // Clase para crear la interfaz gráfica del simulador
 public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
-	static private final String newline = "\n";
+	private static final String newline = "\n";
 
 	// Lista de las dimensiones posibles a escoger
-	static private final String[] dimensiones = { "40x40", "20x30", "30x20" };
+	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -436,58 +437,133 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		}
 		// Si pulsamos en guardar
 		else if (e.getSource() == btnSave) {
-			int returnVal = fc.showSaveDialog(Interfaz.this);
-			if (returnVal == JFileChooser.APPROVE_OPTION) {
-				File file = fc.getSelectedFile();
 
-				String name = file.getName();
-				Pattern pat = Pattern.compile(".+[.]+[^.]+$");
+			int filas = mapa.getFilas();
+			int cols = mapa.getCols();
+			if (filas == 0 && cols == 0) {
+				JOptionPane.showMessageDialog(new JFrame(),
+						"Debe seleccionar un tamaño de mapa para poder guardar en un fichero.");
+			} else {
 
-				Matcher mat = pat.matcher(name);
+				int returnVal = fc.showSaveDialog(Interfaz.this);
+				if (returnVal == JFileChooser.APPROVE_OPTION) {
+					File file = fc.getSelectedFile();
 
-				// Mira a ver si es un archivo con terminación en ".algo" y si no lo convierte
-				// en ".txt"
-				if (!mat.find()) {
-					file = new File(file.getAbsolutePath() + ".txt");
-				}
-				/*
-				 * if (!name.endsWith(".txt") || !name.endsWith(".TXT")) { file = new
-				 * File(file.getAbsolutePath() + ".txt"); }
-				 */
+					String name = file.getName();
+					Pattern pat = Pattern.compile(".+[.]+[^.]+$");
 
-				if (file.exists()) {
-					int result = JOptionPane.showConfirmDialog(this, "El archivo ya existe, ¿sobreescribir?",
-							"Archivo ya existente", JOptionPane.YES_NO_OPTION);
-					switch (result) {
-					case JOptionPane.YES_OPTION:
+					Matcher mat = pat.matcher(name);
+
+					// Mira a ver si es un archivo con terminación en ".algo" y si no lo convierte
+					// en ".txt"
+					if (!mat.find()) {
+						file = new File(file.getAbsolutePath() + ".txt");
+					}
+					/*
+					 * if (!name.endsWith(".txt") || !name.endsWith(".TXT")) { file = new
+					 * File(file.getAbsolutePath() + ".txt"); }
+					 */
+
+					if (file.exists()) {
+						int result = JOptionPane.showConfirmDialog(this, "El archivo ya existe, ¿sobreescribir?",
+								"Archivo ya existente", JOptionPane.YES_NO_OPTION);
+						switch (result) {
+						case JOptionPane.YES_OPTION:
+
+							try (FileWriter fw = new FileWriter(file)) {
+								StringBuilder sb = new StringBuilder();
+
+								sb.append("Mapa:" + newline);
+								sb.append("Dimensiones: " + filas + " x " + cols + newline);
+
+								sb.append("Punto inicial: ");
+								if (mapa.pto_inicial == null)
+									sb.append("NULL");
+								else
+									sb.append(mapa.pto_inicial.toString());
+								sb.append(newline);
+
+								sb.append("Punto final: ");
+								if (mapa.pto_final == null)
+									sb.append("NULL");
+								else
+									sb.append(mapa.pto_final.toString());
+								sb.append(newline);
+
+								sb.append("Obstáculos: [");
+
+								Iterator<Punto> it = mapa.obstaculos.iterator();
+
+								while (it.hasNext()) {
+									sb.append(it.next());
+									if (it.hasNext())
+										sb.append(", ");
+								}
+
+								sb.append("]" + newline);
+
+								fw.write(sb.toString());
+
+							} catch (IOException e1) {
+								e1.printStackTrace();
+							}
+							direccion.setText(file.getAbsolutePath());
+							// Texto que aparece cuando sobreescibes el fichero ya existente
+							log.append("Sobreescribiendo fichero: " + file.getName() + "." + newline);
+
+							break;
+						case JOptionPane.NO_OPTION:
+							log.append("Se ha cancelado el guardado de archivo." + newline);
+							break;
+						}
+					} else {
 						try (FileWriter fw = new FileWriter(file)) {
-							fw.write("");
+							StringBuilder sb = new StringBuilder();
+
+							sb.append("Mapa:" + newline);
+							sb.append("Dimensiones: " + filas + " x " + cols + newline);
+
+							sb.append("Punto inicial: ");
+							if (mapa.pto_inicial == null)
+								sb.append("NULL");
+							else
+								sb.append(mapa.pto_inicial.toString());
+							sb.append(newline);
+
+							sb.append("Punto final: ");
+							if (mapa.pto_final == null)
+								sb.append("NULL");
+							else
+								sb.append(mapa.pto_final.toString());
+							sb.append(newline);
+
+							sb.append("Obstáculos: [");
+
+							Iterator<Punto> it = mapa.obstaculos.iterator();
+
+							while (it.hasNext()) {
+								sb.append(it.next());
+								if (it.hasNext())
+									sb.append(", ");
+							}
+
+							sb.append("]" + newline);
+
+							fw.write(sb.toString());
+
 						} catch (IOException e1) {
 							e1.printStackTrace();
 						}
 						direccion.setText(file.getAbsolutePath());
-						// Texto que aparece cuando sobreescibes el fichero ya existente
-						log.append("Sobreescribiendo fichero: " + file.getName() + "." + newline);
-						break;
-					case JOptionPane.NO_OPTION:
-						log.append("Se ha cancelado el guardado de archivo." + newline);
-						break;
+						// Texto que aparece cuando guardas el fichero
+						log.append("Guardando fichero: " + file.getName() + "." + newline);
 					}
-				} else {
-					try (FileWriter fw = new FileWriter(file)) {
-						fw.write("");
-					} catch (IOException e1) {
-						e1.printStackTrace();
-					}
-					direccion.setText(file.getAbsolutePath());
-					// Texto que aparece cuando guardas el fichero
-					log.append("Guardando fichero: " + file.getName() + "." + newline);
-				}
 
-			} else {
-				log.append("Se ha cancelado el guardado de fichero." + newline);
+				} else {
+					log.append("Se ha cancelado el guardado de fichero." + newline);
+				}
+				log.setCaretPosition(log.getDocument().getLength());
 			}
-			log.setCaretPosition(log.getDocument().getLength());
 		}
 		// Controlador de la parte del algoritmo
 		else if (e.getSource() == algCB) {
@@ -574,13 +650,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				mapa.pto_inicial = mapa.pto_final.clone();
 				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Color.GREEN);
 				mapa.pto_final = null;
-				
+
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
 				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Color.RED);
 				mapa.pto_inicial = null;
-				
+
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
 			}
 		}
