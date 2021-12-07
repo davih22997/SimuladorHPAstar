@@ -43,8 +43,8 @@ public class Punto implements Cloneable {
 	}
 
 	/**
-	 * Te genera un pto a partir de un String
-	 * Formato: n1,n2
+	 * Te genera un pto a partir de un String Formato: n1,n2
+	 * 
 	 * @param s
 	 */
 	public Punto(String s) {
@@ -54,6 +54,10 @@ public class Punto implements Cloneable {
 			int c = sc.nextInt();
 			this.c = c;
 			this.f = f;
+		} catch (NumberFormatException e) {
+			e.getStackTrace();
+		} catch (Exception e) {
+			e.getStackTrace();
 		}
 
 	}
