@@ -41,6 +41,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	private static final String newline = "\n";
+	private static final String space = "(\t|\s)";
 
 	// Lista de las dimensiones posibles a escoger
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
@@ -100,7 +101,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte del Mapa
 	private Mapa mapa = new Mapa(0, 0);
 	// Para la creación de puntos desde el fichero
-	private Punto pto_inicial;
+	// private Punto pto_inicial;
 	private Punto pto_final;
 	private ArrayList<Punto> obstaculos;
 
@@ -474,6 +475,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						}
 						if (mapaValido) {
 							log.append("Cargadas las dimensiones del mapa." + newline);
+							// Definimos un punto inicial
+							Punto pto_inicial = null;
+							// Definimos un punto final
+							Punto pto_final = null;
+							// Definimos la lista de obstaculos
+							ArrayList<Punto> obstaculos = new ArrayList<>();
 							// Punto inicial: (x,y)
 							String linea3 = sc.nextLine().toUpperCase();
 							try (Scanner scan = new Scanner(linea3)) {
@@ -484,13 +491,66 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 									pto_inicial = null;
 								else
 									try (Scanner scan2 = new Scanner(ptoinic)) {
-										scan2.useDelimiter("(\t|\s)*X(\t|\s)*");
-										pto_inicial = new Punto(scan2.nextInt(), scan2.nextInt());
+										scan2.useDelimiter(space + "*[(]" + space + "*");
+										try (Scanner scan3 = new Scanner(scan2.next())) {
+											scan3.useDelimiter(space + "*," + space + "*");
+											int f = scan3.nextInt();
+											try (Scanner scan4 = new Scanner(scan3.next())) {
+												scan4.useDelimiter(space + "*[)]");
+												int c = scan4.nextInt();
+												pto_inicial = new Punto(f, c);
+												mapa.MatrizBotones[f][c].setBackground(Color.GREEN);
+												mapa.pto_inicial = pto_inicial;
+											}
+										}
 									} catch (NumberFormatException exc) {
 										JOptionPane.showMessageDialog(new JFrame(),
 												"Debe dar un formato válido para el punto. Se le asignará el valor null.");
+									} catch (Exception exc) {
+										exc.printStackTrace();
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Valores no válidos para el punto. Se le asignará el valor null.");
 									}
 
+								log.append("Cargados los datos relativos al punto inicial." + newline);
+							}
+
+							// Punto final: (x,y)
+							String linea4 = sc.nextLine().toUpperCase();
+							try (Scanner scan = new Scanner(linea4)) {
+								scan.useDelimiter("(\t|\s)*PUNTO(\t|\s)+FINAL(\t|\s)*:(\t|\s)*");
+								// (x, y)
+								String ptofin = scan.next();
+								if (ptofin.equals("NULL"))
+									pto_final = null;
+								else
+									try (Scanner scan2 = new Scanner(ptofin)) {
+										scan2.useDelimiter(space + "*[(]" + space + "*");
+										try (Scanner scan3 = new Scanner(scan2.next())) {
+											scan3.useDelimiter(space + "*," + space + "*");
+											int f = scan3.nextInt();
+											try (Scanner scan4 = new Scanner(scan3.next())) {
+												scan4.useDelimiter(space + "*[)]");
+												int c = scan4.nextInt();
+												pto_final = new Punto(f, c);
+												if (pto_final.equals(pto_inicial))
+													JOptionPane.showMessageDialog(new JFrame(),
+															"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
+												else {
+													mapa.MatrizBotones[f][c].setBackground(Color.RED);
+													mapa.pto_final = pto_final;
+												}
+											}
+										}
+									} catch (NumberFormatException exc) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Debe dar un formato válido para el punto. Se le asignará el valor null.");
+									} catch (Exception exc) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Valores no válidos para el punto. Se le asignará el valor null.");
+									}
+
+								log.append("Cargados los datos relativos al punto final." + newline);
 							}
 						} else {
 							log.append("Dimensiones no válidas para el mapa. Se cancela la carga de datos." + newline);
