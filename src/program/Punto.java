@@ -44,12 +44,12 @@ public class Punto implements Cloneable {
 
 	/**
 	 * Te genera un pto a partir de un String
-	 * 
+	 * Formato: n1,n2
 	 * @param s
 	 */
 	public Punto(String s) {
 		try (Scanner sc = new Scanner(s)) {
-			sc.useDelimiter(", ");
+			sc.useDelimiter("\s*,\s*");
 			int f = sc.nextInt();
 			int c = sc.nextInt();
 			this.c = c;

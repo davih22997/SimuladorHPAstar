@@ -8,10 +8,13 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -96,11 +99,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte del Mapa
 	private Mapa mapa = new Mapa(0, 0);
+	// Para la creación de puntos desde el fichero
+	private Punto pto_inicial;
+	private Punto pto_final;
+	private ArrayList<Punto> obstaculos;
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
 
-		// Inicializamos el formato decimal
+		// Inicializamos el formato decimal (para la velocidad)
 		frmt = new DecimalFormat();
 		frmt.setMaximumFractionDigits(2);
 		frmt.setMinimumFractionDigits(2);
@@ -424,10 +431,77 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					log.append("No existe el fichero: " + file.getName() + " en la ruta dada." + newline);
 					log.append("Se ha cancelado la apertura de fichero." + newline);
 				} else {
+
+					boolean mapaValido = true;
 					direccion.setText(file.getAbsolutePath());
 
 					// Registramos la apertura de fichero
 					log.append("Abriendo fichero: " + file.getName() + "." + newline);
+
+					try (Scanner sc = new Scanner(file)) {
+						log.append("Cargando datos..." + newline);
+						// Son 5 líneas
+						// Linea mapa (inutil)
+						sc.nextLine();
+						// String linea1 = sc.nextLine();
+						// Linea Dimensiones: Filas x Columnas
+						String linea2 = sc.nextLine().toUpperCase();
+						try (Scanner scan = new Scanner(linea2)) {
+							scan.useDelimiter("(\t|\s)*DIMENSIONES(\t|\s)*:(\t|\s)*");
+							// (FILAS X COLUMNAS)
+							String dimens = scan.next();
+							try (Scanner scan2 = new Scanner(dimens)) {
+								scan2.useDelimiter("(\t|\s)*X(\t|\s)*");
+								int dim1 = scan2.nextInt();
+								int dim2 = scan2.nextInt();
+								if (dim1 == 40 && dim2 == 40) {
+									dims.setSelectedItem(dimensiones[0]);
+								} else if (dim1 == 20 && dim2 == 30) {
+									dims.setSelectedItem(dimensiones[1]);
+								} else if (dim1 == 30 && dim2 == 20) {
+									dims.setSelectedItem(dimensiones[2]);
+								} else {
+									JOptionPane.showMessageDialog(new JFrame(),
+											"Las dimensiones dadas no se encuentran entre las opciones disponibles.\nNo se creará un mapa nuevo a partir del fichero.");
+									mapaValido = false;
+								}
+
+							} catch (NumberFormatException exc) {
+								JOptionPane.showMessageDialog(new JFrame(),
+										"Formato inválido para definir el mapa. No se creará");
+								mapaValido = false;
+							}
+						}
+						if (mapaValido) {
+							log.append("Cargadas las dimensiones del mapa." + newline);
+							// Punto inicial: (x,y)
+							String linea3 = sc.nextLine().toUpperCase();
+							try (Scanner scan = new Scanner(linea3)) {
+								scan.useDelimiter("(\t|\s)*PUNTO(\t|\s)+INICIAL(\t|\s)*:(\t|\s)*");
+								// (x,y)
+								String ptoinic = scan.next();
+								if (ptoinic.equals("NULL"))
+									pto_inicial = null;
+								else
+									try (Scanner scan2 = new Scanner(ptoinic)) {
+										scan2.useDelimiter("(\t|\s)*X(\t|\s)*");
+										pto_inicial = new Punto(scan2.nextInt(), scan2.nextInt());
+									} catch (NumberFormatException exc) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Debe dar un formato válido para el punto. Se le asignará el valor null.");
+									}
+
+							}
+						} else {
+							log.append("Dimensiones no válidas para el mapa. Se cancela la carga de datos." + newline);
+							mapaValido = true;
+						}
+
+					} catch (FileNotFoundException e1) {
+						// TODO Auto-generated catch block
+						e1.printStackTrace();
+					}
+
 				}
 			} else {
 				log.append("Se ha cancelado la apertura de fichero." + newline);
