@@ -32,6 +32,7 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -40,8 +41,19 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 // Clase para crear la interfaz gráfica del simulador
 public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
+	// Constantes String muy usadas
 	private static final String newline = "\n";
 	private static final String space = "(\t|\s)";
+	private static final String number = "(([1-9][0-9]+)|[0-9])";
+
+	// Patrones que se usan
+	// Patrón lista
+	private static final Pattern patlist = Pattern.compile(space + "*[{].*[}]" + space + "*");
+	// Patrón punto
+	private static final Pattern patpoint = Pattern.compile(
+			space + "*[(]" + space + "*" + number + space + "*," + space + "*" + number + space + "*[)]" + space + "*");
+	// Patrón archivo (se comprueba que finalice en .algo)
+	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
 	// Lista de las dimensiones posibles a escoger
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
@@ -102,8 +114,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private Mapa mapa = new Mapa(0, 0);
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
-	private Punto pto_final;
-	private ArrayList<Punto> obstaculos;
+	// private Punto pto_final;
+	// private ArrayList<Punto> obstaculos;
 
 	public Interfaz() {
 		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
@@ -407,6 +419,26 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		return initButtonIcon(dIcons, dir);
 	}
 
+	/**
+	 * Método para contar los espacios al principio de un String
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private int cuentaEspacios(String s) {
+		int cont = 0;
+		int i = 0;
+		while (s.charAt(i) == '\t' || s.charAt(i) == ' ') {
+			cont++;
+			i++;
+		}
+
+		return cont;
+	}
+
+	/**
+	 * Gestor de todas las acciones.
+	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
 		// TODO Auto-generated method stub
@@ -489,28 +521,37 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 								String ptoinic = scan.next();
 								if (ptoinic.equals("NULL"))
 									pto_inicial = null;
-								else
-									try (Scanner scan2 = new Scanner(ptoinic)) {
-										scan2.useDelimiter(space + "*[(]" + space + "*");
-										try (Scanner scan3 = new Scanner(scan2.next())) {
-											scan3.useDelimiter(space + "*," + space + "*");
-											int f = scan3.nextInt();
-											try (Scanner scan4 = new Scanner(scan3.next())) {
-												scan4.useDelimiter(space + "*[)]");
-												int c = scan4.nextInt();
-												pto_inicial = new Punto(f, c);
-												mapa.MatrizBotones[f][c].setBackground(Color.GREEN);
-												mapa.pto_inicial = pto_inicial;
+								else {
+									// Comprobamos que tenga el formato de un punto
+									Matcher matpoint = patpoint.matcher(ptoinic);
+									// Si no lo tiene
+									if (!matpoint.matches()) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Formato no válido para definir un punto. Se le asignará el valor null");
+									} // Si lo tiene
+									else {
+										try (Scanner scan2 = new Scanner(ptoinic)) {
+											scan2.useDelimiter(space + "*[(]" + space + "*");
+											try (Scanner scan3 = new Scanner(scan2.next())) {
+												scan3.useDelimiter(space + "*," + space + "*");
+												int f = scan3.nextInt();
+												try (Scanner scan4 = new Scanner(scan3.next())) {
+													scan4.useDelimiter(space + "*[)]");
+													int c = scan4.nextInt();
+													pto_inicial = new Punto(f, c);
+													mapa.MatrizBotones[f][c].setBackground(Color.GREEN);
+													mapa.pto_inicial = pto_inicial;
+												}
 											}
+										} catch (NumberFormatException exc) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Debe dar un formato válido para el punto. Se le asignará el valor null.");
+										} catch (Exception exc) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Valores no válidos para el punto. Se le asignará el valor null.");
 										}
-									} catch (NumberFormatException exc) {
-										JOptionPane.showMessageDialog(new JFrame(),
-												"Debe dar un formato válido para el punto. Se le asignará el valor null.");
-									} catch (Exception exc) {
-										exc.printStackTrace();
-										JOptionPane.showMessageDialog(new JFrame(),
-												"Valores no válidos para el punto. Se le asignará el valor null.");
 									}
+								}
 
 								log.append("Cargados los datos relativos al punto inicial." + newline);
 							}
@@ -518,40 +559,113 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 							// Punto final: (FILA, COLUMNA)
 							String linea4 = sc.nextLine().toUpperCase();
 							try (Scanner scan = new Scanner(linea4)) {
-								scan.useDelimiter("(\t|\s)*PUNTO(\t|\s)+FINAL(\t|\s)*:(\t|\s)*");
+								scan.useDelimiter(space + "*PUNTO" + space + "+FINAL" + space + "*:" + space + "*");
 								// (x, y)
 								String ptofin = scan.next();
 								if (ptofin.equals("NULL"))
 									pto_final = null;
-								else
-									try (Scanner scan2 = new Scanner(ptofin)) {
-										scan2.useDelimiter(space + "*[(]" + space + "*");
-										try (Scanner scan3 = new Scanner(scan2.next())) {
-											scan3.useDelimiter(space + "*," + space + "*");
-											int f = scan3.nextInt();
-											try (Scanner scan4 = new Scanner(scan3.next())) {
-												scan4.useDelimiter(space + "*[)]");
-												int c = scan4.nextInt();
-												pto_final = new Punto(f, c);
-												if (pto_final.equals(pto_inicial))
-													JOptionPane.showMessageDialog(new JFrame(),
-															"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
-												else {
-													mapa.MatrizBotones[f][c].setBackground(Color.RED);
-													mapa.pto_final = pto_final;
+								else {
+									// Comprobamos que tenga el formato de un punto
+									Matcher matpoint = patpoint.matcher(ptofin);
+									// Si no lo tiene
+									if (!matpoint.matches()) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Formato no válido para definir un punto. Se le asignará el valor null");
+									} // Si lo tiene
+									else {
+										try (Scanner scan2 = new Scanner(ptofin)) {
+											scan2.useDelimiter("(" + space + "*[(]" + space + "*)");
+											try (Scanner scan3 = new Scanner(scan2.next())) {
+												scan3.useDelimiter(space + "*," + space + "*");
+												int f = scan3.nextInt();
+												try (Scanner scan4 = new Scanner(scan3.next())) {
+													scan4.useDelimiter(space + "*[)]" + space + "*");
+													int c = scan4.nextInt();
+													pto_final = new Punto(f, c);
+													if (pto_final.equals(pto_inicial))
+														JOptionPane.showMessageDialog(new JFrame(),
+																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
+													else {
+														mapa.MatrizBotones[f][c].setBackground(Color.RED);
+														mapa.pto_final = pto_final;
+													}
 												}
 											}
+										} catch (NumberFormatException exc) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Debe dar un formato válido para el punto. Se le asignará el valor null.");
+										} catch (Exception exc) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Valores no válidos para el punto. Se le asignará el valor null.");
 										}
-									} catch (NumberFormatException exc) {
-										JOptionPane.showMessageDialog(new JFrame(),
-												"Debe dar un formato válido para el punto. Se le asignará el valor null.");
-									} catch (Exception exc) {
-										JOptionPane.showMessageDialog(new JFrame(),
-												"Valores no válidos para el punto. Se le asignará el valor null.");
 									}
+								}
 
 								log.append("Cargados los datos relativos al punto final." + newline);
 							}
+
+							// Obstáculos: {Punto1, Punto2, ... }
+							String linea5 = sc.nextLine().toUpperCase();
+							try (Scanner scan = new Scanner(linea5)) {
+								scan.useDelimiter(space + "*OBSTÁCULOS" + space + "*:" + space + "*");
+								// { lista_ptos }
+								String lista = scan.next();
+								// Comprobamos que siga el patrón lista
+								Matcher matlist = patlist.matcher(lista);
+								// Si no sigue el patrón, creamos una lista vacía.
+								if (!matlist.matches()) {
+									JOptionPane.showMessageDialog(new JFrame(),
+											"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
+								} // Si lo sigue, operamos
+								else {
+
+									// Quitamos el inicio de la lista
+									try (Scanner scan2 = new Scanner(lista.substring(1))) {
+										// booleano para comprobar si hay puntos ya definidos
+										boolean rep = false;
+
+										scan2.useDelimiter("([)]" + space + "*," + space + "*)" + "|([)]" + space
+												+ "*[}]" + space + "*)");
+
+										while (scan2.hasNext()) {
+											String p = scan2.next();
+											Matcher matpoint = patpoint.matcher(p + ")");
+											if (!matpoint.matches()) {
+												throw new Exception();
+											} else {
+												Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
+												if (obs.equals(pto_inicial) || obs.equals(pto_final)
+														|| obstaculos.contains(obs)) {
+													rep = true;
+												} else
+													obstaculos.add(obs);
+											}
+										}
+
+										for (Punto o : obstaculos) {
+											mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Color.BLACK);
+											mapa.obstaculos.add(o);
+										}
+
+										if (rep) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
+										}
+
+										if (obstaculos.size() == 1)
+											log.append("Se ha añadido 1 obstáculo." + newline);
+										else
+											log.append("Se ha añadido un total de " + obstaculos.size() + " obstáculos."
+													+ newline);
+									} catch (Exception exp) {
+										JOptionPane.showMessageDialog(new JFrame(),
+												"Valores no válidos para puntos. No se añadirán obstáculos.");
+									}
+								}
+
+								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
+							}
+
 						} else {
 							log.append("Dimensiones no válidas para el mapa. Se cancela la carga de datos." + newline);
 							mapaValido = true;
@@ -576,7 +690,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			int cols = mapa.getCols();
 			if (filas == 0 && cols == 0) {
 				JOptionPane.showMessageDialog(new JFrame(),
-						"Debe seleccionar un tamaño de mapa para poder guardar en un fichero.");
+						"Debe seleccionar al menos un tamaño de mapa para poder guardar datos en un fichero.");
 			} else {
 
 				int returnVal = fc.showSaveDialog(Interfaz.this);
@@ -584,13 +698,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					File file = fc.getSelectedFile();
 
 					String name = file.getName();
-					Pattern pat = Pattern.compile(".+[.]+[^.]+$");
 
-					Matcher mat = pat.matcher(name);
+					// Para comprobar que el nombre sigue el patrón dado
+					Matcher mat = patfile.matcher(name);
 
 					// Mira a ver si es un archivo con terminación en ".algo" y si no lo convierte
 					// en ".txt"
-					if (!mat.find()) {
+					if (!mat.matches()) {
 						file = new File(file.getAbsolutePath() + ".txt");
 					}
 					/*
@@ -624,7 +738,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 									sb.append(mapa.pto_final.toString());
 								sb.append(newline);
 
-								sb.append("Obstáculos: [");
+								sb.append("Obstáculos: {");
 
 								Iterator<Punto> it = mapa.obstaculos.iterator();
 
@@ -634,7 +748,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 										sb.append(", ");
 								}
 
-								sb.append("]" + newline);
+								sb.append("}" + newline);
 
 								fw.write(sb.toString());
 
@@ -642,7 +756,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 								e1.printStackTrace();
 							}
 							direccion.setText(file.getAbsolutePath());
-							// Texto que aparece cuando sobreescibes el fichero ya existente
+							// Texto que aparece cuando sobreescribes el fichero ya existente
 							log.append("Sobreescribiendo fichero: " + file.getName() + "." + newline);
 
 							break;
@@ -671,7 +785,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 								sb.append(mapa.pto_final.toString());
 							sb.append(newline);
 
-							sb.append("Obstáculos: [");
+							sb.append("Obstáculos: {");
 
 							Iterator<Punto> it = mapa.obstaculos.iterator();
 
@@ -681,7 +795,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 									sb.append(", ");
 							}
 
-							sb.append("]" + newline);
+							sb.append("}" + newline);
 
 							fw.write(sb.toString());
 
