@@ -167,7 +167,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 		// Barra con la dirección del archivo
 		JLabel dirAct = new JLabel("Actual:");
-		direccion = new JTextField(20);
+		direccion = new JTextField(40);
 		direccion.setEditable(false);
 		direccion.setBackground(Color.white);
 
@@ -481,7 +481,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 							Punto pto_final = null;
 							// Definimos la lista de obstaculos
 							ArrayList<Punto> obstaculos = new ArrayList<>();
-							// Punto inicial: (x,y)
+							// Punto inicial: (FILA, COLUMNA)
 							String linea3 = sc.nextLine().toUpperCase();
 							try (Scanner scan = new Scanner(linea3)) {
 								scan.useDelimiter("(\t|\s)*PUNTO(\t|\s)+INICIAL(\t|\s)*:(\t|\s)*");
@@ -515,7 +515,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 								log.append("Cargados los datos relativos al punto inicial." + newline);
 							}
 
-							// Punto final: (x,y)
+							// Punto final: (FILA, COLUMNA)
 							String linea4 = sc.nextLine().toUpperCase();
 							try (Scanner scan = new Scanner(linea4)) {
 								scan.useDelimiter("(\t|\s)*PUNTO(\t|\s)+FINAL(\t|\s)*:(\t|\s)*");
