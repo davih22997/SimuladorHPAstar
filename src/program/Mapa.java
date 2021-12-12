@@ -6,6 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
+import java.util.Comparator;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -32,8 +33,8 @@ public class Mapa {
 
 	// Variables básicas del mapa:
 	// Cantidad total de filas y de columnas
-	private int dY = 0; // Y -> fils
-	private int dX = 0; // X -> cols
+	static int dY = 0; // Y -> fils
+	static int dX = 0; // X -> cols
 
 	// Dimensiones de cada botón en el mapa
 	private int tamY = 0; // Y -> alto
@@ -51,12 +52,12 @@ public class Mapa {
 	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
-	JButton[][] MatrizBotones;
+	static JButton[][] MatrizBotones;
 
 	// Variables para los puntos
-	Punto pto_inicial;
-	Punto pto_final;
-	ArrayList<Punto> obstaculos;
+	static Punto pto_inicial;
+	static Punto pto_final;
+	static ArrayList<Punto> obstaculos;
 
 	public Mapa(int fils, int cols) {
 		this(fils, cols, TIPO_CONSULTA);
@@ -98,6 +99,13 @@ public class Mapa {
 	 */
 	public void setTipo(int n) {
 		tipo = n;
+	}
+	
+	/**
+	 * Devuelve el tipo del mapa
+	 */
+	public int getTipo() {
+		return tipo;
 	}
 
 	/**
@@ -411,6 +419,20 @@ public class Mapa {
 	private void getDimButtons(int cX, int cY) {
 		tamX = dimX / cX;
 		tamY = dimY / cY;
+	}
+
+	/**
+	 * Ordena los obstáculos en el ArrayList de obstáculos
+	 */
+	public void ordenarObstaculos() {
+		obstaculos.sort(new Comparator<Punto>() {
+			@Override
+			public int compare(Punto p1, Punto p2) {
+				int v1 = (dY ^ p1.getFila() - 1) + p1.getCol();
+				int v2 = (dY ^ p2.getFila() - 1) + p2.getCol();
+				return v1 - v2;
+			}
+		});
 	}
 
 }

@@ -1,5 +1,6 @@
 package program;
 
+import java.util.ArrayList;
 import java.util.Scanner;
 
 // Clase para definir un punto dado por (fila, columna)
@@ -60,6 +61,47 @@ public class Punto implements Cloneable {
 			e.getStackTrace();
 		}
 
+	}
+
+	/**
+	 * Calcula los vecinos dadas las dimensiones del mapa
+	 * 
+	 * @param filas
+	 * @param columnas
+	 * @return
+	 */
+	public ArrayList<Punto> vecinos(int filas, int columnas) {
+		ArrayList<Punto> res = new ArrayList<>();
+
+		int arriba = this.f - 1;
+		int abajo = this.f + 1;
+		int derecha = this.c + 1;
+		int izda = this.c - 1;
+
+		// Primero, añadimos al de arriba
+		if (arriba >= 0)
+			res.add(new Punto(arriba, this.c));
+		// Segundo, al de abajo
+		if (abajo < filas)
+			res.add(new Punto(abajo, this.c));
+		// Tercero, al de la derecha
+		if (derecha < columnas)
+			res.add(new Punto(this.f, derecha));
+		// Por último, al de la izda
+		if (izda >= 0)
+			res.add(new Punto(this.f, izda));
+
+		return res;
+	}
+
+	/**
+	 * Calcula el la distancia Manhattan con respecto a otro punto
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public int distManhattan(Punto p) {
+		return Math.abs(this.f - p.f) + Math.abs(this.c - p.c);
 	}
 
 	@Override
