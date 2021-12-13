@@ -841,11 +841,18 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				// Si se cumplen todas las condiciones, se empieza la simulación
 				else {
 					Astar alg = new Astar();
-					/*
-					alg.calcularCamino(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
+					log.append("Iniciada la simulación del algoritmo A*." + newline);
+					alg.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
 							mapa.obstaculos);
-							*/
-					alg.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final, mapa.obstaculos);
+
+					log.append("Memoria usada: " + alg.memoria + "." + newline);
+					log.append("Iteraciones: " + alg.iteraciones + "." + newline);
+
+					if (alg.encontrada)
+						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
+					else
+						JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
+
 					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
 					btnStart.setEnabled(false);
 					btnStop.setEnabled(true);

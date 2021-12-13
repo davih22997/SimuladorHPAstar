@@ -14,32 +14,44 @@ import java.awt.Color;
 
 public class Astar {
 
-	private static int memoria = 0;
-	private static int iteraciones = 0;
+	protected static int memoria = 0;
+	protected static int iteraciones = 0;
+	protected static boolean encontrada = false;
 
 	public static void BusquedaAstar(int filas, int columnas, Punto pto_inicial, Punto pto_final,
 			ArrayList<Punto> obstaculos) {
 		ArrayList<Punto> explorados = new ArrayList<>();
 
-		// Se crea una cola ordenada según el coste que tenga
-		PriorityQueue<Punto> cola = new PriorityQueue<>(new Comparator<Punto>() {
+		// Se crea una lista de sucesores ordenada según el coste que tenga
+		PriorityQueue<Punto> sucesores = new PriorityQueue<>(new Comparator<Punto>() {
 			@Override
 			public int compare(Punto p1, Punto p2) {
-				return (p1.pasos + p1.distManhattan(pto_final)) - (p2.pasos + p2.distManhattan(pto_final));
+				int c1 = p1.pasos + p1.distManhattan(pto_final);
+				int c2 = p2.pasos + p2.distManhattan(pto_final);
+				
+				int solucion = c1 - c2;
+				
+				if (solucion == 0) {
+					solucion = p2.pasos - p1.pasos;
+				}
+				
+				return solucion;
 			}
 		});
 
 		// Inicialmente, añadimos el punto inicial
-		cola.add(pto_inicial.clone());
+		sucesores.add(pto_inicial.clone());
 
 		// Realizamos búsqueda hasta que no queden elementos o hasta que el elemento de
-		// la cabeza de la cola sea el pto final
-		while ((!cola.isEmpty()) && !cola.peek().equals(pto_final)) {
+		// la cabeza de la lista de sucesores sea el pto final
+		while ((!sucesores.isEmpty()) && !sucesores.peek().equals(pto_final)) {
 
 			// El punto con el menor coste
-			Punto actual = cola.poll();
+			Punto actual = sucesores.poll();
 
 			explorados.add(actual);
+			// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
+			// que se queda en verde
 			if (!actual.equals(pto_inicial))
 				Mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
 
@@ -56,37 +68,38 @@ public class Astar {
 					continue;
 
 				// Si el punto vecino no está en la cola o tiene menos pasos:
-				else if ((!cola.contains(p))
+				else if ((!sucesores.contains(p))
 						|| (explorados.contains(p) && p.pasos < explorados.get(explorados.indexOf(p)).pasos)) {
 
+					// Pintamos el mapa
 					if (!explorados.contains(p) && (!p.equals(pto_inicial) && !p.equals(pto_final)))
 						Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
 
-					// Eliminamos el anterior si la cola lo contiene
-					if (cola.contains(p))
-						cola.remove(p);
+					// Lo eliminamos de la lista de sucesores si lo contiene
+					if (sucesores.contains(p))
+						sucesores.remove(p);
+					else
+						memoria++;
 
-					cola.add(p);
+					// Finalmente, lo añadimos
+					sucesores.add(p);
 				}
 
 			}
 
 		}
 
-		if (!cola.isEmpty() && cola.peek().equals(pto_final)) {
-			Punto p = cola.poll();
-			iteraciones = p.pasos;
+		if (!sucesores.isEmpty() && sucesores.peek().equals(pto_final)) {
+			Punto p = sucesores.poll();
+			iteraciones = explorados.size();
 			while (!p.padre.equals(pto_inicial)) {
 				p = p.padre;
 				Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
 			}
+
+			encontrada = true;
 			
-			JOptionPane.showMessageDialog(new JFrame(), 
-					"Se encontró solución.");
-		} else 
-			JOptionPane.showMessageDialog(new JFrame(),
-					"No se encontró solución.");
-		
+		}
 
 	}
 
