@@ -1,16 +1,9 @@
 package program;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.PriorityQueue;
-import java.util.Stack;
-
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.PriorityQueue;
 
 public class Astar {
 
@@ -53,7 +46,7 @@ public class Astar {
 			// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
 			// que se queda en verde
 			if (!actual.equals(pto_inicial)) {
-				Mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
+				Interfaz.mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
 			}
 			// Cogemos los vecinos del punto
 			ArrayList<Punto> vecinos = actual.vecinos(filas, columnas);
@@ -71,7 +64,7 @@ public class Astar {
 				else if ((!sucesores.contains(p))) {
 					// Pintamos el mapa
 					if (!p.equals(pto_inicial) && !p.equals(pto_final))
-						Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
+						Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
 
 					// Finalmente, lo añadimos
 					sucesores.add(p);
@@ -87,7 +80,7 @@ public class Astar {
 			iteraciones = explorados.size();
 			while (!p.padre.equals(pto_inicial)) {
 				p = p.padre;
-				Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
+				Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
 			}
 
 			encontrada = true;

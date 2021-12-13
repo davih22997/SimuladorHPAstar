@@ -32,7 +32,6 @@ import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
-import javax.swing.UIManager;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -89,7 +88,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private JButton btnMinus, btnPlus;
 	private JPanel btnPanel2;
 	// Variable que controla el valor de la velocidad:
-	private float v = 1;
+	protected static float v = 1;
 	// Para mostrar formato decimal
 	private DecimalFormat frmt;
 
@@ -110,7 +109,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private JButton btnReverse;
 
 	// Parte del Mapa
-	private Mapa mapa = new Mapa(0, 0);
+	protected static Mapa mapa = new Mapa(0, 0);
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
 	// private Punto pto_final;
@@ -840,15 +839,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				}
 				// Si se cumplen todas las condiciones, se empieza la simulación
 				else {
-					Astar alg = new Astar();
 					log.append("Iniciada la simulación del algoritmo A*." + newline);
-					alg.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
+					Astar.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
 							mapa.obstaculos);
 
-					log.append("Memoria usada: " + alg.memoria + "." + newline);
-					log.append("Iteraciones: " + alg.iteraciones + "." + newline);
+					log.append("Memoria usada: " + Astar.memoria + "." + newline);
+					log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
 
-					if (alg.encontrada)
+					if (Astar.encontrada)
 						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
 					else
 						JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");

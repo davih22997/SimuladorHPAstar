@@ -33,16 +33,16 @@ public class Mapa {
 
 	// Variables básicas del mapa:
 	// Cantidad total de filas y de columnas
-	static int dY = 0; // Y -> fils
-	static int dX = 0; // X -> cols
+	protected int dY = 0; // Y -> fils
+	protected int dX = 0; // X -> cols
 
 	// Dimensiones de cada botón en el mapa
 	private int tamY = 0; // Y -> alto
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private static final int dimY = 500; // Y -> alto
-	private static final int dimX = 500; // X -> ancho
+	private final int dimY = 500; // Y -> alto
+	private final int dimX = 500; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -52,12 +52,12 @@ public class Mapa {
 	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
-	static JButton[][] MatrizBotones;
+	protected JButton[][] MatrizBotones;
 
 	// Variables para los puntos
-	static Punto pto_inicial;
-	static Punto pto_final;
-	static ArrayList<Punto> obstaculos;
+	Punto pto_inicial;
+	Punto pto_final;
+	ArrayList<Punto> obstaculos;
 
 	public Mapa(int fils, int cols) {
 		this(fils, cols, TIPO_CONSULTA);
