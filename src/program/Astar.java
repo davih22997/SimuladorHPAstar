@@ -13,6 +13,9 @@ public class Astar {
 
 	public static void BusquedaAstar(int filas, int columnas, Punto pto_inicial, Punto pto_final,
 			ArrayList<Punto> obstaculos) {
+		memoria = 1;
+		iteraciones = 0;
+		encontrada = false;
 		ArrayList<Punto> explorados = new ArrayList<>();
 
 		// Se crea una lista de sucesores ordenada según el coste que tenga
@@ -45,9 +48,9 @@ public class Astar {
 			explorados.add(actual);
 			// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
 			// que se queda en verde
-			if (!actual.equals(pto_inicial)) {
+			if (!actual.equals(pto_inicial)) 
 				Interfaz.mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
-			}
+			
 			// Cogemos los vecinos del punto
 			ArrayList<Punto> vecinos = actual.vecinos(filas, columnas);
 

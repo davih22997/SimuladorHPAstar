@@ -434,5 +434,18 @@ public class Mapa {
 			}
 		});
 	}
+	
+	/**
+	 * Método para pintar el mapa de un color dado y con un tiempo de espera definido
+	 * @throws InterruptedException 
+	 */
+	public void pintarMapa (Color color, long milisecs, int fila, int columna) {
+		MatrizBotones[fila][columna].setBackground(color);
+		try {
+			Thread.sleep(milisecs);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+	}
 
 }
