@@ -8,6 +8,8 @@ public class Punto implements Cloneable {
 
 	private int f;
 	private int c;
+	int pasos = 0;
+	Punto padre = null;
 
 	public Punto(int f, int c) {
 		this.f = f;
@@ -90,6 +92,11 @@ public class Punto implements Cloneable {
 		// Por último, al de la izda
 		if (izda >= 0)
 			res.add(new Punto(this.f, izda));
+
+		for (Punto p : res) {
+			p.padre = this;
+			p.pasos = this.pasos + 1;
+		}
 
 		return res;
 	}

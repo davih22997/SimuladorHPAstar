@@ -4,161 +4,89 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.Stack;
+
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
 import java.awt.Color;
 
 public class Astar {
 
-	int memoria = 0;
-	int iteraciones = 0;
-	ArrayList<Punto> recorrido;
-	
+	private static int memoria = 0;
+	private static int iteraciones = 0;
 
-	public class Par<P, C> {
-		P p;
-		C c;
-
-		public Par(P p, C c) {
-			this.p = p;
-			this.c = c;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			boolean res = false;
-
-			if (o instanceof Par) {
-				res = this.p.equals(((Par) o).p) && this.c.equals(((Par) o).c);
-			}
-
-			return res;
-		}
-	}
-
-	// private int coste;
-	// private Punto pto_inicial;
-	// private ArrayList<Punto> nodosVisitados;
-	private int mapa[][]; // Mapa con los nodos
-
-	public Astar() {
-		mapa = new int[Mapa.dY][Mapa.dX]; // Mapa donde se van guardando los costes
-	}
-
-	public void calcularCamino(int filas, int columnas, Punto pto_inicial, Punto pto_final,
+	public static void BusquedaAstar(int filas, int columnas, Punto pto_inicial, Punto pto_final,
 			ArrayList<Punto> obstaculos) {
-		Stack<Par<Punto, Integer>> camino = new Stack<>();
-		Stack<Par<Punto, Integer>> candidatos = new Stack<>();
-		ArrayList<Punto> visitados = new ArrayList<>();
-		// Nodo sel -> Cabecera, parte de arriba de la pila
-		// Lista de nodos -> Ver cómo (además hay que acumular los costes de forma que
-		// sea coherente
-		// Visitados -> ArrayList
+		ArrayList<Punto> explorados = new ArrayList<>();
 
-		Punto actual = pto_inicial;
-		memoria = 1;
-		int pasos = 0;
-		// Insertamos el coste en el mapa de los costes
-		camino.add(new Par<Punto, Integer>(actual, actual.distManhattan(pto_final)));
-		visitados.add(actual);
+		// Se crea una cola ordenada según el coste que tenga
+		PriorityQueue<Punto> cola = new PriorityQueue<>(new Comparator<Punto>() {
+			@Override
+			public int compare(Punto p1, Punto p2) {
+				return (p1.pasos + p1.distManhattan(pto_final)) - (p2.pasos + p2.distManhattan(pto_final));
+			}
+		});
 
-		while (!actual.equals(pto_final) && !camino.empty()) {
+		// Inicialmente, añadimos el punto inicial
+		cola.add(pto_inicial.clone());
+
+		// Realizamos búsqueda hasta que no queden elementos o hasta que el elemento de
+		// la cabeza de la cola sea el pto final
+		while ((!cola.isEmpty()) && !cola.peek().equals(pto_final)) {
+
+			// El punto con el menor coste
+			Punto actual = cola.poll();
+
+			explorados.add(actual);
+			if (!actual.equals(pto_inicial))
+				Mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
+
 			// Cogemos los vecinos del punto
-			ArrayList<Punto> vecinos = actual.vecinos(Mapa.dY, Mapa.dX);
+			ArrayList<Punto> vecinos = actual.vecinos(filas, columnas);
 
-			// Nunca se van a mirar los obstáculos ni los visitados
+			// Eliminamos los obstaculos
 			vecinos.removeAll(obstaculos);
-			vecinos.removeAll(visitados);
 
-			// Sumamos la cantidad de memoria usada
-			memoria += vecinos.size();
+			// Comprobamos cada vecino del punto actual (sin contar obstaculos
+			for (Punto p : vecinos) {
+				// Si el punto vecino ha sido evaluado y tiene más pasos, pasamos.
+				if (explorados.contains(p) && explorados.get(explorados.indexOf(p)).pasos < p.pasos)
+					continue;
 
-			Iterator<Punto> iter = vecinos.iterator();
+				// Si el punto vecino no está en la cola o tiene menos pasos:
+				else if ((!cola.contains(p))
+						|| (explorados.contains(p) && p.pasos < explorados.get(explorados.indexOf(p)).pasos)) {
 
-			pasos++;
-			Punto next = null;
-			if (iter.hasNext()) {
-				next = iter.next();
-				int coste = pasos + next.distManhattan(pto_final);
-				candidatos.add(new Par<Punto, Integer>(next, coste));
-				mapa[next.getFila()][next.getCol()] = coste;
-				if (!next.equals(pto_final)) {
-					Mapa.MatrizBotones[next.getFila()][next.getCol()].setBackground(Color.CYAN);
-					while (iter.hasNext()) {
-						Punto aux = iter.next();
-						int coste2 = pasos + aux.distManhattan(pto_final);
-						candidatos.add(new Par<Punto, Integer>(aux, coste2));
-						mapa[next.getFila()][next.getCol()] = coste2;
-						
-						if (!aux.equals(pto_final))
-							Mapa.MatrizBotones[aux.getFila()][aux.getCol()].setBackground(Color.CYAN);
-						
-						if (coste2 < coste) {
-							next = aux;
-							coste = coste2;
-						}
-					}
+					if (!explorados.contains(p) && (!p.equals(pto_inicial) && !p.equals(pto_final)))
+						Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
 
-				}
+					// Eliminamos el anterior si la cola lo contiene
+					if (cola.contains(p))
+						cola.remove(p);
 
-				candidatos.sort(new Comparator<Par<Punto, Integer>>() {
-					@Override
-					public int compare(Par<Punto, Integer> par1, Par<Punto, Integer> par2) {
-						return par1.c - par2.c;
-					}
-				});
-
-				if (camino.peek().c == coste) {
-					Par nuevo = new Par<Punto, Integer>(next, coste);
-					camino.add(nuevo);
-					candidatos.remove(nuevo);
-					visitados.add(next);
-					actual = next;
-				} else {
-					Par<Punto, Integer> parsig = candidatos.pop();
-					
-					Par<Punto, Integer> cima = camino.peek();
-					
-					if (cima.p.vecinos(filas, columnas).contains(parsig.p)) {
-						camino.add(parsig);
-						
-					} else {
-						camino.pop();
-						if (!camino.empty()) {
-							actual = camino.peek().p;
-						}
-						pasos--;						
-					}
-							
-				}
-
-			} // Si no se encuentra un nodo a visitar, quitamos el actual de la cima de la
-				// pila
-			else {
-				camino.pop();
-				if (!camino.empty()) {
-					actual = camino.peek().p;
-					pasos--;
+					cola.add(p);
 				}
 
 			}
 
 		}
 
-		iteraciones = visitados.size() - 1;
-		recorrido = new ArrayList<>();
-		for (Punto p : visitados) {
-			if (!p.equals(pto_inicial) && !p.equals(pto_final))
-				Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.BLUE);
-		}
-		for (Par<Punto, Integer> par : camino) {
-			Punto p = par.p;
-			if (!p.equals(pto_inicial) && !p.equals(pto_final))
+		if (!cola.isEmpty() && cola.peek().equals(pto_final)) {
+			Punto p = cola.poll();
+			iteraciones = p.pasos;
+			while (!p.padre.equals(pto_inicial)) {
+				p = p.padre;
 				Mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
-
-			recorrido.add(p);
-		}
-		if (!recorrido.isEmpty())
-			Collections.reverse(camino);
+			}
+			
+			JOptionPane.showMessageDialog(new JFrame(), 
+					"Se encontró solución.");
+		} else 
+			JOptionPane.showMessageDialog(new JFrame(),
+					"No se encontró solución.");
+		
 
 	}
 

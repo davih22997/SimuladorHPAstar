@@ -841,8 +841,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				// Si se cumplen todas las condiciones, se empieza la simulación
 				else {
 					Astar alg = new Astar();
+					/*
 					alg.calcularCamino(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
 							mapa.obstaculos);
+							*/
+					alg.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final, mapa.obstaculos);
 					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
 					btnStart.setEnabled(false);
 					btnStop.setEnabled(true);
