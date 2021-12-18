@@ -100,7 +100,7 @@ public class Mapa {
 	public void setTipo(int n) {
 		tipo = n;
 	}
-	
+
 	/**
 	 * Devuelve el tipo del mapa
 	 */
@@ -434,18 +434,14 @@ public class Mapa {
 			}
 		});
 	}
-	
+
 	/**
-	 * Método para pintar el mapa de un color dado y con un tiempo de espera definido
-	 * @throws InterruptedException 
+	 * Método para pintar el mapa de un color dado y a la posición dada
+	 * 
+	 * @throws InterruptedException
 	 */
-	public void pintarMapa (Color color, long milisecs, int fila, int columna) {
+	public void pintarMapa(Color color, int time, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
-		try {
-			Thread.sleep(milisecs);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 }

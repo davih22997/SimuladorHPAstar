@@ -83,7 +83,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
-	private JButton btnStart, btnStop;
+	protected static JButton btnStart, btnStop;
 	// Control de velocidad
 	private JButton btnMinus, btnPlus;
 	private JPanel btnPanel2;
@@ -109,7 +109,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private JButton btnReverse;
 
 	// Parte del Mapa
-	protected static Mapa mapa = new Mapa(0, 0);
+	protected Mapa mapa = new Mapa(0, 0);
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
 	// private Punto pto_final;
@@ -840,20 +840,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				// Si se cumplen todas las condiciones, se empieza la simulación
 				else {
 					log.append("Iniciada la simulación del algoritmo A*." + newline);
-					Astar.BusquedaAstar(mapa.getFilas(), mapa.getCols(), mapa.pto_inicial, mapa.pto_final,
-							mapa.obstaculos);
-
-					log.append("Memoria usada: " + Astar.memoria + "." + newline);
-					log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
-
-					if (Astar.encontrada)
-						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
-					else
-						JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
-
-					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
-					btnStart.setEnabled(false);
-					btnStop.setEnabled(true);
 
 					// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
 					rCons.setSelected(true);
@@ -861,6 +847,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					rFin.setEnabled(false);
 					rObs.setEnabled(false);
 					btnReverse.setEnabled(false);
+
+					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
+					btnStart.setEnabled(false);
+					btnStop.setEnabled(true);
+
+					// Iniciamos la búsqueda
+					Astar.BusquedaAstar(mapa);
+
 				}
 			} else if (option.equals("HPA*"))
 				log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
