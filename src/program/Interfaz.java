@@ -84,6 +84,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte para el control de la simulación
 	private JLabel titulo3;
 	protected static JButton btnStart, btnStop;
+	protected static boolean start = false;
 	// Control de velocidad
 	private JButton btnMinus, btnPlus;
 	private JPanel btnPanel2;
@@ -839,22 +840,35 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				}
 				// Si se cumplen todas las condiciones, se empieza la simulación
 				else {
-					log.append("Iniciada la simulación del algoritmo A*." + newline);
+					if (!btnStop.isEnabled()) {
+						log.append("Iniciada la simulación del algoritmo A*." + newline);
 
-					// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
-					rCons.setSelected(true);
-					rInic.setEnabled(false);
-					rFin.setEnabled(false);
-					rObs.setEnabled(false);
-					btnReverse.setEnabled(false);
+						// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
+						rCons.setSelected(true);
+						rInic.setEnabled(false);
+						rFin.setEnabled(false);
+						rObs.setEnabled(false);
+						btnReverse.setEnabled(false);
 
-					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
-					btnStart.setEnabled(false);
-					btnStop.setEnabled(true);
+						// Se bloquea el botón de iniciar y se desbloquea el botón de parar
+						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+						btnStop.setEnabled(true);
+						start = true;
 
-					// Iniciamos la búsqueda
-					Astar.BusquedaAstar(mapa);
+						// Iniciamos la búsqueda
+						Astar.BusquedaAstar(mapa);
+					} else {
+						if (start == true) {
+							btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+							start = false;
+							Astar.timer.stop();
+						} else {
+							btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+							start = true;
+							Astar.timer.restart();
+						}
 
+					}
 				}
 			} else if (option.equals("HPA*"))
 				log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
@@ -888,6 +902,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			// Se bloquea el botón de parar y se desbloquea el de iniciar
 			btnStop.setEnabled(false);
 			btnStart.setEnabled(true);
+			btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 
 			// Desbloqueamos los botones
 			rInic.setEnabled(true);
@@ -900,10 +915,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		else if (e.getSource() == btnMinus) {
 			log.append("Se ha reducido la velocidad de la simulación " + newline);
 
-			v -= 0.25;
+			v /= 2;
 			velocity.setText(new String("x").concat(frmt.format(v)));
 			// No puede bajar de 0.25
-			if (v == 0.25) {
+			if (v == (0.25 / 2)) {
 				btnMinus.setEnabled(false);
 				log.append("Se ha alcanzado el mínimo de velocidad" + newline);
 			}
@@ -917,10 +932,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		else if (e.getSource() == btnPlus) {
 			log.append("Se ha aumentado la velocidad de la simulación " + newline);
 
-			v += 0.25;
+			v *= 2;
 			velocity.setText(new String("x").concat(frmt.format(v)));
 			// No puede subir de 2.00
-			if (v == 2) {
+			if (v == 8) {
 				btnPlus.setEnabled(false);
 				log.append("Se ha alcanzado el máximo de velocidad" + newline);
 			}
@@ -938,7 +953,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					mapa.destruirTablero();
 				mapa.setDims(40, 40);
 				mapa.crearTablero();
-				if (!btnStart.isEnabled()) {
+				if (btnStop.isEnabled()) {
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 					btnStart.setEnabled(true);
 					btnStop.setEnabled(false);
 					rInic.setEnabled(true);
@@ -953,7 +969,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 				mapa.setDims(20, 30);
 				mapa.crearTablero();
-				if (!btnStart.isEnabled()) {
+				if (btnStop.isEnabled()) {
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 					btnStart.setEnabled(true);
 					btnStop.setEnabled(false);
 					rInic.setEnabled(true);
@@ -961,13 +978,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					rObs.setEnabled(true);
 					btnReverse.setEnabled(true);
 				}
+
 			} else if (option.equals(dimensiones[2])) { // 30x20
 				if (mapa != null)
 					mapa.destruirTablero();
 
 				mapa.setDims(30, 20);
 				mapa.crearTablero();
-				if (!btnStart.isEnabled()) {
+				if (btnStop.isEnabled()) {
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 					btnStart.setEnabled(true);
 					btnStop.setEnabled(false);
 					rInic.setEnabled(true);
@@ -979,7 +998,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				if (mapa != null)
 					mapa.destruirTablero();
 				mapa.setDims(0, 0);
-				if (!btnStart.isEnabled()) {
+				if (btnStop.isEnabled()) {
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 					btnStart.setEnabled(true);
 					btnStop.setEnabled(false);
 					rInic.setEnabled(true);

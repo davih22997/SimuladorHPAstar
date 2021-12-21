@@ -46,13 +46,15 @@ public class Astar {
 		// Inicialmente, añadimos el punto inicial
 		sucesores.add(mapa.pto_inicial.clone());
 
-		timer = new Timer((int) (100 / (2 * Interfaz.v)), new ActionListener() {
+		// Y ejecutamos el algoritmo cada cierto tiempo (para mostrar paso a paso la
+		// simulación)
+		timer = new Timer((int) (250 / (2 * Interfaz.v)), new ActionListener() {
 
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				timer.setDelay((int) (100 / (2 * Interfaz.v)));
+				timer.setDelay((int) (250 / (2 * Interfaz.v)));
 
-				if (Interfaz.btnStart.isEnabled())
+				if (!Interfaz.btnStop.isEnabled())
 					timer.stop();
 
 				else if ((!sucesores.isEmpty()) && !sucesores.peek().equals(mapa.pto_final)) {
@@ -97,7 +99,7 @@ public class Astar {
 
 				}
 
-				if (!Interfaz.btnStart.isEnabled() && !sucesores.isEmpty() && sucesores.peek().equals(mapa.pto_final)) {
+				if (Interfaz.btnStop.isEnabled() && !sucesores.isEmpty() && sucesores.peek().equals(mapa.pto_final)) {
 					Punto p = sucesores.poll();
 					iteraciones = explorados.size();
 					while (!p.padre.equals(mapa.pto_inicial)) {
@@ -111,12 +113,14 @@ public class Astar {
 
 					encontrada = true;
 					timer.stop();
+					Interfaz.btnStart.setEnabled(false);
 					JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
 				}
 
-				else if (!Interfaz.btnStart.isEnabled() && sucesores.isEmpty()) {
-					JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
+				else if (Interfaz.btnStop.isEnabled() && sucesores.isEmpty()) {
 					timer.stop();
+					Interfaz.btnStart.setEnabled(false);
+					JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
 				}
 			}
 
