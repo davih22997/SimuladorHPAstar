@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -681,7 +682,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 									}
 								}
 
+								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar nuevamente, te la ordena)
+								mapa.ordenarListaObstaculos();
+
 								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
+								
 							}
 
 						} else {

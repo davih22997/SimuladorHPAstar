@@ -341,6 +341,10 @@ public class Mapa {
 				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
 				obstaculos.add(aux);
 				btn.setBackground(Color.BLACK);
+
+				// Dejamos ordenada la lista de obstaculos
+				this.ordenarListaObstaculos();
+
 			}
 			break;
 		default:
@@ -421,16 +425,29 @@ public class Mapa {
 		tamY = dimY / cY;
 	}
 
+	// No se utiliza porque al haber mapa de 40x40 sobrepasa el valor máximo de
+	// Integer
 	/**
-	 * Ordena los obstáculos en el ArrayList de obstáculos
+	 * Ordena la lista de obstaculos del mapa
+	 * 
+	 * @return
 	 */
-	public void ordenarObstaculos() {
+	public void ordenarListaObstaculos() {
+
 		obstaculos.sort(new Comparator<Punto>() {
 			@Override
 			public int compare(Punto p1, Punto p2) {
-				int v1 = (dY ^ p1.getFila() - 1) + p1.getCol();
-				int v2 = (dY ^ p2.getFila() - 1) + p2.getCol();
-				return v1 - v2;
+
+				int val = 0;
+				
+				if (p1.getFila() == p2.getFila())
+					val = p1.getCol() - p2.getCol();
+				else if (p1.getFila() > p2.getFila())
+					val = 1;
+				else
+					val = -1;
+
+				return val;
 			}
 		});
 	}
