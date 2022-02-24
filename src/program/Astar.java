@@ -16,7 +16,7 @@ public class Astar {
 
 	private static String newline = "\n";
 
-	protected static int memoria = 1;
+	protected static int memoria = 0;
 	protected static int iteraciones = 0;
 	protected static boolean encontrada = false;
 	protected static Timer timer;
@@ -77,11 +77,11 @@ public class Astar {
 					vecinos.removeAll(mapa.obstaculos);
 					// Eliminamos también los puntos ya analizados
 					vecinos.removeAll(explorados);
-					
 
 					// Comprobamos cada vecino del punto actual (sin contar obstaculos)
+					int cantMem = 0;
 					for (Punto p : vecinos) {
-						
+
 						// Si el punto vecino no está en la cola:
 						if ((!abiertos.contains(p))) {
 							// Pintamos el mapa
@@ -91,7 +91,8 @@ public class Astar {
 							}
 							// Finalmente, lo añadimos
 							abiertos.add(p);
-							memoria++;
+							// Si tenemos que añadir un nuevo nodo abierto, se incrementa la memoria usada
+							cantMem++;
 						}
 						// O si está en la colacomprobamososia tiene menos pasos:
 						else {
@@ -110,9 +111,13 @@ public class Astar {
 
 					}
 
+					// Sumamos una iteración y la cantidad de memoria usada
+					iteraciones++;
+					memoria += cantMem;
+
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty() && abiertos.peek().equals(mapa.pto_final)) {
 						Punto p = abiertos.poll();
-						iteraciones = explorados.size();
+						//iteraciones = explorados.size();
 						while (!p.padre.equals(mapa.pto_inicial)) {
 							p = p.padre;
 							mapa.pintarMapa(Color.PINK, 0, p.getFila(), p.getCol());
