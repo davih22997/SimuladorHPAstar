@@ -25,6 +25,10 @@ public class Astar {
 		memoria = 1;
 		iteraciones = 0;
 		encontrada = false;
+
+		Interfaz.datosAstar
+				.setText(new String("Memoria usada: ") + Astar.memoria + "    " + "Iteraciones: " + Astar.iteraciones);
+
 		ArrayList<Punto> explorados = new ArrayList<>();
 
 		// Se crea una lista de sucesores ordenada según el coste que tenga
@@ -115,17 +119,20 @@ public class Astar {
 					iteraciones++;
 					memoria += cantMem;
 
+					Interfaz.datosAstar.setText(
+							new String("Memoria usada: ") + Astar.memoria + "    " + "Iteraciones: " + Astar.iteraciones);
+
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty() && abiertos.peek().equals(mapa.pto_final)) {
 						Punto p = abiertos.poll();
-						//iteraciones = explorados.size();
+						// iteraciones = explorados.size();
 						while (!p.padre.equals(mapa.pto_inicial)) {
 							p = p.padre;
 							mapa.pintarMapa(Color.PINK, 0, p.getFila(), p.getCol());
 							// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
 						}
 
-						Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
-						Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
+						// Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
+						// Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
 
 						encontrada = true;
 						timer.stop();

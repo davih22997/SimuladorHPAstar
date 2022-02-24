@@ -30,8 +30,10 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JRadioButton;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
+import javax.swing.SwingConstants;
 import javax.swing.border.BevelBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -111,6 +113,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
+	private Box mapaBox = Box.createVerticalBox();
+
+	// Parte de la simulación A*
+	protected static JLabel datosAstar;
+
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
 	// private Punto pto_final;
@@ -353,10 +360,21 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		pCentral.add(vB4, BorderLayout.CENTER);
 
 		// Parte del Mapa
-		// mapa = new Mapa(40, 40);
-		// mapa.crearTablero();
+		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
+		// vertical
+		mapaBox.add(mapa.tablero);
+		datosAstar = new JLabel();
+		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
+		mapaBox.add(datosAstar);
+		// Escondemos los datos (se van a mostrar solo en simulación).
+		datosAstar.hide();
 
-		pCentral.add(mapa.tablero, BorderLayout.SOUTH);
+		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
+		// la simulación
+		mapaBox.setPreferredSize(new Dimension(500, 504));
+
+		// Añadimos la caja al panel central
+		pCentral.add(mapaBox, BorderLayout.SOUTH);
 
 		// Añadimos el panel central
 		this.add(pCentral, BorderLayout.WEST);
@@ -855,7 +873,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						btnStop.setEnabled(true);
 						start = true;
 
-						// Iniciamos la búsqueda
+						// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
+						// iteraciones y la memoria usada
+						datosAstar.show();
 						Astar.BusquedaAstar(mapa);
 					} else {
 						if (start == true) {
@@ -876,6 +896,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Si pulsamos el botón de parar simulación
 		else if (e.getSource() == btnStop) {
 
+			// Borramos y escondemos los datos de la simulación
+			datosAstar.setText("");
+			datosAstar.hide();
 			// Copiamos los datos
 			Punto pini = mapa.pto_inicial;
 			Punto pfin = mapa.pto_final;
