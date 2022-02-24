@@ -15,7 +15,7 @@ public class Simulador {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub
-				try {	
+				try {
 					Interfaz i = new Interfaz();
 					
 				} catch (Exception e) {
