@@ -5,6 +5,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.PriorityQueue;
 
 import javax.swing.JFrame;
@@ -27,7 +28,7 @@ public class Astar {
 		ArrayList<Punto> explorados = new ArrayList<>();
 
 		// Se crea una lista de sucesores ordenada según el coste que tenga
-		PriorityQueue<Punto> sucesores = new PriorityQueue<>(new Comparator<Punto>() {
+		PriorityQueue<Punto> abiertos = new PriorityQueue<>(new Comparator<Punto>() {
 			@Override
 			public int compare(Punto p1, Punto p2) {
 				int c1 = p1.pasos + p1.distManhattan(mapa.pto_final);
@@ -44,7 +45,7 @@ public class Astar {
 		});
 
 		// Inicialmente, añadimos el punto inicial
-		sucesores.add(mapa.pto_inicial.clone());
+		abiertos.add(mapa.pto_inicial.clone());
 
 		// Y ejecutamos el algoritmo cada cierto tiempo (para mostrar paso a paso la
 		// simulación)
@@ -57,9 +58,9 @@ public class Astar {
 				if (!Interfaz.btnStop.isEnabled())
 					timer.stop();
 
-				else if ((!sucesores.isEmpty()) && !sucesores.peek().equals(mapa.pto_final)) {
+				else if ((!abiertos.isEmpty()) && !abiertos.peek().equals(mapa.pto_final)) {
 					// El punto con el menor coste
-					Punto actual = sucesores.poll();
+					Punto actual = abiertos.poll();
 
 					explorados.add(actual);
 					// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
@@ -74,53 +75,64 @@ public class Astar {
 
 					// Eliminamos los obstaculos
 					vecinos.removeAll(mapa.obstaculos);
+					// Eliminamos también los puntos ya analizados
 					vecinos.removeAll(explorados);
-					vecinos.removeAll(sucesores);
+					
 
-					// Comprobamos cada vecino del punto actual (sin contar obstaculos
+					// Comprobamos cada vecino del punto actual (sin contar obstaculos)
 					for (Punto p : vecinos) {
-						// Si el punto vecino ha sido evaluado y tiene más pasos, pasamos.
-						if (explorados.contains(p))
-							continue;
-
-						// Si el punto vecino no está en la cola o tiene menos pasos:
-						else if ((!sucesores.contains(p))) {
+						
+						// Si el punto vecino no está en la cola:
+						if ((!abiertos.contains(p))) {
 							// Pintamos el mapa
 							if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
 								mapa.pintarMapa(Color.CYAN, 0, p.getFila(), p.getCol());
 								// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
 							}
 							// Finalmente, lo añadimos
-							sucesores.add(p);
+							abiertos.add(p);
 							memoria++;
+						}
+						// O si está en la colacomprobamososia tiene menos pasos:
+						else {
+							Iterator<Punto> it = abiertos.iterator();
+							Punto p2 = it.next();
+
+							while (!p2.equals(p) && it.hasNext())
+								p2 = it.next();
+
+							// Si tiene menos pasos tachamos de abiertos el anterior y metemos el nuevo
+							if (p.pasos < p2.pasos) {
+								abiertos.remove(p2);
+								abiertos.add(p);
+							}
 						}
 
 					}
 
-				}
+					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty() && abiertos.peek().equals(mapa.pto_final)) {
+						Punto p = abiertos.poll();
+						iteraciones = explorados.size();
+						while (!p.padre.equals(mapa.pto_inicial)) {
+							p = p.padre;
+							mapa.pintarMapa(Color.PINK, 0, p.getFila(), p.getCol());
+							// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
+						}
 
-				if (Interfaz.btnStop.isEnabled() && !sucesores.isEmpty() && sucesores.peek().equals(mapa.pto_final)) {
-					Punto p = sucesores.poll();
-					iteraciones = explorados.size();
-					while (!p.padre.equals(mapa.pto_inicial)) {
-						p = p.padre;
-						mapa.pintarMapa(Color.PINK, 0, p.getFila(), p.getCol());
-						// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
+						Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
+						Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
+
+						encontrada = true;
+						timer.stop();
+						Interfaz.btnStart.setEnabled(false);
+						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
 					}
 
-					Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
-					Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
-
-					encontrada = true;
-					timer.stop();
-					Interfaz.btnStart.setEnabled(false);
-					JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
-				}
-
-				else if (Interfaz.btnStop.isEnabled() && sucesores.isEmpty()) {
-					timer.stop();
-					Interfaz.btnStart.setEnabled(false);
-					JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
+					else if (Interfaz.btnStop.isEnabled() && abiertos.isEmpty()) {
+						timer.stop();
+						Interfaz.btnStart.setEnabled(false);
+						JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
+					}
 				}
 			}
 
