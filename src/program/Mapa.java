@@ -425,8 +425,6 @@ public class Mapa {
 		tamY = dimY / cY;
 	}
 
-	// No se utiliza porque al haber mapa de 40x40 sobrepasa el valor máximo de
-	// Integer
 	/**
 	 * Ordena la lista de obstaculos del mapa
 	 * 

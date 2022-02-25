@@ -14,17 +14,15 @@ import javax.swing.Timer;
 
 public class Astar {
 
-	private static String newline = "\n";
+	//private static String newline = "\n";
 
 	protected static int memoria = 0;
 	protected static int iteraciones = 0;
-	protected static boolean encontrada = false;
 	protected static Timer timer;
 
 	public static void BusquedaAstar(Mapa mapa) {
 		memoria = 1;
 		iteraciones = 0;
-		encontrada = false;
 
 		Interfaz.datosAstar
 				.setText(new String("Memoria usada: ") + Astar.memoria + "    " + "Iteraciones: " + Astar.iteraciones);
@@ -134,7 +132,6 @@ public class Astar {
 						// Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
 						// Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
 
-						encontrada = true;
 						timer.stop();
 						Interfaz.btnStart.setEnabled(false);
 						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
