@@ -75,11 +75,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte central
 	private JPanel pCentral;
+	
 
 	// Parte para la gestión de algoritmo
+	// Parte para la gestión de A* en la parte de algoritmo
+	private JPanel pAstar;
 	private JLabel titulo2;
 	private JComboBox<String> algCB;
 	private JPanel algPanel;
+	
+	// Parte para la gestión de HPA* en la parte de algoritmo
+	
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
@@ -1037,6 +1043,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Controlador del selector de las dimensiones del mapa
 		else if (e.getSource() == dims) {
 
+			if (algCB.getSelectedItem().toString().equals("A*")) 
+				datosAstar.hide();
+			
 			String option = dims.getSelectedItem().toString();
 			if (option.equals(dimensiones[0])) { // 40x40
 				if (mapa != null)
