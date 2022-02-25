@@ -120,7 +120,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	protected Mapa mapa = new Mapa(0, 0);
 	private Box mapaBox = Box.createVerticalBox();
 
-	// Parte de la simulación A*
+	// Parte de datos para la simulación A*
 	protected static JLabel datosAstar;
 
 	// Para la creación de puntos desde el fichero

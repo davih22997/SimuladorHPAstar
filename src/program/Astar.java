@@ -16,10 +16,18 @@ public class Astar {
 
 	//private static String newline = "\n";
 
+	// Variables que vamos a usar para la simulación de A*
+	// Datos de la simulación
 	protected static int memoria = 0;
 	protected static int iteraciones = 0;
+	
+	// Temporizador que irá coloreando el mapa
 	protected static Timer timer;
 
+	/**
+	 * Método que realiza la búsqueda de A*
+	 * @param mapa
+	 */
 	public static void BusquedaAstar(Mapa mapa) {
 		memoria = 1;
 		iteraciones = 0;
@@ -68,8 +76,7 @@ public class Astar {
 					// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
 					// que se queda en verde
 					if (!actual.equals(mapa.pto_inicial)) {
-						mapa.pintarMapa(Color.BLUE, 1000, actual.getFila(), actual.getCol());
-						// Interfaz.mapa.MatrizBotones[actual.getFila()][actual.getCol()].setBackground(Color.BLUE);
+						mapa.pintarMapa(Color.BLUE, actual.getFila(), actual.getCol());
 					}
 
 					// Cogemos los vecinos del punto
@@ -88,8 +95,7 @@ public class Astar {
 						if ((!abiertos.contains(p))) {
 							// Pintamos el mapa
 							if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
-								mapa.pintarMapa(Color.CYAN, 0, p.getFila(), p.getCol());
-								// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.CYAN);
+								mapa.pintarMapa(Color.CYAN, p.getFila(), p.getCol());
 							}
 							// Finalmente, lo añadimos
 							abiertos.add(p);
@@ -122,15 +128,10 @@ public class Astar {
 
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty() && abiertos.peek().equals(mapa.pto_final)) {
 						Punto p = abiertos.poll();
-						// iteraciones = explorados.size();
 						while (!p.padre.equals(mapa.pto_inicial)) {
 							p = p.padre;
-							mapa.pintarMapa(Color.PINK, 0, p.getFila(), p.getCol());
-							// Interfaz.mapa.MatrizBotones[p.getFila()][p.getCol()].setBackground(Color.PINK);
+							mapa.pintarMapa(Color.PINK, p.getFila(), p.getCol());
 						}
-
-						// Interfaz.log.append("Memoria usada: " + Astar.memoria + "." + newline);
-						// Interfaz.log.append("Iteraciones: " + Astar.iteraciones + "." + newline);
 
 						timer.stop();
 						Interfaz.btnStart.setEnabled(false);

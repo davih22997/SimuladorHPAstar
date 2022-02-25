@@ -455,7 +455,7 @@ public class Mapa {
 	 * 
 	 * @throws InterruptedException
 	 */
-	public void pintarMapa(Color color, int time, int fila, int columna) {
+	public void pintarMapa(Color color, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
 	}
 
