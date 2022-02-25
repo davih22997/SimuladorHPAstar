@@ -112,6 +112,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
 	private Box mapaBox = Box.createVerticalBox();
+	// Definimos la dimensión la del tablero del mapa + 4 píxeles que es lo que ocupa un JLabel
+	private Dimension mapaDim = new Dimension (500, 504);
 
 	// Parte de la simulación A*
 	protected static JLabel datosAstar;
@@ -370,7 +372,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
 		// la simulación
 		// Hemos sumado 4 a la altura, ya que un JLabel ocupa 4 píxeles
-		mapaBox.setPreferredSize(new Dimension(500, 504));
+		mapaBox.setPreferredSize(mapaDim);
 
 		// Añadimos la caja al panel central
 		pCentral.add(mapaBox, BorderLayout.SOUTH);
