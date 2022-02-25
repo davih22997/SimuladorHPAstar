@@ -83,6 +83,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
+
+	// Panel de control de simulación solo para A*
+	private JPanel panelCAstar;
 	protected static JButton btnStart, btnStop;
 	protected static boolean start = false;
 	// Control de velocidad
@@ -92,9 +95,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	protected static float v = 1;
 	// Para mostrar formato decimal
 	private DecimalFormat frmt;
-
 	// JLabel que mostrará el valor de la velocidad
+	private JLabel vel;
 	private JLabel velocity;
+
+	// Panel de control de simulación solo para HPA*
+	private JPanel panelCHPAstar;
+	protected static JButton btnStart2, btnStop2;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -112,8 +119,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
 	private Box mapaBox = Box.createVerticalBox();
-	// Definimos la dimensión la del tablero del mapa + 4 píxeles que es lo que ocupa un JLabel
-	private Dimension mapaDim = new Dimension (500, 504);
 
 	// Parte de la simulación A*
 	protected static JLabel datosAstar;
@@ -245,8 +250,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 		// Añadimos un panel exclusivo para los botones
 		btnPanel2 = new JPanel();
-		// Damos a cada botón sus características propias:
 
+		// Parte de A*:
+		panelCAstar = new JPanel();
+
+		// Damos a cada botón sus características propias:
 		// Botón para empezar la simulación
 		btnStart = initButtonIcon(Direccion.start16);
 
@@ -254,8 +262,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		btnStop = initButtonIcon(Direccion.stop16);
 		btnStop.setEnabled(false);
 
+		// Añadimos los botones de inicio / fin al panel
+		panelCAstar.add(btnStart);
+		panelCAstar.add(btnStop);
+
 		// Parte de la velocidad
-		JLabel vel = new JLabel("Velocidad:");
+		vel = new JLabel("Velocidad:");
 
 		// Botón para reducir la velocidad
 		btnMinus = initButtonIcon(Direccion.minus16);
@@ -266,13 +278,41 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Botón para aumentar la velocidad
 		btnPlus = initButtonIcon(Direccion.plus16);
 
-		// Añadimos todo al panel de botones
-		btnPanel2.add(btnStart);
-		btnPanel2.add(btnStop);
-		btnPanel2.add(vel);
-		btnPanel2.add(btnMinus);
-		btnPanel2.add(velocity);
-		btnPanel2.add(btnPlus);
+		// Añadimos la parte de velocidad al panel de A*
+		panelCAstar.add(vel);
+		panelCAstar.add(btnMinus);
+		panelCAstar.add(velocity);
+		panelCAstar.add(btnPlus);
+
+		// Añadimos todo al panel general
+		btnPanel2.add(panelCAstar);
+		btnPanel2.setPreferredSize(btnPanel2.getPreferredSize());
+
+		// Parte de HPA*:
+		panelCHPAstar = new JPanel();
+
+		// Creamos una copia de los botones de inicio y de fin de la simulación
+		// Botón para empezar la simulación
+		btnStart2 = initButtonIcon(Direccion.start16);
+
+		// Botón para finalizar la simulación
+		btnStop2 = initButtonIcon(Direccion.stop16);
+		btnStop2.setEnabled(false);
+
+		// Añadimos los botones de inicio / fin al panel
+		panelCHPAstar.add(btnStart2);
+		panelCHPAstar.add(btnStop2);
+
+		// Añadimos todo al panel general
+		btnPanel2.add(panelCHPAstar);
+		// Y ocultamos la parte de HPA* (por defecto está en A*)
+		panelCHPAstar.hide();
+
+		/*
+		 * // Añadimos todo al panel de botones btnPanel2.add(btnStart);
+		 * btnPanel2.add(btnStop); btnPanel2.add(vel); btnPanel2.add(btnMinus);
+		 * btnPanel2.add(velocity); btnPanel2.add(btnPlus);
+		 */
 
 		Box vB3 = Box.createVerticalBox();
 		vB3.add(titulo3);
@@ -366,13 +406,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		datosAstar = new JLabel();
 		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
 		mapaBox.add(datosAstar);
-		// Escondemos los datos (se van a mostrar solo en simulación).
-		datosAstar.hide();
 
 		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
 		// la simulación
-		// Hemos sumado 4 a la altura, ya que un JLabel ocupa 4 píxeles
-		mapaBox.setPreferredSize(mapaDim);
+		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
+		// Escondemos los datos (se van a mostrar solo en simulación).
+		datosAstar.hide();
 
 		// Añadimos la caja al panel central
 		pCentral.add(mapaBox, BorderLayout.SOUTH);
@@ -682,11 +721,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 									}
 								}
 
-								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar nuevamente, te la ordena)
+								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
+								// nuevamente, te la ordena)
 								mapa.ordenarListaObstaculos();
 
 								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
-								
+
 							}
 
 						} else {
@@ -841,69 +881,75 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			String option = algCB.getSelectedItem().toString();
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
+				panelCHPAstar.hide();
+				restartVelocity();
+				panelCAstar.show();
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
+				panelCAstar.hide();
+				panelCHPAstar.show();
 			}
 		}
 		// Control de la simulación
-		// Si pulsamos el botón de iniciar
+		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
 		else if (e.getSource() == btnStart) {
-			String option = algCB.getSelectedItem().toString();
-			// Si está seleccionado el algoritmo A*
-			if (option.equals("A*")) {
-				// Primero, comprobamos que está el mapa creado
-				if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
-					JOptionPane.showMessageDialog(new JFrame(),
-							"Debe definir el tamaño del mapa y seleccionar los puntos inicial y final para poder iniciar la simulación.");
-				}
-				// Segundo, que estén definidos los puntos inicial y final
-				else if (mapa.pto_inicial == null || mapa.pto_final == null) {
-					JOptionPane.showMessageDialog(new JFrame(),
-							"Debe seleccionar los puntos inicial y final para poder iniciar la simulación.");
-				}
-				// Si se cumplen todas las condiciones, se empieza la simulación
-				else {
-					if (!btnStop.isEnabled()) {
-						log.append("Iniciada la simulación del algoritmo A*." + newline);
+			// String option = algCB.getSelectedItem().toString();
+			// Primero, comprobamos que está el mapa creado
+			if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
+				JOptionPane.showMessageDialog(new JFrame(),
+						"Debe definir el tamaño del mapa y seleccionar los puntos inicial y final para poder iniciar la simulación.");
+			}
+			// Segundo, que estén definidos los puntos inicial y final
+			else if (mapa.pto_inicial == null || mapa.pto_final == null) {
+				JOptionPane.showMessageDialog(new JFrame(),
+						"Debe seleccionar los puntos inicial y final para poder iniciar la simulación.");
+			}
+			// Si se cumplen todas las condiciones, se empieza la simulación
+			else {
+				// Bloqueamos el selector de algoritmos
+				algCB.setEnabled(false);
 
-						// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
-						rCons.setSelected(true);
-						rInic.setEnabled(false);
-						rFin.setEnabled(false);
-						rObs.setEnabled(false);
-						btnReverse.setEnabled(false);
+				if (!btnStop.isEnabled()) {
+					log.append("Iniciada la simulación del algoritmo A*." + newline);
 
-						// Se bloquea el botón de iniciar y se desbloquea el botón de parar
-						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
-						btnStop.setEnabled(true);
-						start = true;
+					// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
+					rCons.setSelected(true);
+					rInic.setEnabled(false);
+					rFin.setEnabled(false);
+					rObs.setEnabled(false);
+					btnReverse.setEnabled(false);
 
-						// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
-						// iteraciones y la memoria usada
-						datosAstar.show();
-						Astar.BusquedaAstar(mapa);
+					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+					btnStop.setEnabled(true);
+					start = true;
+
+					datosAstar.show();
+					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
+					// iteraciones y la memoria usada
+					Astar.BusquedaAstar(mapa);
+				} else {
+					if (start == true) {
+						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+						start = false;
+						Astar.timer.stop();
 					} else {
-						if (start == true) {
-							btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-							start = false;
-							Astar.timer.stop();
-						} else {
-							btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
-							start = true;
-							Astar.timer.restart();
-						}
-
+						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+						start = true;
+						Astar.timer.restart();
 					}
+
 				}
-			} else if (option.equals("HPA*"))
-				log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+			}
+
 		}
-		// Si pulsamos el botón de parar simulación
+		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStop) {
 
 			// Borramos y escondemos los datos de la simulación
 			datosAstar.setText("");
 			datosAstar.hide();
+
 			// Copiamos los datos
 			Punto pini = mapa.pto_inicial;
 			Punto pfin = mapa.pto_final;
@@ -937,10 +983,26 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
+
+			// Desbloqueamos el selector de algoritmos
+			algCB.setEnabled(true);
 		}
+
+		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
+		else if (e.getSource() == btnStart2) {
+			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+		}
+
+		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
+		else if (e.getSource() == btnStop2) {
+			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+		}
+
 		// Control de la velocidad
 		// Si pulsamos el botón de reducir velocidad
-		else if (e.getSource() == btnMinus) {
+		else if (e.getSource() == btnMinus)
+
+		{
 			log.append("Se ha reducido la velocidad de la simulación " + newline);
 
 			v /= 2;
@@ -1081,6 +1143,20 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Si seleccionamos la opción de obstáculo
 		else if (rObs.isSelected())
 			mapa.setTipo(Mapa.TIPO_OBSTACULO);
+
+	}
+
+	/**
+	 * Para reiniciar la parte de la velocidad
+	 */
+	private void restartVelocity() {
+		v = 1;
+		velocity.setText(new String("x").concat(frmt.format(v)));
+
+		if (!btnPlus.isEnabled())
+			btnPlus.setEnabled(true);
+		else if (!btnMinus.isEnabled())
+			btnMinus.setEnabled(true);
 
 	}
 
