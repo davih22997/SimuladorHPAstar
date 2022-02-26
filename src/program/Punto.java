@@ -12,6 +12,12 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	int pasos = 0;
 	Punto padre = null;
 
+	/**
+	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
+	 * 
+	 * @param f
+	 * @param c
+	 */
 	public Punto(int f, int c) {
 		this.f = f;
 		this.c = c;
@@ -119,7 +125,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	@Override
 	public boolean equals(Object o) {
-
+		// Para que dos puntos sean iguales, ha de coincidir su fila y su columna
 		return o instanceof Punto ? (this.f == ((Punto) o).f && this.c == ((Punto) o).c) : false;
 	}
 

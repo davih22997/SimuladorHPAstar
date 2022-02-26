@@ -60,6 +60,84 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
+	 * Método para crear un clúster si ya tienes todos los datos
+	 * 
+	 * @param filas
+	 * @param columnas
+	 * @param limites
+	 */
+	public Cluster(int filas, int columnas, ArrayList<Punto> limites) {
+		this.filas = filas;
+		this.columnas = columnas;
+		this.limites = limites;
+	}
+
+	/**
+	 * Método que devuelve los clusters adyacentes dadas las dimensiones del mapa
+	 *
+	 * @param filas_mapa
+	 * @param cols_mapa
+	 * @return
+	 */
+	public ArrayList<Cluster> getAdyacentesMapa(int filas_mapa, int cols_mapa) {
+		ArrayList<Cluster> adyacentes = new ArrayList<>();
+
+		// Comprobamos primero en vertical
+		// Comprobamos para añadir la de la fila superior
+		if (getFilaInicial() != 0)
+			adyacentes.add(new Cluster(filas, columnas, (getFilaInicial() - filas), getColInicial()));
+		// Comprobamos para añadir la de la fila inferior
+		if (getFilaFinal() != (filas_mapa - 1))
+			adyacentes.add(new Cluster(filas, columnas, (getFilaInicial() + filas), getColInicial()));
+		// Comprobamos ahora en horizontal
+		// Comprobamos para añadir la de la izda
+		if (getColInicial() != 0)
+			adyacentes.add(new Cluster(filas, columnas, getFilaInicial(), (getColInicial() - columnas)));
+		// Comprobamos para añadir la de la derecha
+		if (getColFinal() != (cols_mapa - 1))
+			adyacentes.add(new Cluster(filas, columnas, getFilaInicial(), (getColInicial() + columnas)));
+
+		// Ordenamos
+		Collections.sort(adyacentes);
+
+		return adyacentes;
+	}
+
+	/**
+	 * Método que devuelve los clusters adyacentes, dada una lista de clusters
+	 * definida y completa
+	 * 
+	 * @param clusters Lista completa de clusters (incluye a este)
+	 * @return
+	 */
+	public ArrayList<Cluster> getAdyacentes(ArrayList<Cluster> clusters) {
+		ArrayList<Cluster> adyacentes = new ArrayList<>();
+
+		// Cogemos el índice de este elemento
+		int index = clusters.indexOf(this);
+
+		// Los adyacentes se agrupan en 2 tipos:
+		// 1. La de las columnas adyacentes
+		// Comprobamos para añadir la de la izda
+		if (index % columnas != 0)
+			adyacentes.add(clusters.get(index - 1));
+		// Comprobamos para añadir la de la derecha
+		if ((index + 1) % columnas != 0)
+			adyacentes.add(clusters.get(index + 1));
+		// 2. La de las filas adyacentes
+		// Comprobamos para añadir por arriba
+		if (index >= columnas)
+			adyacentes.add(clusters.get(index - columnas));
+		// Comprobamos para añadir por abajo
+		if ((index + columnas) < (filas * columnas))
+			adyacentes.add(clusters.get(index + columnas));
+		// Finalmente, ordenamos
+		Collections.sort(adyacentes);
+
+		return adyacentes;
+	}
+
+	/**
 	 * Método para averiguar si otro cluster es adyacente a este dado también el
 	 * mapa que los engloba
 	 * 
@@ -67,8 +145,9 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public boolean adyacentes(Cluster cluster, Mapa mapa) {
-		// Suponemos que todos los cluster tienen el mismo tamaño y que son distintos:
-		if (this.filas != cluster.filas || this.columnas != cluster.columnas || this.limites.equals(cluster.limites))
+		// Suponemos que todos los cluster que se comparan deben ser distintos y tener
+		// el mismo tamaño
+		if (this.filas != cluster.filas || this.columnas != cluster.columnas || this.equals(cluster))
 			throw new RuntimeException(
 					"Todos los clusters deben tener el mismo tamaño y han de ser distintos entre sí.");
 
@@ -143,6 +222,23 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 */
 	public int getColFinal() {
 		return getPuntoFinal().getCol();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// Para que dos clusters sean iguales, han de coincidir sus puntos inicial y
+		// final
+		// Comparamos primero que tengan las mismas dimensiones
+		return o instanceof Cluster
+				? (this.filas == ((Cluster) o).filas && this.columnas == ((Cluster) o).columnas)
+						&& (this.getPuntoInicial().equals(((Cluster) o).getPuntoInicial())
+								&& this.getPuntoFinal().equals(((Cluster) o).getPuntoFinal()))
+				: false;
+	}
+
+	@Override
+	public int hashCode() {
+		return this.getPuntoInicial().hashCode();
 	}
 
 	@Override

@@ -50,7 +50,7 @@ public class HPAstar {
 	private static final Border bcbottomright = BorderFactory.createCompoundBorder(bbottomright, defaultborder);
 
 	// La lista que contendrá todos los clusters definidos
-	private static ArrayList<Cluster> clusters;
+	protected static ArrayList<Cluster> clusters;
 
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
@@ -66,7 +66,7 @@ public class HPAstar {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
 			pintarCluster(mapa, 10, 10);
-			//printClusters();
+			// printClusters();
 
 			break;
 		// Si no, muestra mensaje de error
@@ -79,7 +79,10 @@ public class HPAstar {
 
 	/**
 	 * Método para pintar los clusters del mapa, dadas sus dimensiones Además, va
-	 * incluyendo los clusters a la lista de clusters
+	 * incluyendo los clusters a la lista de clusters.
+	 * 
+	 * Como en el mapa debe visualizarse simultáneamente el coloreado, no se
+	 * utiliza ningún objeto de la clase Timer
 	 * 
 	 * @param mapa
 	 * @param fils

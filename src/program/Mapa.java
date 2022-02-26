@@ -34,8 +34,8 @@ public class Mapa {
 
 	// Variables básicas del mapa:
 	// Cantidad total de filas y de columnas
-	protected int dY = 0; // Y -> fils
-	protected int dX = 0; // X -> cols
+	private int dY = 0; // Y -> fils
+	private int dX = 0; // X -> cols
 
 	// Dimensiones de cada botón en el mapa
 	private int tamY = 0; // Y -> alto
@@ -120,6 +120,9 @@ public class Mapa {
 		this.dY = fils;
 	}
 
+	/**
+	 * Inicializa el tablero
+	 */
 	private void initComponents() {
 		tablero = new JPanel();
 		tablero.setPreferredSize(new Dimension(dimY, dimX));
@@ -149,11 +152,11 @@ public class Mapa {
 	}
 
 	public void crearTablero() {
-		// Si las dimensiones son válidas
 
 		// Si hay parámetros de texto, los validamos, si no, validamos los numéricos
 		boolean val = (this.tbxDimX == null || this.tbxDimY == null) ? validarDims2() : validarDims();
 
+		// Si las dimensiones son válidas
 		if (val) {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
@@ -190,7 +193,7 @@ public class Mapa {
 				}
 			}
 		}
-		// Si no lo son
+		// Si no lo son, se muestra mensaje de error
 		else {
 			JOptionPane.showMessageDialog(new JFrame(), "Las dimensiones deben ser numéricas y mayores que 0");
 		}
