@@ -54,8 +54,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Patrón archivo (se comprueba que finalice en .algo)
 	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
-	// Lista de las dimensiones posibles a escoger
+	// Lista de las dimensiones de mapa posibles a escoger
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
+
+	// Lista de las dimensiones de cluster posibles a escoger
+	private static final String[] clusters = { "10x10" };
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -75,17 +78,23 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte central
 	private JPanel pCentral;
-	
 
 	// Parte para la gestión de algoritmo
+	// Panel que contendrá la info de arriba (selector de algoritmo + selector de
+	// cluster)
+	private JPanel upPanel;
 	// Parte para la gestión de A* en la parte de algoritmo
-	private JPanel pAstar;
 	private JLabel titulo2;
 	private JComboBox<String> algCB;
 	private JPanel algPanel;
-	
-	// Parte para la gestión de HPA* en la parte de algoritmo
-	
+
+	// Parte para la gestión de HPA* en la parte de algoritmo (incluye cluster y lo
+	// de A*)
+	// Parte para la gestión de selección de tamaño de cluster
+	private JLabel titulo2hpa;
+	private Box vB2hpa;
+	private JPanel clusterPanel;
+	private JComboBox<String> cbTCluster;
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
@@ -222,19 +231,21 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 		// Definimos el apartado para la selección de ALGORITMO
 
+		// Parte de la gestión de algoritmo de A*
+		// Creamos el panel que contendrá todo
+		upPanel = new JPanel();
 		// Creamos el correspondiente titulo
 		titulo2 = new JLabel("Algoritmo");
 		titulo2.setAlignmentX(CENTER_ALIGNMENT);
 
 		// Añadimos un panel exclusivo para la gestión de algoritmo
-
 		algPanel = new JPanel();
 
 		// Añadimos el selector
 		algCB = new JComboBox<>();
 		algCB.addItem("A*");
 		algCB.addItem("HPA*");
-		algCB.setBackground(Color.white);
+		algCB.setBackground(Color.WHITE);
 		algCB.addActionListener(this);
 
 		// Añadimos al panel el selector
@@ -244,10 +255,44 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		Box vB2 = Box.createVerticalBox();
 		vB2.add(titulo2);
 		vB2.add(algPanel);
-		vB2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		// vB2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
+		// Parte de la gestión de algoritmo de HPA* (incluye clusters)
+		// Le creamos el título para los clusters
+		titulo2hpa = new JLabel("Clusters");
+		titulo2hpa.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para la gestión de tamaño de clusters
+		clusterPanel = new JPanel();
+		// Creamos la parte para seleccionar el tamaño de cluster
+		cbTCluster = new JComboBox<>();
+
+		cbTCluster.addItem("Seleccionar dimensiones");
+		for (String tam : clusters)
+			cbTCluster.addItem(tam);
+
+		cbTCluster.setBackground(Color.WHITE);
+		cbTCluster.addActionListener(this);
+
+		clusterPanel.add(cbTCluster);
+
+		// Agrupamos los elementos de forma que estén uno sobre el otro:
+		vB2hpa = Box.createVerticalBox();
+		vB2hpa.add(titulo2hpa);
+		vB2hpa.add(clusterPanel);
+
+		// Lo añadimos todo al panel general
+		upPanel.add(vB2);
+		upPanel.add(vB2hpa);
+		upPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		upPanel.setPreferredSize(upPanel.getPreferredSize());
+		// Ocultamos la parte de clusters (ya que por defecto está seleccionado A*)
+		vB2hpa.hide();
+
+		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
-		boxizda.add(vB2);
+		boxizda.add(upPanel);
+		// boxizda.add(pAstar);
 		// pCentral.add(vB2, BorderLayout.WEST);
 
 		// Definimos el apartado para el CONTROL SIMULACIÓN
@@ -326,7 +371,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		vB3.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
 		// Lo añadimos al panel central
-
 		boxizda.add(vB3);
 		pCentral.add(boxizda, BorderLayout.WEST);
 
@@ -344,7 +388,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Añadimos el selector de dimensiones
 		dims = new JComboBox<>();
 		// Añadimos las opciones al selector
-
 		dims.addItem("Seleccionar dimensiones");
 		for (String tam : dimensiones)
 			dims.addItem(tam);
@@ -888,164 +931,36 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
 				panelCHPAstar.hide();
+				vB2hpa.hide();
 				restartVelocity();
 				panelCAstar.show();
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
 				panelCAstar.hide();
+				vB2hpa.show();
 				panelCHPAstar.show();
 			}
 		}
-		// Control de la simulación
-		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
-		else if (e.getSource() == btnStart) {
-			// String option = algCB.getSelectedItem().toString();
-			// Primero, comprobamos que está el mapa creado
-			if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
-				JOptionPane.showMessageDialog(new JFrame(),
-						"Debe definir el tamaño del mapa y seleccionar los puntos inicial y final para poder iniciar la simulación.");
-			}
-			// Segundo, que estén definidos los puntos inicial y final
-			else if (mapa.pto_inicial == null || mapa.pto_final == null) {
-				JOptionPane.showMessageDialog(new JFrame(),
-						"Debe seleccionar los puntos inicial y final para poder iniciar la simulación.");
-			}
-			// Si se cumplen todas las condiciones, se empieza la simulación
-			else {
-				// Bloqueamos el selector de algoritmos
-				algCB.setEnabled(false);
+		// Controlador del selector de las dimensiones de los clusters (solo para HPA*)
+		else if (e.getSource() == cbTCluster) {
+			String option = cbTCluster.getSelectedItem().toString();
 
-				if (!btnStop.isEnabled()) {
-					log.append("Iniciada la simulación del algoritmo A*." + newline);
+			if (option.equals(clusters[0])) { // 10x10
 
-					// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
-					rCons.setSelected(true);
-					rInic.setEnabled(false);
-					rFin.setEnabled(false);
-					rObs.setEnabled(false);
-					btnReverse.setEnabled(false);
-
-					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
-					btnStop.setEnabled(true);
-					start = true;
-
-					datosAstar.show();
-					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
-					// iteraciones y la memoria usada
-					Astar.BusquedaAstar(mapa);
-				} else {
-					if (start == true) {
-						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-						start = false;
-						Astar.timer.stop();
-					} else {
-						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
-						start = true;
-						Astar.timer.restart();
-					}
-
-				}
+			} else { // Seleccionar tamaño clusters
+				
 			}
 
 		}
-		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
-		else if (e.getSource() == btnStop) {
 
-			// Borramos y escondemos los datos de la simulación
-			datosAstar.setText("");
-			datosAstar.hide();
-
-			// Copiamos los datos
-			Punto pini = mapa.pto_inicial;
-			Punto pfin = mapa.pto_final;
-			ArrayList<Punto> lobs = mapa.obstaculos;
-
-			int tipo = mapa.getTipo();
-
-			// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
-			mapa.destruirTablero();
-			mapa.crearTablero();
-
-			mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
-			mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
-
-			for (Punto obs : lobs)
-				mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
-
-			mapa.pto_inicial = pini;
-			mapa.pto_final = pfin;
-			mapa.obstaculos = lobs;
-
-			mapa.setTipo(tipo);
-
-			// Se bloquea el botón de parar y se desbloquea el de iniciar
-			btnStop.setEnabled(false);
-			btnStart.setEnabled(true);
-			btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-
-			// Desbloqueamos los botones
-			rInic.setEnabled(true);
-			rFin.setEnabled(true);
-			rObs.setEnabled(true);
-			btnReverse.setEnabled(true);
-
-			// Desbloqueamos el selector de algoritmos
-			algCB.setEnabled(true);
-		}
-
-		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
-		else if (e.getSource() == btnStart2) {
-			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
-		}
-
-		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
-		else if (e.getSource() == btnStop2) {
-			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
-		}
-
-		// Control de la velocidad
-		// Si pulsamos el botón de reducir velocidad
-		else if (e.getSource() == btnMinus)
-
-		{
-			log.append("Se ha reducido la velocidad de la simulación " + newline);
-
-			v /= 2;
-			velocity.setText(new String("x").concat(frmt.format(v)));
-			// No puede bajar de 0.25
-			if (v == (0.25 / 2)) {
-				btnMinus.setEnabled(false);
-				log.append("Se ha alcanzado el mínimo de velocidad" + newline);
-			}
-
-			// Si el botón de aumentar estaba bloqueado
-			if (!btnPlus.isEnabled())
-				btnPlus.setEnabled(true);
-
-		}
-		// Si pulsamos el botón de aumentar velocidad
-		else if (e.getSource() == btnPlus) {
-			log.append("Se ha aumentado la velocidad de la simulación " + newline);
-
-			v *= 2;
-			velocity.setText(new String("x").concat(frmt.format(v)));
-			// No puede subir de 2.00
-			if (v == 8) {
-				btnPlus.setEnabled(false);
-				log.append("Se ha alcanzado el máximo de velocidad" + newline);
-			}
-
-			// Si el botón de reducir estaba bloqueado
-			if (!btnMinus.isEnabled())
-				btnMinus.setEnabled(true);
-		}
 		// Controlador del selector de las dimensiones del mapa
 		else if (e.getSource() == dims) {
 
-			if (algCB.getSelectedItem().toString().equals("A*")) 
+			String algoritmo = algCB.getSelectedItem().toString();
+
+			if (algoritmo.equals("A*"))
 				datosAstar.hide();
-			
+
 			String option = dims.getSelectedItem().toString();
 			if (option.equals(dimensiones[0])) { // 40x40
 				if (mapa != null)
@@ -1109,7 +1024,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			}
 
 		}
-		// Si se pulsa el botón de cambio de inicio por fin
+		// Si se pulsa el botón de cambio de pt inicio por pto fin
 		else if (e.getSource() == btnReverse) {
 			if (mapa.pto_final != null && mapa.pto_inicial != null) {
 				Punto aux = mapa.pto_final.clone();
@@ -1133,6 +1048,152 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
 			}
 		}
+
+		// Control de la simulación
+		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
+		else if (e.getSource() == btnStart) {
+			// String option = algCB.getSelectedItem().toString();
+			// Primero, comprobamos que está el mapa creado
+			if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
+				JOptionPane.showMessageDialog(new JFrame(),
+						"Debe definir el tamaño del mapa y seleccionar los puntos inicial y final para poder iniciar la simulación.");
+			}
+			// Segundo, que estén definidos los puntos inicial y final
+			else if (mapa.pto_inicial == null || mapa.pto_final == null) {
+				JOptionPane.showMessageDialog(new JFrame(),
+						"Debe seleccionar los puntos inicial y final para poder iniciar la simulación.");
+			}
+			// Si se cumplen todas las condiciones, se empieza la simulación
+			else {
+				// Bloqueamos el selector de algoritmos
+				algCB.setEnabled(false);
+
+				if (!btnStop.isEnabled()) {
+					log.append("Iniciada la simulación del algoritmo A*." + newline);
+
+					// Cambiamos a que solo se pueda consultar, bloqueamos el resto de botones
+					rCons.setSelected(true);
+					rInic.setEnabled(false);
+					rFin.setEnabled(false);
+					rObs.setEnabled(false);
+					btnReverse.setEnabled(false);
+
+					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+					btnStop.setEnabled(true);
+					start = true;
+
+					datosAstar.show();
+					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
+					// iteraciones y la memoria usada
+					Astar.BusquedaAstar(mapa);
+				} else {
+					if (start == true) {
+						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+						start = false;
+						Astar.timer.stop();
+					} else {
+						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+						start = true;
+						Astar.timer.restart();
+					}
+
+				}
+			}
+
+		}
+		// Si pulsamos el botón de parar simulación (con la opción del algoritmo A*)
+		else if (e.getSource() == btnStop) {
+
+			// Borramos y escondemos los datos de la simulación
+			datosAstar.setText("");
+			datosAstar.hide();
+
+			// Copiamos los datos
+			Punto pini = mapa.pto_inicial;
+			Punto pfin = mapa.pto_final;
+			ArrayList<Punto> lobs = mapa.obstaculos;
+
+			int tipo = mapa.getTipo();
+
+			// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
+			mapa.destruirTablero();
+			mapa.crearTablero();
+
+			mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
+			mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
+
+			for (Punto obs : lobs)
+				mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
+
+			mapa.pto_inicial = pini;
+			mapa.pto_final = pfin;
+			mapa.obstaculos = lobs;
+
+			mapa.setTipo(tipo);
+
+			// Se bloquea el botón de parar y se desbloquea el de iniciar
+			btnStop.setEnabled(false);
+			btnStart.setEnabled(true);
+			btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+
+			// Desbloqueamos los botones
+			rInic.setEnabled(true);
+			rFin.setEnabled(true);
+			rObs.setEnabled(true);
+			btnReverse.setEnabled(true);
+
+			// Desbloqueamos el selector de algoritmos
+			algCB.setEnabled(true);
+		}
+
+		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
+		else if (e.getSource() == btnStart2) {
+			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+		}
+
+		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
+		else if (e.getSource() == btnStop2) {
+			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+		}
+
+		// Control de la velocidad (solo para A*)
+		// Si pulsamos el botón de reducir velocidad
+		else if (e.getSource() == btnMinus)
+
+		{
+			log.append("Se ha reducido la velocidad de la simulación " + newline);
+
+			v /= 2;
+			velocity.setText(new String("x").concat(frmt.format(v)));
+			// No puede bajar de 0.25
+			if (v == (0.25 / 2)) {
+				btnMinus.setEnabled(false);
+				log.append("Se ha alcanzado el mínimo de velocidad" + newline);
+			}
+
+			// Si el botón de aumentar estaba bloqueado
+			if (!btnPlus.isEnabled())
+				btnPlus.setEnabled(true);
+
+		}
+		// Si pulsamos el botón de aumentar velocidad
+		else if (e.getSource() == btnPlus) {
+			log.append("Se ha aumentado la velocidad de la simulación " + newline);
+
+			v *= 2;
+			velocity.setText(new String("x").concat(frmt.format(v)));
+			// No puede subir de 2.00
+			if (v == 8) {
+				btnPlus.setEnabled(false);
+				log.append("Se ha alcanzado el máximo de velocidad" + newline);
+			}
+
+			// Si el botón de reducir estaba bloqueado
+			if (!btnMinus.isEnabled())
+				btnMinus.setEnabled(true);
+		}
+
 	}
 
 	@Override
