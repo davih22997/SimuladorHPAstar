@@ -963,8 +963,26 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			String algoritmo = algCB.getSelectedItem().toString();
 
-			if (algoritmo.equals("A*"))
+			if (algoritmo.equals("A*")) {
 				datosAstar.hide();
+				if (btnStop.isEnabled()) {
+					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+					btnStart.setEnabled(true);
+					btnStop.setEnabled(false);
+					rInic.setEnabled(true);
+					rFin.setEnabled(true);
+					rObs.setEnabled(true);
+					btnReverse.setEnabled(true);
+				}
+			} else if (algoritmo.equals("HPA*")) {
+				if (btnStop2.isEnabled()) {
+					btnStop2.setEnabled(false);
+					rInic.setEnabled(true);
+					rFin.setEnabled(true);
+					rObs.setEnabled(true);
+					btnReverse.setEnabled(true);
+				}
+			}
 
 			String option = dims.getSelectedItem().toString();
 			if (option.equals(dimensiones[0])) { // 40x40
@@ -972,15 +990,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					mapa.destruirTablero();
 				mapa.setDims(40, 40);
 				mapa.crearTablero();
-				if (btnStop.isEnabled()) {
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
 
 			} else if (option.equals(dimensiones[1])) { // 20x30
 				if (mapa != null)
@@ -988,44 +997,16 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 				mapa.setDims(20, 30);
 				mapa.crearTablero();
-				if (btnStop.isEnabled()) {
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
-
 			} else if (option.equals(dimensiones[2])) { // 30x20
 				if (mapa != null)
 					mapa.destruirTablero();
 
 				mapa.setDims(30, 20);
 				mapa.crearTablero();
-				if (btnStop.isEnabled()) {
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
 			} else { // Seleccionar dimensiones
 				if (mapa != null)
 					mapa.destruirTablero();
 				mapa.setDims(0, 0);
-				if (btnStop.isEnabled()) {
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
 			}
 
 		}
@@ -1116,29 +1097,24 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			reiniciarMapa();
 			/*
-			// Copiamos los datos
-			Punto pini = mapa.pto_inicial;
-			Punto pfin = mapa.pto_final;
-			ArrayList<Punto> lobs = mapa.obstaculos;
-
-			int tipo = mapa.getTipo();
-
-			// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
-			mapa.destruirTablero();
-			mapa.crearTablero();
-
-			mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
-			mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
-
-			for (Punto obs : lobs)
-				mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
-
-			mapa.pto_inicial = pini;
-			mapa.pto_final = pfin;
-			mapa.obstaculos = lobs;
-
-			mapa.setTipo(tipo);
-			*/
+			 * // Copiamos los datos Punto pini = mapa.pto_inicial; Punto pfin =
+			 * mapa.pto_final; ArrayList<Punto> lobs = mapa.obstaculos;
+			 * 
+			 * int tipo = mapa.getTipo();
+			 * 
+			 * // Y generamos un mapa nuevo, con los mismos datos pero sin la simulación
+			 * hecha mapa.destruirTablero(); mapa.crearTablero();
+			 * 
+			 * mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
+			 * mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
+			 * 
+			 * for (Punto obs : lobs)
+			 * mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
+			 * 
+			 * mapa.pto_inicial = pini; mapa.pto_final = pfin; mapa.obstaculos = lobs;
+			 * 
+			 * mapa.setTipo(tipo);
+			 */
 
 			// Se bloquea el botón de parar y se desbloquea el de iniciar
 			btnStop.setEnabled(false);
@@ -1185,10 +1161,16 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						log.append("Iniciada la simulación del algoritmo HPA*." + newline);
 						// 1. Desbloqueamos el botón de pausar la simulación
 						btnStop2.setEnabled(true);
-						// 2. Creamos la copia de seguridad del mapa (para luego borrar los bordes en
+						// 2. Bloqueamos los botones de modificación del mapa (ptos inicio, fin,
+						// obstáculos...)
+						rInic.setEnabled(false);
+						rFin.setEnabled(false);
+						rObs.setEnabled(false);
+						btnReverse.setEnabled(false);
+						// 3. Creamos la copia de seguridad del mapa (para luego borrar los bordes en
 						// caso de parar la simulación)
 						// copiaMapa = mapa.MatrizBotones.clone();
-						// 3. Iniciamos el proceso de pintar bordes
+						// 4. Iniciamos el proceso de pintar bordes
 						if (tCluster.equals(clusters[0])) {
 							HPAstar.definirCluster(mapa, HPAstar.CLUSTER_10X10);
 						}
@@ -1203,8 +1185,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStop2) {
 			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+
+			// Reiniciamos el mapa para borrar lo que se ha pintado
 			reiniciarMapa();
+
+			// Desbloqueamos los botones
+			rInic.setEnabled(true);
+			rFin.setEnabled(true);
+			rObs.setEnabled(true);
+			btnReverse.setEnabled(true);
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1279,7 +1270,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			btnMinus.setEnabled(true);
 
 	}
-	
+
 	/**
 	 * Devuelve el mapa a su estado original una vez parada una simulación
 	 */
