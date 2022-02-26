@@ -1,6 +1,8 @@
 package program;
 
 import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
@@ -47,6 +49,9 @@ public class HPAstar {
 	private static final Border bcbottomleft = BorderFactory.createCompoundBorder(bbottomleft, defaultborder);
 	private static final Border bcbottomright = BorderFactory.createCompoundBorder(bbottomright, defaultborder);
 
+	// La lista que contendrá todos los clusters definidos
+	private static ArrayList<Cluster> clusters;
+
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
 	 * represente su tamaño y pintarlos
@@ -56,10 +61,12 @@ public class HPAstar {
 	 */
 	public static void definirCluster(Mapa mapa, int tam) {
 
+		clusters = new ArrayList<>();
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
 			pintarCluster(mapa, 10, 10);
+			//printClusters();
 
 			break;
 		// Si no, muestra mensaje de error
@@ -71,7 +78,8 @@ public class HPAstar {
 	}
 
 	/**
-	 * Método para pintar los clusters del mapa, dadas sus dimensiones
+	 * Método para pintar los clusters del mapa, dadas sus dimensiones Además, va
+	 * incluyendo los clusters a la lista de clusters
 	 * 
 	 * @param mapa
 	 * @param fils
@@ -90,8 +98,11 @@ public class HPAstar {
 				// 1.
 				if (f % fils == 0) {
 					// además 3.
-					if (c % cols == 0)
+					if (c % cols == 0) {
 						mapa.pintarBorde(bctopleft, f, c);
+						// Añadimos el cluster cuando coincide con la casilla inicial
+						clusters.add(new Cluster(fils, cols, f, c));
+					}
 					// además 4
 					else if (c % cols == (cols - 1))
 						mapa.pintarBorde(bctopright, f, c);
@@ -119,7 +130,31 @@ public class HPAstar {
 
 			}
 		}
-
+		// Finalmente, se ordena la lista de clusters
+		Collections.sort(clusters);
+		Interfaz.log.append("Se han creado los clústers.\n");
 	}
 
+	/**
+	 * Método para imprimir la lista de clusters por consola (es meramente para
+	 * comprobar que se ha creado correctamente).
+	 */
+	@SuppressWarnings("unused")
+	private static void printClusters() {
+
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Los clusters son los siguientes:\n");
+
+		int cont = 0;
+
+		for (Cluster c : clusters) {
+			sb.append("Cluster ").append(cont++).append(":\n");
+			sb.append("Punto inicial: ").append(c.getPuntoInicial()).append("\n");
+			sb.append("Punto final: ").append(c.getPuntoFinal()).append("\n\n");
+		}
+
+		System.out.println(sb.toString());
+
+	}
 }

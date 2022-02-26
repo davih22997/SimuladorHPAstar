@@ -13,6 +13,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Scanner;
 import java.util.regex.Matcher;
@@ -777,7 +778,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
 								// nuevamente, te la ordena)
-								mapa.ordenarListaObstaculos();
+								Collections.sort(mapa.obstaculos);
 
 								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
 
@@ -1163,15 +1164,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						btnStop2.setEnabled(true);
 						// 2. Bloqueamos los botones de modificación del mapa (ptos inicio, fin,
 						// obstáculos...)
+						rCons.setSelected(true);
 						rInic.setEnabled(false);
 						rFin.setEnabled(false);
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
-						// 3. Creamos la copia de seguridad del mapa (para luego borrar los bordes en
-						// caso de parar la simulación)
-						// copiaMapa = mapa.MatrizBotones.clone();
+						// 3. Bloqueamos el selector de clusters y el de algoritmos (temporalmente)
+						algCB.setEnabled(false);
+						cbTCluster.setEnabled(false);
 						// 4. Iniciamos el proceso de pintar bordes
 						if (tCluster.equals(clusters[0])) {
+							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirCluster(mapa, HPAstar.CLUSTER_10X10);
 						}
 
@@ -1191,6 +1194,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			// Reiniciamos el mapa para borrar lo que se ha pintado
 			reiniciarMapa();
 
+			// Desbloqueamos también los selectores
+			algCB.setEnabled(false);
+			cbTCluster.setEnabled(false);
 			// Desbloqueamos los botones
 			rInic.setEnabled(true);
 			rFin.setEnabled(true);

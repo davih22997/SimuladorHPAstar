@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -344,7 +344,7 @@ public class Mapa {
 				btn.setBackground(Color.BLACK);
 
 				// Dejamos ordenada la lista de obstaculos
-				this.ordenarListaObstaculos();
+				Collections.sort(obstaculos);
 
 			}
 			break;
@@ -427,31 +427,6 @@ public class Mapa {
 	}
 
 	/**
-	 * Ordena la lista de obstaculos del mapa
-	 * 
-	 * @return
-	 */
-	public void ordenarListaObstaculos() {
-
-		obstaculos.sort(new Comparator<Punto>() {
-			@Override
-			public int compare(Punto p1, Punto p2) {
-
-				int val = 0;
-				
-				if (p1.getFila() == p2.getFila())
-					val = p1.getCol() - p2.getCol();
-				else if (p1.getFila() > p2.getFila())
-					val = 1;
-				else
-					val = -1;
-
-				return val;
-			}
-		});
-	}
-
-	/**
 	 * Método para pintar el mapa de un color dado y a la posición dada
 	 * 
 	 * @throws InterruptedException
@@ -459,9 +434,10 @@ public class Mapa {
 	public void pintarMapa(Color color, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
 	}
-	
+
 	/**
 	 * Método para cambiar el borde de una casilla
+	 * 
 	 * @param border
 	 * @param fila
 	 * @param columna

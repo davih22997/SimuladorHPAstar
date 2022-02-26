@@ -1,10 +1,11 @@
 package program;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Scanner;
 
 // Clase para definir un punto dado por (fila, columna)
-public class Punto implements Cloneable {
+public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	private int f;
 	private int c;
@@ -130,6 +131,38 @@ public class Punto implements Cloneable {
 	@Override
 	public Punto clone() {
 		return new Punto(this.f, this.c);
+	}
+
+	@Override
+	public int compareTo(Punto p) {
+		// Los puntos van ordenados en primer lugar teniendo en cuenta su fila, y
+		// después su columna
+		int val = 0;
+
+		if (this.getFila() == p.getFila())
+			val = this.getCol() - p.getCol();
+		else if (this.getFila() > p.getFila())
+			val = 1;
+		else
+			val = -1;
+
+		return val;
+	}
+
+	@Override
+	public int compare(Punto p1, Punto p2) {
+		// Los puntos van ordenados en primer lugar teniendo en cuenta su fila, y
+		// después su columna
+		int val = 0;
+
+		if (p1.getFila() == p2.getFila())
+			val = p1.getCol() - p2.getCol();
+		else if (p1.getFila() > p2.getFila())
+			val = 1;
+		else
+			val = -1;
+
+		return val;
 	}
 
 }
