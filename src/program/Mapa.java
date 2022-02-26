@@ -16,6 +16,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 public class Mapa {
 
@@ -457,6 +458,16 @@ public class Mapa {
 	 */
 	public void pintarMapa(Color color, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
+	}
+	
+	/**
+	 * Método para cambiar el borde de una casilla
+	 * @param border
+	 * @param fila
+	 * @param columna
+	 */
+	public void pintarBorde(Border border, int fila, int columna) {
+		MatrizBotones[fila][columna].setBorder(border);
 	}
 
 }

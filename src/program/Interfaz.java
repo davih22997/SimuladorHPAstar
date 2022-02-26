@@ -60,6 +60,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Lista de las dimensiones de cluster posibles a escoger
 	private static final String[] clusters = { "10x10" };
 
+	// Texto por defecto para seleccionar las dimensiones
+	private static final String selDims = "Seleccionar dimensiones";
+
 	// Panel con todo el contenido
 	private JPanel panel;
 
@@ -134,6 +137,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
 	private Box mapaBox = Box.createVerticalBox();
+	// Copia de seguridad del mapa para HPA*
+	// private JButton[][] copiaMapa;
 
 	// Parte de datos para la simulación A*
 	protected static JLabel datosAstar;
@@ -267,7 +272,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Creamos la parte para seleccionar el tamaño de cluster
 		cbTCluster = new JComboBox<>();
 
-		cbTCluster.addItem("Seleccionar dimensiones");
+		cbTCluster.addItem(selDims);
 		for (String tam : clusters)
 			cbTCluster.addItem(tam);
 
@@ -388,7 +393,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Añadimos el selector de dimensiones
 		dims = new JComboBox<>();
 		// Añadimos las opciones al selector
-		dims.addItem("Seleccionar dimensiones");
+		dims.addItem(selDims);
 		for (String tam : dimensiones)
 			dims.addItem(tam);
 
@@ -948,7 +953,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			if (option.equals(clusters[0])) { // 10x10
 
 			} else { // Seleccionar tamaño clusters
-				
+
 			}
 
 		}
@@ -1109,6 +1114,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			datosAstar.setText("");
 			datosAstar.hide();
 
+			reiniciarMapa();
+			/*
 			// Copiamos los datos
 			Punto pini = mapa.pto_inicial;
 			Punto pfin = mapa.pto_final;
@@ -1131,6 +1138,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			mapa.obstaculos = lobs;
 
 			mapa.setTipo(tipo);
+			*/
 
 			// Se bloquea el botón de parar y se desbloquea el de iniciar
 			btnStop.setEnabled(false);
@@ -1150,11 +1158,53 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStart2) {
 			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+
+			// Si es la primera vez que pulsamos el botón de inicio en HPA*
+			if (!btnStop2.isEnabled()) {
+				// Comprobamos que los datos están creados:
+				// 1. Comprobamos que está el mapa creado
+				if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
+					JOptionPane.showMessageDialog(new JFrame(),
+							"Debe definir el tamaño del mapa y seleccionar los puntos inicial y final para poder iniciar la simulación.");
+				}
+				// 2. Comprobamos que estén definidos los puntos inicial y final
+				else if (mapa.pto_inicial == null || mapa.pto_final == null) {
+					JOptionPane.showMessageDialog(new JFrame(),
+							"Debe seleccionar los puntos inicial y final para poder iniciar la simulación.");
+				}
+				// 3. Comprobamos que está definido el tamaño de clusters
+				else {
+					String tCluster = cbTCluster.getSelectedItem().toString();
+
+					if (tCluster.equals(selDims)) {
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Debe seleccionar las dimensiones de los clusters para poder realizar una simulación de HPA*.");
+					}
+					// 4. Una vez comprobado que están todos los datos definidos
+					else {
+						log.append("Iniciada la simulación del algoritmo HPA*." + newline);
+						// 1. Desbloqueamos el botón de pausar la simulación
+						btnStop2.setEnabled(true);
+						// 2. Creamos la copia de seguridad del mapa (para luego borrar los bordes en
+						// caso de parar la simulación)
+						// copiaMapa = mapa.MatrizBotones.clone();
+						// 3. Iniciamos el proceso de pintar bordes
+						if (tCluster.equals(clusters[0])) {
+							HPAstar.definirCluster(mapa, HPAstar.CLUSTER_10X10);
+						}
+
+					}
+				}
+
+			}
+
 		}
 
 		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStop2) {
 			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+			btnStop2.setEnabled(false);
+			reiniciarMapa();
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1228,6 +1278,34 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		else if (!btnMinus.isEnabled())
 			btnMinus.setEnabled(true);
 
+	}
+	
+	/**
+	 * Devuelve el mapa a su estado original una vez parada una simulación
+	 */
+	private void reiniciarMapa() {
+		// Copiamos los datos
+		Punto pini = mapa.pto_inicial;
+		Punto pfin = mapa.pto_final;
+		ArrayList<Punto> lobs = mapa.obstaculos;
+
+		int tipo = mapa.getTipo();
+
+		// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
+		mapa.destruirTablero();
+		mapa.crearTablero();
+
+		mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
+		mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
+
+		for (Punto obs : lobs)
+			mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
+
+		mapa.pto_inicial = pini;
+		mapa.pto_final = pfin;
+		mapa.obstaculos = lobs;
+
+		mapa.setTipo(tipo);
 	}
 
 }
