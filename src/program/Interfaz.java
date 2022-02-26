@@ -292,7 +292,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		upPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		upPanel.setPreferredSize(upPanel.getPreferredSize());
 		// Ocultamos la parte de clusters (ya que por defecto está seleccionado A*)
-		vB2hpa.hide();
+		vB2hpa.setVisible(false);
 
 		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
@@ -362,7 +362,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Añadimos todo al panel general
 		btnPanel2.add(panelCHPAstar);
 		// Y ocultamos la parte de HPA* (por defecto está en A*)
-		panelCHPAstar.hide();
+		panelCHPAstar.setVisible(false);
 
 		/*
 		 * // Añadimos todo al panel de botones btnPanel2.add(btnStart);
@@ -465,7 +465,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// la simulación
 		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
 		// Escondemos los datos (se van a mostrar solo en simulación).
-		datosAstar.hide();
+		datosAstar.setVisible(false);
 
 		// Añadimos la caja al panel central
 		pCentral.add(mapaBox, BorderLayout.SOUTH);
@@ -935,15 +935,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			String option = algCB.getSelectedItem().toString();
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
-				panelCHPAstar.hide();
-				vB2hpa.hide();
+				panelCHPAstar.setVisible(false);
+				vB2hpa.setVisible(false);
 				restartVelocity();
-				panelCAstar.show();
+				panelCAstar.setVisible(true);
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
-				panelCAstar.hide();
-				vB2hpa.show();
-				panelCHPAstar.show();
+				panelCAstar.setVisible(false);
+				vB2hpa.setVisible(true);
+				panelCHPAstar.setVisible(true);
 			}
 		}
 		// Controlador del selector de las dimensiones de los clusters (solo para HPA*)
@@ -964,7 +964,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			String algoritmo = algCB.getSelectedItem().toString();
 
 			if (algoritmo.equals("A*")) {
-				datosAstar.hide();
+				datosAstar.setVisible(false);
 				if (btnStop.isEnabled()) {
 					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 					btnStart.setEnabled(true);
@@ -1069,7 +1069,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					btnStop.setEnabled(true);
 					start = true;
 
-					datosAstar.show();
+					datosAstar.setVisible(true);
 					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
 					// iteraciones y la memoria usada
 					Astar.BusquedaAstar(mapa);
@@ -1093,7 +1093,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			// Borramos y escondemos los datos de la simulación
 			datosAstar.setText("");
-			datosAstar.hide();
+			datosAstar.setVisible(false);
 
 			reiniciarMapa();
 			/*
