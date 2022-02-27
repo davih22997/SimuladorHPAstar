@@ -144,6 +144,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte de datos para la simulación A*
 	protected static JLabel datosAstar;
 
+	// Parte para la simulación de HPA*
+	// Te cuenta cuántas veces has pulsado el botón de simulación
+	private int step = 0;
+
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
 	// private Punto pto_final;
@@ -213,7 +217,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		JLabel dirAct = new JLabel("Actual:");
 		direccion = new JTextField(40);
 		direccion.setEditable(false);
-		direccion.setBackground(Color.white);
+		direccion.setBackground(Color.WHITE);
 
 		// Añadimos los botones al panel de botones
 		btnPanel.add(btnNew);
@@ -398,7 +402,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		for (String tam : dimensiones)
 			dims.addItem(tam);
 
-		dims.setBackground(Color.white);
+		dims.setBackground(Color.WHITE);
 		dims.addActionListener(this);
 
 		// Añadimos los componentes al panel
@@ -652,7 +656,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 													scan4.useDelimiter(space + "*[)]");
 													int c = scan4.nextInt();
 													pto_inicial = new Punto(f, c);
-													mapa.MatrizBotones[f][c].setBackground(Color.GREEN);
+													mapa.MatrizBotones[f][c].setBackground(Mapa.cInicial);
 													mapa.pto_inicial = pto_inicial;
 												}
 											}
@@ -699,7 +703,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 														JOptionPane.showMessageDialog(new JFrame(),
 																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
 													else {
-														mapa.MatrizBotones[f][c].setBackground(Color.RED);
+														mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
 														mapa.pto_final = pto_final;
 													}
 												}
@@ -756,7 +760,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 										}
 
 										for (Punto o : obstaculos) {
-											mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Color.BLACK);
+											mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
 											mapa.obstaculos.add(o);
 										}
 
@@ -943,6 +947,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
 				panelCAstar.setVisible(false);
+				step = 0;
 				vB2hpa.setVisible(true);
 				panelCHPAstar.setVisible(true);
 			}
@@ -977,6 +982,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				}
 			} else if (algoritmo.equals("HPA*")) {
 				if (btnStop2.isEnabled()) {
+					step = 0;
 					btnStop2.setEnabled(false);
 					rInic.setEnabled(true);
 					rFin.setEnabled(true);
@@ -1017,19 +1023,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				Punto aux = mapa.pto_final.clone();
 				mapa.pto_final = mapa.pto_inicial;
 				mapa.pto_inicial = aux;
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Color.RED);
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Color.GREEN);
+				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
+				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 
 				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
 			} else if (mapa.pto_final != null) {
 				mapa.pto_inicial = mapa.pto_final.clone();
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Color.GREEN);
+				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 				mapa.pto_final = null;
 
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Color.RED);
+				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
 				mapa.pto_inicial = null;
 
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
@@ -1106,11 +1112,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			 * // Y generamos un mapa nuevo, con los mismos datos pero sin la simulación
 			 * hecha mapa.destruirTablero(); mapa.crearTablero();
 			 * 
-			 * mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
-			 * mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
+			 * mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(mapa.cInicial
+			 * );
+			 * mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(mapa.cFinal);
 			 * 
 			 * for (Punto obs : lobs)
-			 * mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
+			 * mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(mapa.cObs);
 			 * 
 			 * mapa.pto_inicial = pini; mapa.pto_final = pfin; mapa.obstaculos = lobs;
 			 * 
@@ -1175,28 +1182,49 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						// 4. Iniciamos el proceso de pintar bordes
 						if (tCluster.equals(clusters[0])) {
 							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
-							HPAstar.definirCluster(mapa, HPAstar.CLUSTER_10X10);
+							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_10X10);
+						} else {
+
 						}
+
+						// Sumamos un "step", para indicar que se ha pulsado una vez el botón, y
+						// continuar con el siguiente paso de la simulación
+						step++;
 
 					}
 				}
 
+			}
+			// Si no es la primera vez que se pulsa -> Vamos al siguiente paso de la
+			// simulación
+			else {
+				switch (step) {
+				// El segundo paso de la simulación -> Crear las entradas entre los clústers
+				case 1:
+
+					break;
+				default:
+					break;
+				}
 			}
 
 		}
 
 		// Si pulsamos el botón de parar simulación (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStop2) {
-			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
+			// Reiniciamos el contador de pasos:
+			step = 0;
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+			// Activamos el botón de start
+			btnStart2.setEnabled(true);
 
 			// Reiniciamos el mapa para borrar lo que se ha pintado
 			reiniciarMapa();
 
 			// Desbloqueamos también los selectores
-			algCB.setEnabled(false);
-			cbTCluster.setEnabled(false);
+			algCB.setEnabled(true);
+			cbTCluster.setEnabled(true);
 			// Desbloqueamos los botones
 			rInic.setEnabled(true);
 			rFin.setEnabled(true);
@@ -1292,11 +1320,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		mapa.destruirTablero();
 		mapa.crearTablero();
 
-		mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Color.GREEN);
-		mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Color.RED);
+		mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
+		mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
 
 		for (Punto obs : lobs)
-			mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Color.BLACK);
+			mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
 
 		mapa.pto_inicial = pini;
 		mapa.pto_final = pfin;

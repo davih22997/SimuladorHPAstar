@@ -107,7 +107,7 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * Método que devuelve los clusters adyacentes, dada una lista de clusters
 	 * definida y completa
 	 * 
-	 * @param clusters Lista completa de clusters (incluye a este)
+	 * @param clusters Lista completa de clusters (incluyendo a este)
 	 * @return
 	 */
 	public ArrayList<Cluster> getAdyacentes(ArrayList<Cluster> clusters) {

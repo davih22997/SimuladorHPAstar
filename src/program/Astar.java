@@ -1,6 +1,5 @@
 package program;
 
-import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -84,7 +83,7 @@ public class Astar {
 					// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
 					// que se queda en verde
 					if (!actual.equals(mapa.pto_inicial)) {
-						mapa.pintarMapa(Color.BLUE, actual.getFila(), actual.getCol());
+						mapa.pintarMapa(Mapa.cCerrado, actual.getFila(), actual.getCol());
 					}
 
 					// Cogemos los vecinos del punto
@@ -105,7 +104,7 @@ public class Astar {
 						if ((!abiertos.contains(p))) {
 							// Pintamos el mapa
 							if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
-								mapa.pintarMapa(Color.CYAN, p.getFila(), p.getCol());
+								mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
 							}
 							// Finalmente, lo añadimos
 							abiertos.add(p);
@@ -145,7 +144,7 @@ public class Astar {
 						Punto p = abiertos.poll();
 						while (!p.padre.equals(mapa.pto_inicial)) {
 							p = p.padre;
-							mapa.pintarMapa(Color.PINK, p.getFila(), p.getCol());
+							mapa.pintarMapa(Mapa.cRecorrido, p.getFila(), p.getCol());
 						}
 
 						timer.stop();

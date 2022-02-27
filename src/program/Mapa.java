@@ -20,6 +20,16 @@ import javax.swing.border.Border;
 
 public class Mapa {
 
+	// Constantes para los colores:
+	protected static final Color cInicial = Color.GREEN;
+	protected static final Color cFinal = Color.RED;
+	protected static final Color cObs = Color.BLACK;
+	
+	// Constantes que (de momento) se usan en A*
+	protected static final Color cAbierto = Color.CYAN;
+	protected static final Color cCerrado = Color.BLUE;
+	protected static final Color cRecorrido = Color.PINK;
+	
 	// Para insertar una nueva línea
 	private final static String newline = "\n";
 
@@ -262,7 +272,7 @@ public class Mapa {
 
 					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
-					btn.setBackground(Color.GREEN);
+					btn.setBackground(cInicial);
 					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
 					pto_inicial = aux;
@@ -280,7 +290,7 @@ public class Mapa {
 				}
 
 				pto_inicial = aux;
-				btn.setBackground(Color.GREEN);
+				btn.setBackground(cInicial);
 			}
 			break;
 		case TIPO_FINAL: // Pto final
@@ -304,7 +314,7 @@ public class Mapa {
 
 					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
-					btn.setBackground(Color.RED);
+					btn.setBackground(cFinal);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
 					pto_final = aux;
@@ -322,11 +332,11 @@ public class Mapa {
 				}
 
 				pto_final = aux;
-				btn.setBackground(Color.RED);
+				btn.setBackground(cFinal);
 			}
 			break;
 		case TIPO_OBSTACULO: // Obstáculo
-			btn.setBackground(Color.BLACK);
+			btn.setBackground(cObs);
 			// Si la lista de obstaculos contiene el punto seleccionado
 			if (obstaculos.contains(aux)) {
 				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
@@ -344,7 +354,7 @@ public class Mapa {
 				}
 				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
 				obstaculos.add(aux);
-				btn.setBackground(Color.BLACK);
+				btn.setBackground(cObs);
 
 				// Dejamos ordenada la lista de obstaculos
 				Collections.sort(obstaculos);

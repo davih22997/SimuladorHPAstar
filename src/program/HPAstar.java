@@ -12,11 +12,14 @@ import javax.swing.border.Border;
 
 public class HPAstar {
 
-	// Constantes para el tamaño de los clusters
+	// Constantes para el tamaño de los clusters:
 	public static final int CLUSTER_10X10 = 1;
 
+	// Constantes para los colores:
 	// Color que usaremos (de momento) para todos los bordes
 	private static final Color cBorder = Color.BLACK;
+	// Color para pintar las entradas entre clusters
+	private static final Color cEntrance = Color.LIGHT_GRAY;
 
 	// Constantes para los bordes
 	// El borde por defecto es:
@@ -52,6 +55,10 @@ public class HPAstar {
 	// La lista que contendrá todos los clusters definidos
 	protected static ArrayList<Cluster> clusters;
 
+	// Constante para definir el umbral para ver cuántas entradas hay entre los
+	// clústers
+	protected static int umbral = 6;
+
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
 	 * represente su tamaño y pintarlos
@@ -59,13 +66,15 @@ public class HPAstar {
 	 * @param mapa
 	 * @param tam
 	 */
-	public static void definirCluster(Mapa mapa, int tam) {
+	public static void definirClusters(Mapa mapa, int tam) {
 
 		clusters = new ArrayList<>();
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
-			pintarCluster(mapa, 10, 10);
+			Interfaz.btnStart2.setEnabled(false);
+			crearClusters(mapa, 10, 10);
+			Interfaz.btnStart2.setEnabled(true);
 			// printClusters();
 
 			break;
@@ -78,17 +87,17 @@ public class HPAstar {
 	}
 
 	/**
-	 * Método para pintar los clusters del mapa, dadas sus dimensiones Además, va
-	 * incluyendo los clusters a la lista de clusters.
+	 * Método para crear y pintar los clusters del mapa, dadas sus dimensiones Se
+	 * van incluyendo los clusters a la lista de clusters.
 	 * 
-	 * Como en el mapa debe visualizarse simultáneamente el coloreado, no se
-	 * utiliza ningún objeto de la clase Timer
+	 * Como en el mapa debe visualizarse simultáneamente el coloreado, no se utiliza
+	 * ningún objeto de la clase Timer
 	 * 
 	 * @param mapa
 	 * @param fils
 	 * @param cols
 	 */
-	public static void pintarCluster(Mapa mapa, int fils, int cols) {
+	public static void crearClusters(Mapa mapa, int fils, int cols) {
 		// Recorremos todo el mapa para ir pintando bordes
 		// Seguimos las siguientes reglas
 		// 1. Si la fila es múltiplo del número de filas, pintamos arriba
