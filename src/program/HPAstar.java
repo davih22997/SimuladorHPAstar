@@ -57,7 +57,8 @@ public class HPAstar {
 
 	// Constante para definir el umbral para ver cuántas entradas hay entre los
 	// clústers
-	protected static int umbral = 6;
+	// (No se pone final porque puede variar según el tamaño de cluster).
+	protected static int umbral;
 
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
@@ -69,11 +70,19 @@ public class HPAstar {
 	public static void definirClusters(Mapa mapa, int tam) {
 
 		clusters = new ArrayList<>();
+		// Iniciamos el umbral con valor 0
+		umbral = 0;
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
+			// Bloqueamos el botón de start
 			Interfaz.btnStart2.setEnabled(false);
+			// Realizamos la creación de cluster
 			crearClusters(mapa, 10, 10);
+
+			// Definimos el valor del umbral
+			umbral = 6;
+			// Y desbloqueamos el botón de start, una vez hecho todo
 			Interfaz.btnStart2.setEnabled(true);
 			// printClusters();
 
@@ -83,6 +92,19 @@ public class HPAstar {
 			JOptionPane.showMessageDialog(new JFrame(), "Tamaño de cluster no compatible con el tamaño del mapa");
 			break;
 		}
+
+	}
+
+	/**
+	 * Método para, una vez tenemos los clusters, definir las entradas (edges), dado
+	 * el mapa (lo necesitamos para ver los obstáculos y los punto inicial y final
+	 * (y no colorear encima)
+	 * 
+	 * @param mapa
+	 */
+	public static void definirEdges(Mapa mapa) {
+		// Para no repetir 2 veces las comprobaciones, iremos recorriendo los cluster
+		// comprobando siempre sus adyacentes izquierdo e inferior (si los tiene)
 
 	}
 
@@ -160,13 +182,10 @@ public class HPAstar {
 
 		int cont = 0;
 
-		for (Cluster c : clusters) {
-			sb.append("Cluster ").append(cont++).append(":\n");
-			sb.append("Punto inicial: ").append(c.getPuntoInicial()).append("\n");
-			sb.append("Punto final: ").append(c.getPuntoFinal()).append("\n\n");
-		}
+		for (Cluster c : clusters)
+			sb.append("Cluster ").append(cont++).append(":\n").append(c.toString());
 
-		System.out.println(sb.toString());
+		System.out.println(sb.toString() + "\n");
 
 	}
 }

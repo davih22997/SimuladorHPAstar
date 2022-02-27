@@ -8,45 +8,12 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 
 	// Los atributos que necesitamos de los clústers son:
 	// Los límites que delimitan al cluster
-	private ArrayList<Punto> limites;
+	// private ArrayList<Punto> limites;
 	// Y sus dimensiones
 	private int filas;
 	private int columnas;
-
-	/**
-	 * Método para crear un clúster dadas la fila y la columna iniciales (esquina
-	 * superior izda)
-	 * 
-	 * @param filas
-	 * @param columnas
-	 * @param fila_inicio
-	 * @param fila_fin
-	 * @param col_inicio
-	 * @param col_fin
-	 */
-	public Cluster(int filas, int columnas, int fila_inicio, int col_inicio) {
-		// Cogemos las dimensiones
-		this.filas = filas;
-		this.columnas = columnas;
-
-		// Y a partir de las coordenadas de la casilla inicial, creamos la lista de los
-		// puntos límite:
-		this.limites = new ArrayList<>();
-		// 1. Añadimos los límites superior e inferior
-		for (int fila = fila_inicio; fila < (fila_inicio + filas); fila += (filas - 1))
-			for (int col = col_inicio; col < (col_inicio + columnas); col++)
-				limites.add(new Punto(fila, col));
-
-		// 2. Añadimos los límites izda y derecha
-		for (int col = col_inicio; col < (col_inicio + columnas); col += (columnas - 1))
-			for (int fila = (fila_inicio + 1); fila < (fila_inicio + filas - 1); fila++)
-				limites.add(new Punto(fila, col));
-
-		// 3. Ordenamos los límites orden teniendo en cuenta primero la fila, después la
-		// columna
-		Collections.sort(limites);
-
-	}
+	// Punto de inicio del cluster (esquina superior izda)
+	private Punto inicio;
 
 	/**
 	 * Método para crear un clúster dado un punto inicial (esquina superior izda)
@@ -56,20 +23,130 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @param p_inicial
 	 */
 	public Cluster(int filas, int columnas, Punto p_inicial) {
-		this(filas, columnas, p_inicial.getFila(), p_inicial.getCol());
+		// Cogemos las dimensiones
+		this.filas = filas;
+		this.columnas = columnas;
+		// Y el punto de origen del cluster
+		this.inicio = p_inicial;
 	}
 
 	/**
-	 * Método para crear un clúster si ya tienes todos los datos
+	 * Método para crear un clúster dadas la fila y la columna iniciales (esquina
+	 * superior izda)
 	 * 
 	 * @param filas
 	 * @param columnas
+	 * @param fila_inicio
+	 * @param col_inicio
+	 */
+	public Cluster(int filas, int columnas, int fila_inicio, int col_inicio) {
+		this(filas, columnas, new Punto(fila_inicio, col_inicio));
+	}
+
+	/**
+	 * Método para crear un clúster si te dan el contorno (suponemos que el contorno
+	 * viene ordenado)
+	 * 
 	 * @param limites
 	 */
-	public Cluster(int filas, int columnas, ArrayList<Punto> limites) {
-		this.filas = filas;
-		this.columnas = columnas;
-		this.limites = limites;
+	public Cluster(ArrayList<Punto> limites) {
+		this((1 + limites.get(limites.size() - 1).getFila() - limites.get(0).getFila()),
+				(1 + limites.get(limites.size() - 1).getCol() - limites.get(0).getCol()), limites.get(0));
+	}
+
+	/**
+	 * Método para devolver el contorno del cluster
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getLimit() {
+		// Cogemos las coordenadas del punto inicial
+		int fila_inicio = inicio.getFila();
+		int col_inicio = inicio.getCol();
+
+		// Y a partir de las coordenadas de la casilla inicial, creamos la lista de
+		// los puntos límite:
+		ArrayList<Punto> limit = new ArrayList<>();
+		// 1. Añadimos los
+		// límites superior e inferior
+		for (int fila = fila_inicio; fila < (fila_inicio + filas); fila += (filas - 1))
+			for (int col = col_inicio; col < (col_inicio + columnas); col++)
+				limit.add(new Punto(fila, col));
+
+		// 2. Añadimos los límites izda y derecha
+		for (int col = col_inicio; col < (col_inicio + columnas); col += (columnas - 1))
+			for (int fila = (fila_inicio + 1); fila < (fila_inicio + filas - 1); fila++)
+				limit.add(new Punto(fila, col));
+
+		// 3. Ordenamos los límites orden teniendo en cuenta primero la fila, después
+		// la columna
+		Collections.sort(limit);
+
+		return limit;
+	}
+
+	/**
+	 * Método para obtener el contorno por el lateral superior
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getTopLimit() {
+		ArrayList<Punto> limit = new ArrayList<>();
+
+		// Simplemente nos movemos por columnas desde la fila inicial
+		for (int c = getColInicial(); c < (getColInicial() + columnas); c++)
+			limit.add(new Punto(getFilaInicial(), c));
+
+		// Devolvemos sin ordenar porque las hemos introducido ordenadas
+		return limit;
+	}
+
+	/**
+	 * Método para obtener el contorno por el lateral inferior
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getBottomLimit() {
+		ArrayList<Punto> limit = new ArrayList<>();
+
+		// Nos movemos por columnas desde la fila final
+		for (int c = getColInicial(); c <= getColFinal(); c++)
+			limit.add(new Punto(getFilaFinal(), c));
+
+		// Devolvemos sin ordenar porque las hemos introducido ordenadas
+		return limit;
+	}
+
+	/**
+	 * Método para obtener el contorno por el lateral izquierdo
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getLeftLimit() {
+		ArrayList<Punto> limit = new ArrayList<>();
+
+		// Nos movemos por filas desde la columna inicial
+		for (int f = getFilaInicial(); f <= getFilaFinal(); f++)
+			limit.add(new Punto(f, getColInicial()));
+
+		// Devolvemos sin ordenar porque las hemos introducido ordenadas
+		return limit;
+	}
+
+	/**
+	 * Método para obtener el contorno por el lateral derecho
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getRightLimit() {
+		ArrayList<Punto> limit = new ArrayList<>();
+
+		// Nos movemos por filas desde la columna final
+		for (int f = getFilaInicial(); f <= getFilaFinal(); f++)
+			limit.add(new Punto(f, getColFinal()));
+
+		// Devolvemos sin ordenar porque las hemos introducido ordenadas
+		return limit;
 	}
 
 	/**
@@ -110,30 +187,29 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @param clusters Lista completa de clusters (incluyendo a este)
 	 * @return
 	 */
-	public ArrayList<Cluster> getAdyacentes(ArrayList<Cluster> clusters) {
+	public ArrayList<Cluster> getAdyacents(ArrayList<Cluster> clusters, Mapa mapa) {
 		ArrayList<Cluster> adyacentes = new ArrayList<>();
 
 		// Cogemos el índice de este elemento
 		int index = clusters.indexOf(this);
 
-		// Los adyacentes se agrupan en 2 tipos:
-		// 1. La de las columnas adyacentes
+		// Hallamos el número de clusters que hay como columnas en el mapa
+		int cols = mapa.getCols() / columnas;
+
+		// Comprobamos para añadir por arriba
+		if (!isTop(mapa))
+			adyacentes.add(clusters.get(index - cols));
 		// Comprobamos para añadir la de la izda
-		if (index % columnas != 0)
+		if (!isLeft(mapa))
 			adyacentes.add(clusters.get(index - 1));
 		// Comprobamos para añadir la de la derecha
-		if ((index + 1) % columnas != 0)
+		if (!isRight(mapa))
 			adyacentes.add(clusters.get(index + 1));
-		// 2. La de las filas adyacentes
-		// Comprobamos para añadir por arriba
-		if (index >= columnas)
-			adyacentes.add(clusters.get(index - columnas));
 		// Comprobamos para añadir por abajo
-		if ((index + columnas) < (filas * columnas))
-			adyacentes.add(clusters.get(index + columnas));
-		// Finalmente, ordenamos
-		Collections.sort(adyacentes);
+		if (!isBottom(mapa))
+			adyacentes.add(clusters.get(index + cols));
 
+		// No ordenamos porque lo hemos introducido ordenado
 		return adyacentes;
 	}
 
@@ -151,7 +227,11 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 			throw new RuntimeException(
 					"Todos los clusters deben tener el mismo tamaño y han de ser distintos entre sí.");
 
+		// Suponemos que los clusters también han de estar dentro del mapa
+		if (!this.inMap(mapa) || !cluster.inMap(mapa))
+			throw new RuntimeException("Los clusters deben estar en el mapa");
 		boolean res = false;
+
 		// Miramos que coincida o la fila o la columna iniciales
 		// 1. Si coinciden las filas
 		if (this.getFilaInicial() == cluster.getFilaInicial()) {
@@ -171,12 +251,52 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
+	 * Método que te indica si el clúster contiene la primera fila del mapa
+	 * 
+	 * @param mapa
+	 * @return
+	 */
+	public boolean isTop(Mapa mapa) {
+		return getFilaInicial() == 0;
+	}
+
+	/**
+	 * Método que te indica si el cluster contiene la última fila del mapa
+	 * 
+	 * @param mapa
+	 * @return
+	 */
+	public boolean isBottom(Mapa mapa) {
+		return getFilaFinal() == (mapa.getFilas() - 1);
+	}
+
+	/**
+	 * Método que te indica si el clúster contiene la primera columna del mapa
+	 * 
+	 * @param mapa
+	 * @return
+	 */
+	public boolean isLeft(Mapa mapa) {
+		return getColInicial() == 0;
+	}
+
+	/**
+	 * Método que te indica si el cluster contiene la última columna del mapa
+	 * 
+	 * @param mapa
+	 * @return
+	 */
+	public boolean isRight(Mapa mapa) {
+		return getColFinal() == (mapa.getCols() - 1);
+	}
+
+	/**
 	 * Devuelve la primera casilla del cluster
 	 * 
 	 * @return
 	 */
 	public Punto getPuntoInicial() {
-		return limites.get(0);
+		return inicio;
 	}
 
 	/**
@@ -185,7 +305,8 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public Punto getPuntoFinal() {
-		return limites.get((limites.size() - 1));
+
+		return new Punto(getFilaFinal(), getColFinal());
 	}
 
 	/**
@@ -194,7 +315,7 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public int getFilaInicial() {
-		return getPuntoInicial().getFila();
+		return inicio.getFila();
 	}
 
 	/**
@@ -203,7 +324,7 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public int getFilaFinal() {
-		return getPuntoFinal().getFila();
+		return inicio.getFila() + filas - 1;
 	}
 
 	/**
@@ -212,7 +333,7 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public int getColInicial() {
-		return getPuntoInicial().getCol();
+		return inicio.getCol();
 	}
 
 	/**
@@ -221,7 +342,18 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 * @return
 	 */
 	public int getColFinal() {
-		return getPuntoFinal().getCol();
+		return inicio.getCol() + columnas - 1;
+	}
+
+	/**
+	 * Método para averiguar si el cluster está dentro del mapa
+	 * 
+	 * @param mapa
+	 * @return
+	 */
+	public boolean inMap(Mapa mapa) {
+		return this.getFilaInicial() >= 0 && this.getColInicial() >= 0 && this.getFilaFinal() < mapa.getFilas()
+				&& this.getColFinal() < mapa.getCols();
 	}
 
 	@Override
@@ -238,7 +370,7 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 
 	@Override
 	public int hashCode() {
-		return this.getPuntoInicial().hashCode();
+		return inicio.hashCode();
 	}
 
 	@Override
@@ -269,6 +401,17 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 			val = -1;
 
 		return val;
+	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+
+		sb.append("Dimensiones: ").append(filas).append("X").append(columnas).append("\n");
+		sb.append("Punto inicial: ").append(getPuntoInicial()).append("\n");
+		sb.append("Punto final: ").append(getPuntoFinal()).append("\n");
+
+		return sb.toString();
 	}
 
 }
