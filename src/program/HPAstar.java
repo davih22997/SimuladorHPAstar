@@ -316,34 +316,8 @@ public class HPAstar {
 		// Si no están vacíos los límites (comprobamos uno de ellos ya que ambos se
 		// vacian de igual manera):
 		if (!l1.isEmpty()) {
-
-			// Creamos un array que te diga cuantos puntos van juntos
-			ArrayList<Integer> juntos = new ArrayList<>();
-
-			// También, creamos otro array que diga cuántos edges debería haber, teniendo en
-			// cuenta el umbral
-			ArrayList<Integer> cantidades = new ArrayList<>();
-
-			// Un sumatorio para tener controlado el índice
-			int index = 0;
-
-			while (index < l1.size()) {
-				// Vamos contando puntos consecutivos
-				int n = contarPtosConsecutivos(l1, index);
-				// Los añadimos a la lista
-				juntos.add(n);
-				// Vemos cuántos edges deberían crearse:
-				if (n > umbral)
-					cantidades.add(2);
-				else
-					cantidades.add(1);
-				// Incrementamos el indice
-				index += n;
-			}
-
-			// Una vez tenemos cuántos puntos hay consecutivos y la cantidad de edges que
-			// debemos abrir, pintamos el mapa
-			pintarEdges(l1, l2, juntos, cantidades, mapa);
+			// Pintamos el mapa
+			pintarEdges(l1, l2, mapa);
 
 		}
 	}
@@ -355,17 +329,16 @@ public class HPAstar {
 	 * @param l1
 	 * @param l2
 	 * @param juntos
-	 * @param cantidades
 	 * @param mapa
 	 */
-	private static void pintarEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, ArrayList<Integer> juntos,
-			ArrayList<Integer> cantidades, Mapa mapa) {
+	private static void pintarEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Mapa mapa) {
 
 		// Creamos un contador, para tener localizado el índice
 		int index = 0;
 
 		// Obtenemos cada cantidad de puntos consecutivos
-		for (int n : juntos) {
+		while (index < l1.size()) {
+			int n = contarPtosConsecutivos(l1, index);
 			// Cogemos los primeros puntos de ambas listas
 			Punto pl1_1 = l1.get(index);
 			Punto pl2_1 = l2.get(index);
