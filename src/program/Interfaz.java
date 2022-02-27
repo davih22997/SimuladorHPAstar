@@ -1180,16 +1180,20 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
 						// 4. Iniciamos el proceso de pintar bordes
+						// Bloqueamos el botón de start
+						btnStart2.setEnabled(false);
 						if (tCluster.equals(clusters[0])) {
 							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_10X10);
 						} else {
 
 						}
-
-						// Sumamos un "step", para indicar que se ha pulsado una vez el botón, y
+						// Una vez terminamos:
+						// 1. Sumamos un "step", para indicar que se ha pulsado una vez el botón, y
 						// continuar con el siguiente paso de la simulación
 						step++;
+						// 2. Desbloqueamos el botón de start
+						btnStart2.setEnabled(true);
 
 					}
 				}
@@ -1201,6 +1205,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				switch (step) {
 				// El segundo paso de la simulación -> Crear las entradas entre los clústers
 				case 1:
+					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+					// Realizamos la siguiente fase
+					HPAstar.definirEdges(mapa);
+					// Incrementamos un "step"
+					step++;
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(true);
 
 					break;
 				default:

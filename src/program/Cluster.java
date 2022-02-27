@@ -150,41 +150,11 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
-	 * Método que devuelve los clusters adyacentes dadas las dimensiones del mapa
-	 *
-	 * @param filas_mapa
-	 * @param cols_mapa
-	 * @return
-	 */
-	public ArrayList<Cluster> getAdyacentesMapa(int filas_mapa, int cols_mapa) {
-		ArrayList<Cluster> adyacentes = new ArrayList<>();
-
-		// Comprobamos primero en vertical
-		// Comprobamos para añadir la de la fila superior
-		if (getFilaInicial() != 0)
-			adyacentes.add(new Cluster(filas, columnas, (getFilaInicial() - filas), getColInicial()));
-		// Comprobamos para añadir la de la fila inferior
-		if (getFilaFinal() != (filas_mapa - 1))
-			adyacentes.add(new Cluster(filas, columnas, (getFilaInicial() + filas), getColInicial()));
-		// Comprobamos ahora en horizontal
-		// Comprobamos para añadir la de la izda
-		if (getColInicial() != 0)
-			adyacentes.add(new Cluster(filas, columnas, getFilaInicial(), (getColInicial() - columnas)));
-		// Comprobamos para añadir la de la derecha
-		if (getColFinal() != (cols_mapa - 1))
-			adyacentes.add(new Cluster(filas, columnas, getFilaInicial(), (getColInicial() + columnas)));
-
-		// Ordenamos
-		Collections.sort(adyacentes);
-
-		return adyacentes;
-	}
-
-	/**
 	 * Método que devuelve los clusters adyacentes, dada una lista de clusters
-	 * definida y completa
+	 * definida y completa; y también el mapa
 	 * 
 	 * @param clusters Lista completa de clusters (incluyendo a este)
+	 * @param mapa
 	 * @return
 	 */
 	public ArrayList<Cluster> getAdyacents(ArrayList<Cluster> clusters, Mapa mapa) {
@@ -214,22 +184,72 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
+	 * Devuelve, de haberlo, el cluster adyacente superior dados la lista de
+	 * clusters y el mapa
+	 * 
+	 * @param clusters
+	 * @param mapa
+	 * @return
+	 */
+	public Cluster topAdyacent(ArrayList<Cluster> clusters, Mapa mapa) {
+		int index = clusters.indexOf(this);
+		int cols = mapa.getCols() / columnas;
+
+		return isTop(mapa) ? null : clusters.get(index - cols);
+	}
+
+	/**
+	 * Devuelve, de haberlo, el cluster adyacente inferior dados la lista de
+	 * clusters y el mapa
+	 * 
+	 * @param clusters
+	 * @param mapa
+	 * @return
+	 */
+	public Cluster bottomAdyacent(ArrayList<Cluster> clusters, Mapa mapa) {
+		int index = clusters.indexOf(this);
+		int cols = mapa.getCols() / columnas;
+
+		return isBottom(mapa) ? null : clusters.get(index + cols);
+	}
+
+	/**
+	 * Devuelve, de haberlo, el cluster adyacente izquierdo dados la lista de
+	 * clusters y el mapa
+	 * 
+	 * @param clusters
+	 * @param mapa
+	 * @return
+	 */
+	public Cluster leftAdyacent(ArrayList<Cluster> clusters, Mapa mapa) {
+		int index = clusters.indexOf(this);
+
+		return isLeft(mapa) ? null : clusters.get(index - 1);
+	}
+
+	/**
+	 * Devuelve, de haberlo, el cluster adyacente derecho dados la lista de clusters
+	 * y el mapa
+	 * 
+	 * @param clusters
+	 * @param mapa
+	 * @return
+	 */
+	public Cluster rightAdyacent(ArrayList<Cluster> clusters, Mapa mapa) {
+		int index = clusters.indexOf(this);
+
+		return isRight(mapa) ? null : clusters.get(index + 1);
+	}
+
+	/**
 	 * Método para averiguar si otro cluster es adyacente a este dado también el
-	 * mapa que los engloba
+	 * mapa que los engloba Suponemos que los clusters que se comparan han de estar
+	 * en el mapa, ser distintos y tener el mismo tamaño
 	 * 
 	 * @param cluster
 	 * @return
 	 */
 	public boolean adyacentes(Cluster cluster, Mapa mapa) {
-		// Suponemos que todos los cluster que se comparan deben ser distintos y tener
-		// el mismo tamaño
-		if (this.filas != cluster.filas || this.columnas != cluster.columnas || this.equals(cluster))
-			throw new RuntimeException(
-					"Todos los clusters deben tener el mismo tamaño y han de ser distintos entre sí.");
-
-		// Suponemos que los clusters también han de estar dentro del mapa
-		if (!this.inMap(mapa) || !cluster.inMap(mapa))
-			throw new RuntimeException("Los clusters deben estar en el mapa");
 		boolean res = false;
 
 		// Miramos que coincida o la fila o la columna iniciales

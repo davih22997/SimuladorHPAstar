@@ -109,6 +109,17 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	/**
+	 * Método que te indica si otro punto es adyacente
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public boolean adyacente(Punto p) {
+		return (this.c == p.c && (this.f == (p.f + 1) || this.f == (p.f - 1)))
+				|| (this.f == p.f && (this.c == (p.c + 1) || this.c == (p.c - 1)));
+	}
+
+	/**
 	 * Calcula el la distancia Manhattan con respecto a otro punto
 	 * 
 	 * @param p

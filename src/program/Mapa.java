@@ -24,12 +24,12 @@ public class Mapa {
 	protected static final Color cInicial = Color.GREEN;
 	protected static final Color cFinal = Color.RED;
 	protected static final Color cObs = Color.BLACK;
-	
+
 	// Constantes que (de momento) se usan en A*
 	protected static final Color cAbierto = Color.CYAN;
 	protected static final Color cCerrado = Color.BLUE;
 	protected static final Color cRecorrido = Color.PINK;
-	
+
 	// Para insertar una nueva línea
 	private final static String newline = "\n";
 
@@ -440,12 +440,22 @@ public class Mapa {
 	}
 
 	/**
-	 * Método para pintar el mapa de un color dado y a la posición dada
+	 * Método para pintar el mapa de dados un color una posición
 	 * 
 	 * @throws InterruptedException
 	 */
 	public void pintarMapa(Color color, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
+	}
+
+	/**
+	 * Mismo método pero para pintar dado un punto
+	 * 
+	 * @param color
+	 * @param p
+	 */
+	public void pintarMapa(Color color, Punto p) {
+		pintarMapa(color, p.getFila(), p.getCol());
 	}
 
 	/**
