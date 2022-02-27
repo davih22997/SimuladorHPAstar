@@ -99,15 +99,15 @@ public class HPAstar {
 	 */
 	public static void definirEdges(Mapa mapa) {
 		// Para no repetir 2 veces las comprobaciones, iremos recorriendo los cluster
-		// comprobando siempre sus adyacentes izquierdo e inferior (si los tiene)
+		// comprobando siempre sus adyacentes derecho e inferior (si los tiene)
 
 		// Vamos recorriendo los clusters generados siguiendo el orden (de izda a
 		// derecha y al llegar al final se baja una fila):
 		for (Cluster c : clusters) {
-			// 1- Creamos los edge inferiores
+			// 1. Creamos los edge inferiores
 			bottomEdge(c, clusters, mapa);
 
-			// 2- Creamos los edges por la derecha
+			// 2. Creamos los edges por la derecha
 			rigthEdge(c, clusters, mapa);
 
 		}

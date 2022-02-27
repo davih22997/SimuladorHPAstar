@@ -941,6 +941,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
 				panelCHPAstar.setVisible(false);
+				cbTCluster.setSelectedIndex(0);
 				vB2hpa.setVisible(false);
 				restartVelocity();
 				panelCAstar.setVisible(true);
@@ -949,6 +950,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				panelCAstar.setVisible(false);
 				step = 0;
 				vB2hpa.setVisible(true);
+				cbTCluster.setSelectedIndex(0);
 				panelCHPAstar.setVisible(true);
 			}
 		}
@@ -1103,26 +1105,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			datosAstar.setVisible(false);
 
 			reiniciarMapa();
-			/*
-			 * // Copiamos los datos Punto pini = mapa.pto_inicial; Punto pfin =
-			 * mapa.pto_final; ArrayList<Punto> lobs = mapa.obstaculos;
-			 * 
-			 * int tipo = mapa.getTipo();
-			 * 
-			 * // Y generamos un mapa nuevo, con los mismos datos pero sin la simulación
-			 * hecha mapa.destruirTablero(); mapa.crearTablero();
-			 * 
-			 * mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(mapa.cInicial
-			 * );
-			 * mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(mapa.cFinal);
-			 * 
-			 * for (Punto obs : lobs)
-			 * mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(mapa.cObs);
-			 * 
-			 * mapa.pto_inicial = pini; mapa.pto_final = pfin; mapa.obstaculos = lobs;
-			 * 
-			 * mapa.setTipo(tipo);
-			 */
 
 			// Se bloquea el botón de parar y se desbloquea el de iniciar
 			btnStop.setEnabled(false);
@@ -1216,6 +1198,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 					break;
 				default:
+					System.out.println("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo");
+
 					break;
 				}
 			}
