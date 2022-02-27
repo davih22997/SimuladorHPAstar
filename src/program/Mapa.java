@@ -6,7 +6,7 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.Collections;
 
 import javax.swing.BorderFactory;
 import javax.swing.GroupLayout;
@@ -16,9 +16,20 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.border.Border;
 
 public class Mapa {
 
+	// Constantes para los colores:
+	protected static final Color cInicial = Color.GREEN;
+	protected static final Color cFinal = Color.RED;
+	protected static final Color cObs = Color.BLACK;
+	
+	// Constantes que (de momento) se usan en A*
+	protected static final Color cAbierto = Color.CYAN;
+	protected static final Color cCerrado = Color.BLUE;
+	protected static final Color cRecorrido = Color.PINK;
+	
 	// Para insertar una nueva línea
 	private final static String newline = "\n";
 
@@ -33,8 +44,8 @@ public class Mapa {
 
 	// Variables básicas del mapa:
 	// Cantidad total de filas y de columnas
-	protected int dY = 0; // Y -> fils
-	protected int dX = 0; // X -> cols
+	private int dY = 0; // Y -> fils
+	private int dX = 0; // X -> cols
 
 	// Dimensiones de cada botón en el mapa
 	private int tamY = 0; // Y -> alto
@@ -119,6 +130,9 @@ public class Mapa {
 		this.dY = fils;
 	}
 
+	/**
+	 * Inicializa el tablero
+	 */
 	private void initComponents() {
 		tablero = new JPanel();
 		tablero.setPreferredSize(new Dimension(dimY, dimX));
@@ -148,11 +162,11 @@ public class Mapa {
 	}
 
 	public void crearTablero() {
-		// Si las dimensiones son válidas
 
 		// Si hay parámetros de texto, los validamos, si no, validamos los numéricos
 		boolean val = (this.tbxDimX == null || this.tbxDimY == null) ? validarDims2() : validarDims();
 
+		// Si las dimensiones son válidas
 		if (val) {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
@@ -189,7 +203,7 @@ public class Mapa {
 				}
 			}
 		}
-		// Si no lo son
+		// Si no lo son, se muestra mensaje de error
 		else {
 			JOptionPane.showMessageDialog(new JFrame(), "Las dimensiones deben ser numéricas y mayores que 0");
 		}
@@ -258,7 +272,7 @@ public class Mapa {
 
 					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
-					btn.setBackground(Color.GREEN);
+					btn.setBackground(cInicial);
 					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
 					pto_inicial = aux;
@@ -276,7 +290,7 @@ public class Mapa {
 				}
 
 				pto_inicial = aux;
-				btn.setBackground(Color.GREEN);
+				btn.setBackground(cInicial);
 			}
 			break;
 		case TIPO_FINAL: // Pto final
@@ -300,7 +314,7 @@ public class Mapa {
 
 					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
-					btn.setBackground(Color.RED);
+					btn.setBackground(cFinal);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()]
 							.setBackground(UIManager.getColor("Button.background"));
 					pto_final = aux;
@@ -318,11 +332,11 @@ public class Mapa {
 				}
 
 				pto_final = aux;
-				btn.setBackground(Color.RED);
+				btn.setBackground(cFinal);
 			}
 			break;
 		case TIPO_OBSTACULO: // Obstáculo
-			btn.setBackground(Color.BLACK);
+			btn.setBackground(cObs);
 			// Si la lista de obstaculos contiene el punto seleccionado
 			if (obstaculos.contains(aux)) {
 				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
@@ -340,10 +354,10 @@ public class Mapa {
 				}
 				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
 				obstaculos.add(aux);
-				btn.setBackground(Color.BLACK);
+				btn.setBackground(cObs);
 
 				// Dejamos ordenada la lista de obstaculos
-				this.ordenarListaObstaculos();
+				Collections.sort(obstaculos);
 
 			}
 			break;
@@ -426,37 +440,23 @@ public class Mapa {
 	}
 
 	/**
-	 * Ordena la lista de obstaculos del mapa
-	 * 
-	 * @return
-	 */
-	public void ordenarListaObstaculos() {
-
-		obstaculos.sort(new Comparator<Punto>() {
-			@Override
-			public int compare(Punto p1, Punto p2) {
-
-				int val = 0;
-				
-				if (p1.getFila() == p2.getFila())
-					val = p1.getCol() - p2.getCol();
-				else if (p1.getFila() > p2.getFila())
-					val = 1;
-				else
-					val = -1;
-
-				return val;
-			}
-		});
-	}
-
-	/**
 	 * Método para pintar el mapa de un color dado y a la posición dada
 	 * 
 	 * @throws InterruptedException
 	 */
-	public void pintarMapa(Color color, int time, int fila, int columna) {
+	public void pintarMapa(Color color, int fila, int columna) {
 		MatrizBotones[fila][columna].setBackground(color);
+	}
+
+	/**
+	 * Método para cambiar el borde de una casilla
+	 * 
+	 * @param border
+	 * @param fila
+	 * @param columna
+	 */
+	public void pintarBorde(Border border, int fila, int columna) {
+		MatrizBotones[fila][columna].setBorder(border);
 	}
 
 }
