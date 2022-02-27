@@ -14,6 +14,7 @@ public class HPAstar {
 
 	// Constantes para el tamaño de los clusters:
 	public static final int CLUSTER_10X10 = 1;
+	public static final int CLUSTER_5X5 = 2;
 
 	// Constantes para los colores:
 	// Color que usaremos (de momento) para todos los bordes
@@ -79,7 +80,13 @@ public class HPAstar {
 			crearClusters(mapa, 10, 10);
 			// Definimos el valor del umbral
 			umbral = 6;
-			// printClusters();
+
+			break;
+		case CLUSTER_5X5:
+			// Realizamos la creación de cluster
+			crearClusters(mapa, 5, 5);
+			// Definimos el valor del umbral
+			umbral = 3;
 
 			break;
 		// Si no, muestra mensaje de error

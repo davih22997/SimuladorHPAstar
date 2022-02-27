@@ -59,7 +59,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
 
 	// Lista de las dimensiones de cluster posibles a escoger
-	private static final String[] clusters = { "10x10" };
+	private static final String[] clusters = { "10x10", "5x5" };
 
 	// Texto por defecto para seleccionar las dimensiones
 	private static final String selDims = "Seleccionar dimensiones";
@@ -960,6 +960,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			if (option.equals(clusters[0])) { // 10x10
 
+			} else if (option.equals(clusters[1])) { // 5x5
+
 			} else { // Seleccionar tamaño clusters
 
 			}
@@ -1167,7 +1169,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						if (tCluster.equals(clusters[0])) {
 							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_10X10);
-						} else {
+						} else if (tCluster.equals(clusters[1])) {
+							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
+							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_5X5);
 
 						}
 						// Una vez terminamos:
