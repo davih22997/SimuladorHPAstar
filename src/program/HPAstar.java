@@ -328,7 +328,6 @@ public class HPAstar {
 	 * 
 	 * @param l1
 	 * @param l2
-	 * @param juntos
 	 * @param mapa
 	 */
 	private static void pintarEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Mapa mapa) {
