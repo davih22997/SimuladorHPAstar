@@ -7,10 +7,15 @@ import java.util.Scanner;
 // Clase para definir un punto dado por (fila, columna)
 public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
+	// Coordenadas del punto (fila y columna)
 	private int f;
 	private int c;
-	int pasos = 0;
+	// Coste del punto
+	double coste = 0;
+	// Punto padre (por defecto es null)
 	Punto padre = null;
+	// Constante para el coste en diagonal
+	static final Double DIAGONAL = Math.sqrt(2);
 
 	/**
 	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
@@ -73,7 +78,8 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	/**
-	 * Calcula los vecinos dadas las dimensiones del mapa
+	 * Calcula los vecinos dadas las dimensiones del mapa (para la opción de
+	 * 4-vecinos)
 	 * 
 	 * @param filas
 	 * @param columnas
@@ -87,25 +93,96 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		int derecha = this.c + 1;
 		int izda = this.c - 1;
 
+		// Vamos a seguir el orden de los puntos:
+
 		// Primero, añadimos al de arriba
 		if (arriba >= 0)
-			res.add(new Punto(arriba, this.c));
-		// Segundo, al de abajo
-		if (abajo < filas)
-			res.add(new Punto(abajo, this.c));
+			res.add(crearHijo(arriba, this.c, 1));
+		// Segundo, al de la izda
+		if (izda >= 0)
+			res.add(crearHijo(this.f, izda, 1));
 		// Tercero, al de la derecha
 		if (derecha < columnas)
-			res.add(new Punto(this.f, derecha));
-		// Por último, al de la izda
-		if (izda >= 0)
-			res.add(new Punto(this.f, izda));
+			res.add(crearHijo(this.f, derecha, 1));
+		// Por último, al de abajo
+		if (abajo < filas)
+			res.add(crearHijo(abajo, this.c, 1));
 
-		for (Punto p : res) {
-			p.padre = this;
-			p.pasos = this.pasos + 1;
-		}
 
 		return res;
+	}
+
+	/**
+	 * Calcula los vecinos dadas las dimensiones del mapa (para la opción de
+	 * 8-vecinos)
+	 * 
+	 * @param filas
+	 * @param columnas
+	 * @return
+	 */
+	public ArrayList<Punto> vecinos_8(int filas, int columnas) {
+		ArrayList<Punto> res = new ArrayList<>();
+
+		int arriba = this.f + 1;
+		int abajo = this.f - 1;
+		int izda = this.c - 1;
+		int derecha = this.c + 1;
+
+		// Vamos a introducir los datos en el orden de los puntos
+		// Primero, arriba izda, luego arriba y por último arriba derecha
+		if (arriba >= 0) {
+			// Arriba izda
+			if (izda >= 0)
+				res.add(crearHijo(arriba, izda, DIAGONAL));
+
+			// Arriba
+			res.add(crearHijo(arriba, this.c, 1));
+			// arriba derecha
+			if (derecha < columnas)
+				res.add(crearHijo(arriba, derecha, DIAGONAL));
+
+		}
+		// Ahora izquierda
+		if (izda >= 0)
+			res.add(crearHijo(this.f, izda, 1));
+
+		// Ahora derecha
+		if (derecha < columnas)
+			res.add(crearHijo(this.f, derecha, 1));
+
+		// Ahora abajo izda, abajo y abajo derecha
+		if (abajo < filas) {
+			// Abajo izda
+			if (izda >= 0)
+				res.add(crearHijo(abajo, izda, DIAGONAL));
+
+			// Abajo
+			res.add(crearHijo(abajo, this.c, 1));
+
+			// Abajo derecha
+			if (derecha < columnas)
+				res.add(crearHijo(abajo, derecha, DIAGONAL));
+		}
+
+		// Como hemos añadido los puntos de forma ordenada, no ordenamos la lista
+		return res;
+	}
+
+	/**
+	 * Método para crear un hijo de este punto, teniendo en cuenta la fila, la
+	 * columna y el coste a sumar
+	 * 
+	 * @param fila
+	 * @param col
+	 * @param extra
+	 * @return
+	 */
+	private Punto crearHijo(int fila, int col, double extra) {
+		Punto p = new Punto(fila, col);
+		p.padre = this;
+		p.coste = this.coste + extra;
+
+		return p;
 	}
 
 	/**
@@ -127,6 +204,31 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 */
 	public int distManhattan(Punto p) {
 		return Math.abs(this.f - p.f) + Math.abs(this.c - p.c);
+	}
+
+	/**
+	 * Calcula la distancia octil con respecto a otro punto
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public double distOctil(Punto p) {
+		double res = 0;
+
+		int df = Math.abs(this.f - p.f);
+		int dc = Math.abs(this.c - p.c);
+
+		// Si hay más filas que columnas
+		if (df > dc)
+			res = Math.sqrt(2) * dc + (df - dc);
+		// Si coincide el número de filas y de columnas
+		else if (df == dc)
+			res = Math.sqrt(2) * df;
+		// Si hay menos filas que columnas
+		else
+			res = Math.sqrt(2) * df + (dc - df);
+
+		return res;
 	}
 
 	@Override

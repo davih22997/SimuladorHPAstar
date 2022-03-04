@@ -58,11 +58,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Lista de las dimensiones de mapa posibles a escoger
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
 
+	// Lista de números de vecinos para el algoritmo A*
+	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
+
 	// Lista de las dimensiones de cluster posibles a escoger
 	private static final String[] clusters = { "10x10", "5x5" };
 
 	// Texto por defecto para seleccionar las dimensiones
 	private static final String selDims = "Seleccionar dimensiones";
+
+	// Texto por defecto para seleccionar número de vecinos
+	// private static final String selNum = "Seleccionar cantidad";
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -85,15 +91,22 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte para la gestión de algoritmo
 	// Panel que contendrá la info de arriba (selector de algoritmo + selector de
-	// cluster)
+	// número de vecinos / selector de cluster)
 	private JPanel upPanel;
 	// Parte para la gestión de A* en la parte de algoritmo
 	private JLabel titulo2;
 	private JComboBox<String> algCB;
 	private JPanel algPanel;
 
-	// Parte para la gestión de HPA* en la parte de algoritmo (incluye cluster y lo
-	// de A*)
+	// Parte para la gestión de A* en la parte de algoritmo (incluye selector de
+	// algoritmo y de cantidad de vecinos
+	private JLabel titulo2a;
+	private Box vB2a;
+	private JPanel vecPanel;
+	private JComboBox<String> vecCB;
+
+	// Parte para la gestión de HPA* en la parte de algoritmo (incluye selector de
+	// algoritmo y de dimensiones de cluster)
 	// Parte para la gestión de selección de tamaño de cluster
 	private JLabel titulo2hpa;
 	private Box vB2hpa;
@@ -241,7 +254,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 		// Definimos el apartado para la selección de ALGORITMO
 
-		// Parte de la gestión de algoritmo de A*
 		// Creamos el panel que contendrá todo
 		upPanel = new JPanel();
 		// Creamos el correspondiente titulo
@@ -298,6 +310,38 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		upPanel.setPreferredSize(upPanel.getPreferredSize());
 		// Ocultamos la parte de clusters (ya que por defecto está seleccionado A*)
 		vB2hpa.setVisible(false);
+
+		// Parte de la gestión de algoritmo A* (incluye número de vecinos)
+		// Le creamos el título para la cantidad de vecinos
+		titulo2a = new JLabel("Cantidad de vecinos");
+		titulo2a.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivos para la gestión de cantidad de vecinos
+		vecPanel = new JPanel();
+		// Creamos la parte para seleccionar la cantidad de vecinos
+		vecCB = new JComboBox<>();
+
+		// vecCB.addItem(selNum);
+
+		// Por defecto tendrá la opción de 4-vecinos
+		for (String vec : numVecinos)
+			vecCB.addItem(vec);
+
+		vecCB.setBackground(Color.WHITE);
+		vecCB.addActionListener(this);
+
+		vecPanel.add(vecCB);
+
+		// Agrupamos los elementos para que estén uno sobre el otro:
+		vB2a = Box.createVerticalBox();
+		vB2a.add(titulo2a);
+		vB2a.add(vecPanel);
+
+		// Lo añadimos al panel general
+		upPanel.add(vB2a);
+		// No quitamos la opción de que sea visible, dado que por defecto estará
+		// seleccionado el algoritmo A*
+		vB2a.setVisible(true);
 
 		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
@@ -940,20 +984,44 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			String option = algCB.getSelectedItem().toString();
 			if (option.equals("A*")) {
 				log.append("Se ha seleccionado el algoritmo A*." + newline);
+				// Ocultamos elementos propios de HPA*
 				panelCHPAstar.setVisible(false);
-				cbTCluster.setSelectedIndex(0);
 				vB2hpa.setVisible(false);
+				// Reiniciamos el valor de la velocidad
 				restartVelocity();
+				// Dejamos por defecto seleccionado 4-Vecinos
+				vecCB.setSelectedIndex(0);
+				// Hacemos visible los elementos propios de A*
+				vB2a.setVisible(true);
 				panelCAstar.setVisible(true);
 			} else if (option.equals("HPA*")) {
 				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
+				// Ocultamos los elementos propios de A*
+				vB2a.setVisible(false);
 				panelCAstar.setVisible(false);
+				// Reiniciamos las variables de HPA*
 				step = 0;
-				vB2hpa.setVisible(true);
+				// Dejamos por defecto seleccionada la opción para escoger las dimensiones de
+				// clusters
 				cbTCluster.setSelectedIndex(0);
+				// Mostramos los elementos propios de HPA*
+				vB2hpa.setVisible(true);
 				panelCHPAstar.setVisible(true);
 			}
 		}
+		// Controlador del selector de la cantidad de vecinos (solo para A*)
+		else if (e.getSource() == vecCB) {
+			String option = vecCB.getSelectedItem().toString();
+
+			if (option.equals(numVecinos[0])) { // 4-Vecinos
+
+			} else if (option.equals(numVecinos[1])) { // 8-Vecinos
+
+			} else { // Seleccionar cantidad de vecinos
+
+			}
+		}
+
 		// Controlador del selector de las dimensiones de los clusters (solo para HPA*)
 		else if (e.getSource() == cbTCluster) {
 			String option = cbTCluster.getSelectedItem().toString();
@@ -962,7 +1030,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			} else if (option.equals(clusters[1])) { // 5x5
 
-			} else { // Seleccionar tamaño clusters
+			} else { // Seleccionar dimensiones
 
 			}
 
@@ -1064,6 +1132,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			else {
 				// Bloqueamos el selector de algoritmos
 				algCB.setEnabled(false);
+				// Bloqueamos también el selector de cantidad de vecinos
+				vecCB.setEnabled(false);
 
 				if (!btnStop.isEnabled()) {
 					log.append("Iniciada la simulación del algoritmo A*." + newline);
@@ -1083,7 +1153,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					datosAstar.setVisible(true);
 					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
 					// iteraciones y la memoria usada
-					Astar.BusquedaAstar(mapa);
+					// Antes vemos qué opción está seleccionada en cuanto a cantidad de vecinos
+					String option = vecCB.getSelectedItem().toString();
+					// Si seleccionamos 4-vecinos
+					if (option.equals(numVecinos[0])) {
+						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan.");
+						Astar.BusquedaAstar(mapa, Astar.VECINOS_4);
+					}
+					// Si seleccionamos 8-vecinos
+					else if (option.equals(numVecinos[1])) {
+						log.append("Simulación con 8 vecinos. Se aplica la distancia octil.");
+						Astar.BusquedaAstar(mapa, Astar.VECINOS_8);
+					}
+
 				} else {
 					if (start == true) {
 						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
@@ -1121,6 +1203,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 			// Desbloqueamos el selector de algoritmos
 			algCB.setEnabled(true);
+			// Desbloqueamos también el selector de cantidad de vecinos
+			vecCB.setEnabled(true);
 		}
 
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
