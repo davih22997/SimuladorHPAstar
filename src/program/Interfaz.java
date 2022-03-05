@@ -149,6 +149,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private ButtonGroup bGroup;
 	private JRadioButton rInic, rFin, rObs, rCons;
 	private JButton btnReverse;
+	private JButton btnDelete;
 
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
@@ -480,12 +481,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Botón para cambiar inicio-fin
 		btnReverse = initButtonIcon(Direccion.refresh16);
 
+		// Botón para borrar el contenido del mapa
+		btnDelete = initButtonIcon(Direccion.delete16);
+
 		// Añadimos los botones al panel
 		pMalla.add(rCons);
 		pMalla.add(rInic);
 		pMalla.add(rFin);
 		pMalla.add(rObs);
 		pMalla.add(btnReverse);
+		pMalla.add(btnDelete);
+
+		// Bloqueamos el botón de borrar (se activa cuando ya hay mapa definido)
+		btnDelete.setEnabled(false);
 
 		// Añadimos todos los RadioButtons al mismo grupo
 		bGroup = new ButtonGroup();
@@ -1003,6 +1011,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			}
 		}
 
+		// Si se pulsa la opción de borrar el contenido del mapa
+		else if (e.getSource() == btnDelete) {
+			borrarMapa();
+			log.append("Se vacía el contenido del mapa." + newline);
+		}
+
 		// Control de la simulación
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
 		else if (e.getSource() == btnStart) {
@@ -1036,6 +1050,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					rFin.setEnabled(false);
 					rObs.setEnabled(false);
 					btnReverse.setEnabled(false);
+					btnDelete.setEnabled(false);
 
 					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
 					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
@@ -1049,12 +1064,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					String option = vecCB.getSelectedItem().toString();
 					// Si seleccionamos 4-vecinos
 					if (option.equals(numVecinos[0])) {
-						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan.");
+						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan." + newline);
 						Astar.BusquedaAstar(mapa, Astar.VECINOS_4);
 					}
 					// Si seleccionamos 8-vecinos
 					else if (option.equals(numVecinos[1])) {
-						log.append("Simulación con 8 vecinos. Se aplica la distancia octil.");
+						log.append("Simulación con 8 vecinos. Se aplica la distancia octil." + newline);
 						Astar.BusquedaAstar(mapa, Astar.VECINOS_8);
 					}
 
@@ -1097,6 +1112,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
+			btnDelete.setEnabled(true);
 
 			// Desbloqueamos el selector de algoritmos
 			algCB.setEnabled(true);
@@ -1142,6 +1158,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						rFin.setEnabled(false);
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
+						btnDelete.setEnabled(false);
 						// 3. Bloqueamos el selector de clusters y el de algoritmos (temporalmente)
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
@@ -1150,11 +1167,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						// 4. Iniciamos el proceso de pintar bordes
 						// Bloqueamos el botón de start
 						btnStart2.setEnabled(false);
+						log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 						if (tCluster.equals(clusters[0])) {
-							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_10X10);
 						} else if (tCluster.equals(clusters[1])) {
-							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_5X5);
 
 						}
@@ -1215,6 +1231,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
+			btnDelete.setEnabled(true);
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1281,10 +1298,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Gestor de los JComboBox
 	 */
 	public void itemStateChanged(ItemEvent e) {
-		// TODO Auto-generated method stub
-
-		// Comprobamos que se ha seleccionado (y no que se ha vuelto a pulsar lo mismo 2
-		// veces)
+		// Comprobamos que se ha seleccionado un nuevo valor
 		if (e.getStateChange() == ItemEvent.SELECTED) {
 			// Controlador de la parte del algoritmo
 			if (e.getSource() == algCB) {
@@ -1345,15 +1359,27 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			// Controlador del selector de las dimensiones del mapa
 			else if (e.getSource() == dims) {
 				String option = dims.getSelectedItem().toString();
-				if (option.equals(dimensiones[0])) { // 40x40
-					mapaNuevo(40, 40);
 
-				} else if (option.equals(dimensiones[1])) { // 20x30
-					mapaNuevo(20, 30);
-				} else if (option.equals(dimensiones[2])) { // 30x20
-					mapaNuevo(30, 20);
-				} else { // Seleccionar dimensiones
+				if (option.equals(selDims)) { // Seleccionar dimensiones
 					mapaNuevo(0, 0);
+					// Bloqueamos el botón de borrar contenido del mapa (ya que no hay mapa en este
+					// caso)
+					btnDelete.setEnabled(false);
+
+				} else { // Si se selecciona alguna de las dimensiones
+
+					// 1. Se crea el mapa
+					log.append("Se crea un mapa tamaño " + option + "." + newline);
+					if (option.equals(dimensiones[0])) { // 40x40
+						mapaNuevo(40, 40);
+					} else if (option.equals(dimensiones[1])) { // 20x30
+						mapaNuevo(20, 30);
+					} else if (option.equals(dimensiones[2])) { // 30x20
+						mapaNuevo(30, 20);
+					}
+
+					// 2. Desbloqueamos el botón de borrar contenido del mapa
+					btnDelete.setEnabled(true);
 				}
 
 			}
@@ -1418,7 +1444,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	}
 
 	/**
-	 * Te deja el mapa vacío
+	 * Te deja el mapa vacío (para el botón de borrar)
 	 */
 	private void borrarMapa() {
 		if (!dims.getSelectedItem().toString().equals(selDims)) {

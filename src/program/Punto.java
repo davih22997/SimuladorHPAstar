@@ -108,7 +108,6 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		if (abajo < filas)
 			res.add(crearHijo(abajo, this.c, 1));
 
-
 		return res;
 	}
 
@@ -123,8 +122,8 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	public ArrayList<Punto> vecinos_8(int filas, int columnas) {
 		ArrayList<Punto> res = new ArrayList<>();
 
-		int arriba = this.f + 1;
-		int abajo = this.f - 1;
+		int arriba = this.f - 1;
+		int abajo = this.f + 1;
 		int izda = this.c - 1;
 		int derecha = this.c + 1;
 
