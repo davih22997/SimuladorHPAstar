@@ -59,7 +59,7 @@ public class HPAstar {
 	// Constante para definir el umbral para ver cuántas entradas hay entre los
 	// clústers
 	// (No se pone final porque puede variar según el tamaño de cluster).
-	protected static int umbral;
+	private static int umbral;
 
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
@@ -78,15 +78,10 @@ public class HPAstar {
 		case CLUSTER_10X10:
 			// Realizamos la creación de cluster
 			crearClusters(mapa, 10, 10);
-			// Definimos el valor del umbral
-			umbral = 6;
-
 			break;
 		case CLUSTER_5X5:
 			// Realizamos la creación de cluster
 			crearClusters(mapa, 5, 5);
-			// Definimos el valor del umbral
-			umbral = 3;
 
 			break;
 		// Si no, muestra mensaje de error
@@ -100,11 +95,17 @@ public class HPAstar {
 	/**
 	 * Método para, una vez tenemos los clusters, definir las entradas (edges), dado
 	 * el mapa (lo necesitamos para ver los obstáculos y los punto inicial y final
-	 * (y no colorear encima)
+	 * (y no colorear encima). También pasamos el valor del umbral a aplicar para la
+	 * creación de los nodos.
 	 * 
 	 * @param mapa
+	 * @param vumbral
 	 */
-	public static void definirEdges(Mapa mapa) {
+	public static void definirEdges(Mapa mapa, int vumbral) {
+
+		// Asignamos el valor al umbral
+		umbral = vumbral;
+
 		// Para no repetir 2 veces las comprobaciones, iremos recorriendo los cluster
 		// comprobando siempre sus adyacentes derecho e inferior (si los tiene)
 

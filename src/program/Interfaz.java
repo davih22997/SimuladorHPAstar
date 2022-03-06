@@ -114,6 +114,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private Box vB2hpa;
 	private JPanel clusterPanel;
 	private JComboBox<String> cbTCluster;
+	// Parte para la selección del tamaño del umbral
+	private JLabel titulo2umbral;
+	private Box vB2umbral;
+	private JPanel umbralPanel;
+	private JComboBox<Integer> umbral;
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
@@ -281,7 +286,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		vB2.add(titulo2);
 		vB2.add(algPanel);
 
-		// Parte de la gestión de algoritmo de HPA* (incluye clusters)
+		// Parte de la gestión de algoritmo de HPA* (incluye clusters y también umbral)
 		// Le creamos el título para los clusters
 		titulo2hpa = new JLabel("Clusters");
 		titulo2hpa.setAlignmentX(CENTER_ALIGNMENT);
@@ -305,17 +310,42 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		vB2hpa.add(titulo2hpa);
 		vB2hpa.add(clusterPanel);
 
+		// Creamos el título para el umbral
+		titulo2umbral = new JLabel("Umbral");
+		titulo2umbral.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para la gestión del tamaño del umbral
+		umbralPanel = new JPanel();
+		umbral = new JComboBox<>();
+
+		for (int i = 1; i <= 10; i++)
+			umbral.addItem(i);
+
+		umbral.setBackground(Color.WHITE);
+		umbral.addItemListener(this);
+
+		umbral.setPreferredSize(umbral.getPreferredSize());
+
+		umbralPanel.add(umbral);
+
+		// Agrupamos los elementos para que estén uno sobre el otro:
+		vB2umbral = Box.createVerticalBox();
+		vB2umbral.add(titulo2umbral);
+		vB2umbral.add(umbralPanel);
+
 		// Lo añadimos todo al panel general
 		upPanel.add(vB2);
 		upPanel.add(vB2hpa);
+		upPanel.add(vB2umbral);
 		upPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		upPanel.setPreferredSize(upPanel.getPreferredSize());
 		// Ocultamos la parte de clusters (ya que por defecto está seleccionado A*)
 		vB2hpa.setVisible(false);
+		vB2umbral.setVisible(false);
 
 		// Parte de la gestión de algoritmo A* (incluye número de vecinos)
-		// Le creamos el título para la cantidad de vecinos
-		titulo2a = new JLabel("Cantidad de vecinos");
+		// Le creamos el título para la modalidad (cantidad de vecinos)
+		titulo2a = new JLabel("Modalidad");
 		titulo2a.setAlignmentX(CENTER_ALIGNMENT);
 
 		// Añadimos un panel exclusivos para la gestión de cantidad de vecinos
@@ -1159,9 +1189,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
 						btnDelete.setEnabled(false);
-						// 3. Bloqueamos el selector de clusters y el de algoritmos (temporalmente)
+						// 3. Bloqueamos el selector de clusters, el de umbral y el de algoritmos
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
+						umbral.setEnabled(false);
 						// Y también el selector de dimensiones de mapa
 						dims.setEnabled(false);
 						// 4. Iniciamos el proceso de pintar bordes
@@ -1188,17 +1219,21 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			// Si no es la primera vez que se pulsa -> Vamos al siguiente paso de la
 			// simulación
 			else {
+				int vumbral = (Integer) umbral.getSelectedItem();
 				switch (step) {
 				// El segundo paso de la simulación -> Crear las entradas entre los clústers
 				case 1:
+					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
 					// Realizamos la siguiente fase
-					HPAstar.definirEdges(mapa);
+					HPAstar.definirEdges(mapa, vumbral);
 					// Incrementamos un "step"
 					step++;
 					// Desbloqueamos el botón de start
 					btnStart2.setEnabled(true);
+
+					log.append("Creación de arcos realizado");
 
 					break;
 				default:
@@ -1225,6 +1260,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			// Desbloqueamos también los selectores
 			algCB.setEnabled(true);
 			cbTCluster.setEnabled(true);
+			umbral.setEnabled(true);
 			dims.setEnabled(true);
 			// Desbloqueamos los botones
 			rInic.setEnabled(true);
@@ -1308,6 +1344,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Ocultamos elementos propios de HPA*
 					panelCHPAstar.setVisible(false);
 					vB2hpa.setVisible(false);
+					vB2umbral.setVisible(false);
 					// Reiniciamos el valor de la velocidad
 					restartVelocity();
 					// Dejamos por defecto seleccionado 4-Vecinos
@@ -1325,8 +1362,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Dejamos por defecto seleccionada la opción para escoger las dimensiones de
 					// clusters
 					cbTCluster.setSelectedIndex(0);
+					// Borramos los umbrales y bloqueamos el selector
+					umbral.removeAllItems();
+					umbral.addItem(1);
+					umbral.setEnabled(false);
+
 					// Mostramos los elementos propios de HPA*
 					vB2hpa.setVisible(true);
+					vB2umbral.setVisible(true);
 					panelCHPAstar.setVisible(true);
 				}
 			}
@@ -1347,12 +1390,39 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				String option = cbTCluster.getSelectedItem().toString();
 
 				if (option.equals(clusters[0])) { // 10x10
-					System.out.println("10x10");
-				} else if (option.equals(clusters[1])) { // 5x5
-					// System.out.println("5x5");
-				} else { // Seleccionar dimensiones
+					// Borramos todos los elementos
+					umbral.removeAllItems();
+					// Añadimos opciones al umbral
+					for (int i = 1; i <= 10; i++)
+						umbral.addItem(i);
 
+					// Reactivamos el selector
+					umbral.setEnabled(true);
+
+				} else if (option.equals(clusters[1])) { // 5x5
+					// Borramos todos los elementos
+					umbral.removeAllItems();
+					// Añadimos opciones al umbral
+					for (int i = 1; i <= 5; i++)
+						umbral.addItem(i);
+
+					// Reactivamos el selector
+					umbral.setEnabled(true);
+
+				} else { // Seleccionar dimensiones
+					// Borramos todas las opciones del umbral
+					umbral.removeAllItems();
+					// Para que no se note el borrado, añadimos 1 elemento y borramos
+					umbral.addItem(1);
+					// Bloqueamos el selector
+					umbral.setEnabled(false);
 				}
+
+			}
+
+			// Controlador del selector del umbral
+			else if (e.getSource() == umbral) {
+				Integer option = (Integer) umbral.getSelectedItem();
 
 			}
 
