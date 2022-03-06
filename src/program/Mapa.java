@@ -63,11 +63,13 @@ public class Mapa {
 	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
-	protected JButton[][] MatrizBotones;
+	private JButton[][] MatrizBotones;
 
 	// Variables para los puntos
+	// Puntos inicial y final
 	Punto pto_inicial;
 	Punto pto_final;
+	// Lista de obstáculos
 	ArrayList<Punto> obstaculos;
 
 	public Mapa(int fils, int cols) {

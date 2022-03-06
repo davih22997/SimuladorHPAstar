@@ -15,6 +15,8 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	// Punto de inicio del cluster (esquina superior izda)
 	private Punto inicio;
 
+	private ArrayList<Punto> nodos;
+
 	/**
 	 * Método para crear un clúster dado un punto inicial (esquina superior izda)
 	 * 
@@ -28,6 +30,8 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 		this.columnas = columnas;
 		// Y el punto de origen del cluster
 		this.inicio = p_inicial;
+
+		nodos = new ArrayList<>();
 	}
 
 	/**
@@ -363,6 +367,70 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	 */
 	public int getColFinal() {
 		return inicio.getCol() + columnas - 1;
+	}
+
+	/**
+	 * Método que indica si un punto dado está dentro del cluster.
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public boolean inCluster(Punto p) {
+		int pfila = p.getFila();
+		int pcol = p.getCol();
+
+		int fini = this.getFilaInicial();
+		int cini = this.getColInicial();
+
+		int ffin = this.getFilaFinal();
+		int cfin = this.getColFinal();
+
+		return pfila >= fini && pfila <= ffin && pcol >= cini && pcol <= cfin;
+	}
+
+	/**
+	 * Método para añadir un nodo a la lista de nodos del cluster
+	 * 
+	 * @param p
+	 * @param ordenar
+	 */
+	public void addNodo(Punto p, boolean ordenar) {
+		// Comprobamos que el punto pertenece al cluster y que no está guardado
+		// en la lista de nodos para meterlo en la lista
+		if (inCluster(p) && !nodos.contains(p))
+			nodos.add(p);
+
+		// Ordenamos la lista de nodos si así lo indicamos
+		if (ordenar)
+			Collections.sort(nodos);
+	}
+
+	/**
+	 * Método para añadir varios nodos a la vez a la lista de nodos
+	 * 
+	 * @param l
+	 * @param ordenar
+	 */
+	public void addNodos(ArrayList<Punto> l, boolean ordenar) {
+		// Para cada punto, comprobamos que pertenece al cluster y que no está guardado
+		// en la lista de nodos para meterlo en la lista
+		for (Punto p : l)
+			if (inCluster(p) && !nodos.contains(p))
+				nodos.add(p);
+
+		// Ordenamos la lista de nodos si así lo indicamos
+		if (ordenar)
+			Collections.sort(nodos);
+
+	}
+
+	/**
+	 * Método para obtener la lista de nodos del cluster
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getNodos() {
+		return nodos;
 	}
 
 	/**

@@ -737,7 +737,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 													scan4.useDelimiter(space + "*[)]");
 													int c = scan4.nextInt();
 													pto_inicial = new Punto(f, c);
-													mapa.MatrizBotones[f][c].setBackground(Mapa.cInicial);
+													mapa.pintarMapa(Mapa.cInicial, f, c);
+													// mapa.MatrizBotones[f][c].setBackground(Mapa.cInicial);
 													mapa.pto_inicial = pto_inicial;
 												}
 											}
@@ -784,7 +785,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 														JOptionPane.showMessageDialog(new JFrame(),
 																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
 													else {
-														mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
+														mapa.pintarMapa(Mapa.cFinal, f, c);
+														// mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
 														mapa.pto_final = pto_final;
 													}
 												}
@@ -841,7 +843,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 										}
 
 										for (Punto o : obstaculos) {
-											mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
+											mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
+											// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
 											mapa.obstaculos.add(o);
 										}
 
@@ -1022,19 +1025,23 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				Punto aux = mapa.pto_final.clone();
 				mapa.pto_final = mapa.pto_inicial;
 				mapa.pto_inicial = aux;
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
+				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
+				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
+				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
+				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 
 				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
 			} else if (mapa.pto_final != null) {
 				mapa.pto_inicial = mapa.pto_final.clone();
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
+				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
+				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 				mapa.pto_final = null;
 
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
+				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
+				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
 				mapa.pto_inicial = null;
 
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
@@ -1233,7 +1240,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Desbloqueamos el botón de start
 					btnStart2.setEnabled(true);
 
-					log.append("Creación de arcos realizado");
+					log.append("Creación de nodos y arcos realizado");
 
 					break;
 				default:
@@ -1422,7 +1429,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 			// Controlador del selector del umbral
 			else if (e.getSource() == umbral) {
-				Integer option = (Integer) umbral.getSelectedItem();
 
 			}
 
@@ -1486,11 +1492,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		mapa.destruirTablero();
 		mapa.crearTablero();
 
-		mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
-		mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
+		mapa.pintarMapa(Mapa.cInicial, pini);
+		mapa.pintarMapa(Mapa.cFinal, pfin);
+		// mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
+		// mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
 
 		for (Punto obs : lobs)
-			mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
+			mapa.pintarMapa(Mapa.cObs, obs);
+		// mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
 
 		mapa.pto_inicial = pini;
 		mapa.pto_final = pfin;

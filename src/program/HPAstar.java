@@ -71,8 +71,6 @@ public class HPAstar {
 	public static void definirClusters(Mapa mapa, int tam) {
 
 		clusters = new ArrayList<>();
-		// Iniciamos el umbral con valor 0
-		umbral = 0;
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
@@ -112,12 +110,19 @@ public class HPAstar {
 		// Vamos recorriendo los clusters generados siguiendo el orden (de izda a
 		// derecha y al llegar al final se baja una fila):
 		for (Cluster c : clusters) {
+			// CREACIÓN DE ARCOS EXTERNOS
 			// 1. Creamos los edge inferiores
 			bottomEdge(c, clusters, mapa);
 
 			// 2. Creamos los edges por la derecha
 			rigthEdge(c, clusters, mapa);
 
+			// CREACIÓN DE ARCOS INTERNOS
+			// 3. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
+			// (edges)
+			Collections.sort(c.getNodos());
+
+			// 4. Creamos los arcos internos
 		}
 
 	}
@@ -133,7 +138,7 @@ public class HPAstar {
 	 * @param fils
 	 * @param cols
 	 */
-	public static void crearClusters(Mapa mapa, int fils, int cols) {
+	private static void crearClusters(Mapa mapa, int fils, int cols) {
 		// Recorremos todo el mapa para ir pintando bordes
 		// Seguimos las siguientes reglas
 		// 1. Si la fila es múltiplo del número de filas, pintamos arriba
@@ -191,7 +196,7 @@ public class HPAstar {
 	 * @param index
 	 * @return
 	 */
-	public static int contarPtosConsecutivos(ArrayList<Punto> ptos, int index) {
+	private static int contarPtosConsecutivos(ArrayList<Punto> ptos, int index) {
 
 		// Creamos el contador
 		int cont = 0;
@@ -233,9 +238,15 @@ public class HPAstar {
 			// Cogemos el límite izquierdo del adyacente
 			ArrayList<Punto> lLeft = cRight.getLeftLimit();
 
-			// DEejamos que se haga el trabajo de creación de edges para los límites
+			// Creamos un array con el cluster original (posición 0) y con el cluster vecino
+			// (posición 1)
+			Cluster[] cls = new Cluster[2];
+			cls[0] = c;
+			cls[1] = cRight;
+			// Dejamos que se haga el trabajo de creación de edges para los límites
 			// izquierdo y derecho obtenidos
-			workEdges(lRigh, lLeft, mapa);
+
+			workEdges(lRigh, lLeft, cls, mapa);
 		}
 	}
 
@@ -256,22 +267,29 @@ public class HPAstar {
 			// Cogemos el límite superior de su adyacente
 			ArrayList<Punto> lSup = cInf.getTopLimit();
 
+			// Creamos un array con el cluster original (posición 0) y con el cluster vecino
+			// (posición 1)
+			Cluster[] cls = new Cluster[2];
+			cls[0] = c;
+			cls[1] = cInf;
+
 			// Dejamos que se haga el trabajo de creación de edges para los límites superior
 			// e inferior obtenidos
-			workEdges(lInf, lSup, mapa);
+			workEdges(lInf, lSup, cls, mapa);
 		}
 
 	}
 
 	/**
-	 * Método que, dado 2 límites (que suponemos adyacentes) y el mapa, crea y pinta
-	 * los Edges
+	 * Método que, dado 2 límites (que suponemos adyacentes), el par de clusters y
+	 * el mapa, crea y pinta los Edges
 	 * 
 	 * @param l1
 	 * @param l2
+	 * @param cls
 	 * @param mapa
 	 */
-	private static void workEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Mapa mapa) {
+	private static void workEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Cluster[] cls, Mapa mapa) {
 		// Cogemos la lista de obstáculos del mapa
 		ArrayList<Punto> obs1 = (ArrayList<Punto>) mapa.obstaculos.clone();
 		// Y nos quedamos solo con los puntos coincidentes
@@ -325,7 +343,7 @@ public class HPAstar {
 		// vacian de igual manera):
 		if (!l1.isEmpty()) {
 			// Pintamos el mapa
-			pintarEdges(l1, l2, mapa);
+			pintarEdges(l1, l2, cls, mapa);
 
 		}
 	}
@@ -338,7 +356,7 @@ public class HPAstar {
 	 * @param l2
 	 * @param mapa
 	 */
-	private static void pintarEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Mapa mapa) {
+	private static void pintarEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Cluster[] cls, Mapa mapa) {
 
 		// Creamos un contador, para tener localizado el índice
 		int index = 0;
@@ -353,6 +371,9 @@ public class HPAstar {
 			// a cada lado
 			// Si n es 1 simplemente se pinta un punto en cada lado
 			if (n == 1) {
+				// Creamos el arco externo
+				pl1_1.addArcoExterno(pl2_1);
+
 				// No se pintan los puntos de interés (no comparo si es obstáculos porque están
 				// borrados)
 				if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
@@ -360,6 +381,13 @@ public class HPAstar {
 
 				if (!pl2_1.equals(mapa.pto_final) && !pl2_1.equals(mapa.pto_final))
 					mapa.pintarMapa(cEntrance, pl2_1);
+
+				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
+				// puntos ya vienen ordenados)
+				// Al cluster original
+				cls[0].addNodo(pl1_1, false);
+				// Al cluster adyacente
+				cls[1].addNodo(pl2_1, false);
 
 			}
 			// En caso de que haya más puntos consecutivos, comprobamos cuántos edges se van
@@ -371,6 +399,10 @@ public class HPAstar {
 					// Cogemos el índice extremo
 					Punto pl1_2 = l1.get(index2);
 					Punto pl2_2 = l2.get(index2);
+
+					// Creamos los arcos externos
+					pl1_1.addArcoExterno(pl2_1);
+					pl1_2.addArcoExterno(pl2_2);
 
 					// Comprobamos que cada punto que tenemos no sea de interés para colorearlo
 					if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
@@ -385,6 +417,15 @@ public class HPAstar {
 					if (!pl2_2.equals(mapa.pto_final) && !pl2_2.equals(mapa.pto_final))
 						mapa.pintarMapa(cEntrance, pl2_2);
 
+					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
+					// vienen ordenados)
+					// Al cluster original
+					cls[0].addNodo(pl1_1, false);
+					cls[0].addNodo(pl1_2, false);
+					// Al cluster adyacente
+					cls[1].addNodo(pl2_1, false);
+					cls[1].addNodo(pl2_2, false);
+
 				}
 				// En caso contrario, se crea uno en medio
 				else {
@@ -394,12 +435,22 @@ public class HPAstar {
 					pl1_1 = l1.get(index2);
 					pl2_1 = l2.get(index2);
 
+					// Creamos el arco entre ambos puntos
+					pl1_1.addArcoExterno(pl2_1);
+
 					// Comprobamos que no sean de interés, para así colorearlos
 					if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
 						mapa.pintarMapa(cEntrance, pl1_1);
 
 					if (!pl2_1.equals(mapa.pto_final) && !pl2_1.equals(mapa.pto_final))
 						mapa.pintarMapa(cEntrance, pl2_1);
+
+					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya
+					// vienen ordenados)
+					// Al cluster original
+					cls[0].addNodo(pl1_1, false);
+					// Al cluster adyacente
+					cls[1].addNodo(pl2_1, false);
 				}
 			}
 			index += n;

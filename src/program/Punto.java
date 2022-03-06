@@ -11,11 +11,17 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	private int f;
 	private int c;
 	// Coste del punto
-	double coste = 0;
+	protected double coste = 0;
 	// Punto padre (por defecto es null)
-	Punto padre = null;
+	protected Punto padre = null;
 	// Constante para el coste en diagonal
-	static final Double DIAGONAL = Math.sqrt(2);
+	protected static final Double DIAGONAL = Math.sqrt(2);
+
+	// Arcos
+	// Arco externo (solo hay uno por punto)
+	private Punto aExt = null;
+	// Arcos internos (hay varios para cada punto)
+	private ArrayList<Punto> aInt = null;
 
 	/**
 	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
@@ -228,6 +234,17 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 			res = Math.sqrt(2) * df + (dc - df);
 
 		return res;
+	}
+
+	/**
+	 * Método para añadir un arco externo (afecta tanto a este punto como al que se
+	 * le pasa como parámetro)
+	 * 
+	 * @param p
+	 */
+	public void addArcoExterno(Punto p) {
+		this.aExt = p;
+		p.aExt = this;
 	}
 
 	@Override
