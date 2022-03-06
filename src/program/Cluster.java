@@ -400,6 +400,16 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 		if (inCluster(p) && !nodos.contains(p))
 			nodos.add(p);
 
+		// Si está en la lista de nodos, añadimos arcos externos
+		else if (nodos.contains(p)) {
+			// Cogemos el índice del punto
+			int index = nodos.indexOf(p);
+			// Metemos los edges al punto que está entre los nodos
+			for (Punto edge : p.getArcosExternos())
+				nodos.get(index).addArcoExterno(edge);
+
+		}
+
 		// Ordenamos la lista de nodos si así lo indicamos
 		if (ordenar)
 			Collections.sort(nodos);

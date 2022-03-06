@@ -91,10 +91,9 @@ public class HPAstar {
 	}
 
 	/**
-	 * Método para, una vez tenemos los clusters, definir las entradas (edges), dado
-	 * el mapa (lo necesitamos para ver los obstáculos y los punto inicial y final
-	 * (y no colorear encima). También pasamos el valor del umbral a aplicar para la
-	 * creación de los nodos.
+	 * Método para, una vez tenemos los clusters, definir las nodos y arcos (edges),
+	 * dado el mapa (para pintarlo también). También, pasamos el valor del umbral a
+	 * aplicar para la creación de los nodos.
 	 * 
 	 * @param mapa
 	 * @param vumbral
@@ -123,6 +122,7 @@ public class HPAstar {
 			Collections.sort(c.getNodos());
 
 			// 4. Creamos los arcos internos
+			internalEdges(c, mapa);
 		}
 
 	}
@@ -455,6 +455,17 @@ public class HPAstar {
 			}
 			index += n;
 		}
+
+	}
+
+	/**
+	 * Método para crear los arcos internos, dado el cluster que contiene los nodos
+	 * y el mapa
+	 * 
+	 * @param c
+	 * @param mapa
+	 */
+	private static void internalEdges(Cluster c, Mapa mapa) {
 
 	}
 

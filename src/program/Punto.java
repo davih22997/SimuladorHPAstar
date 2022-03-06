@@ -1,7 +1,9 @@
 package program;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Scanner;
 
 // Clase para definir un punto dado por (fila, columna)
@@ -10,18 +12,18 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	// Coordenadas del punto (fila y columna)
 	private int f;
 	private int c;
-	// Coste del punto
-	protected double coste = 0;
+	// Coste del punto (por defecto es 0)
+	protected double coste;
 	// Punto padre (por defecto es null)
-	protected Punto padre = null;
+	protected Punto padre;
 	// Constante para el coste en diagonal
 	protected static final Double DIAGONAL = Math.sqrt(2);
 
 	// Arcos
-	// Arco externo (solo hay uno por punto)
-	private Punto aExt = null;
-	// Arcos internos (hay varios para cada punto)
-	private ArrayList<Punto> aInt = null;
+	// Arcos externos (puede haber 2 si coincide con una esquina)
+	private ArrayList<Punto> edges;
+	// Arcos internos (es una lista de puntos que puede ser vacía)
+	private ArrayList<Punto> intraedges;
 
 	/**
 	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
@@ -32,6 +34,11 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	public Punto(int f, int c) {
 		this.f = f;
 		this.c = c;
+
+		coste = 0;
+		padre = null;
+		edges = new ArrayList<>();
+		intraedges = new ArrayList<>();
 	}
 
 	/**
@@ -243,8 +250,65 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * @param p
 	 */
 	public void addArcoExterno(Punto p) {
-		this.aExt = p;
-		p.aExt = this;
+		// Comprueba que son adyacentes y que no está en la lista; en caso contrario, no
+		// lo añade
+		if (adyacente(p) && !edges.contains(p)) {
+			// Añade el arco en ambos puntos
+			edges.add(p);
+			p.addArcoExterno(this);
+			// Ordena ambas listas
+			Collections.sort(edges);
+		}
+	}
+
+	/**
+	 * Método para obtener el arco externo que hay de un punto a otro
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getArcosExternos() {
+		return edges;
+	}
+
+	/**
+	 * Método para añadir un arco interno
+	 * 
+	 * @param p
+	 */
+	public void addArcoInterno(Punto p) {
+		intraedges.add(p);
+		p.intraedges.add(this);
+	}
+
+	/**
+	 * Devuelve el arco externo (se usa para depurar código)
+	 */
+	public String toStringEdges() {
+		StringBuilder sb = new StringBuilder();
+
+		int tam = edges.size();
+		sb.append("El punto " + this.toString() + " tiene " + tam);
+		if (tam == 1)
+			sb.append(" arco externo.\n");
+		else
+			sb.append(" arcos externos.\n");
+
+		sb.append(this.toString()).append(" -> ");
+		if (edges.isEmpty())
+			sb.append("[]");
+		else {
+			Iterator<Punto> it = edges.iterator();
+			while (it.hasNext()) {
+				sb.append(it.next());
+				if (it.hasNext())
+					sb.append("\n\t-> ");
+				else
+					break;
+			}
+
+		}
+
+		return sb.toString();
 	}
 
 	@Override
