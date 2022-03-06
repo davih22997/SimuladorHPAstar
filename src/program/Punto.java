@@ -21,7 +21,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	// Arcos
 	// Arcos externos (puede haber 2 si coincide con una esquina)
-	private ArrayList<Punto> edges;
+	private ArrayList<Punto> interedges;
 	// Arcos internos (es una lista de puntos que puede ser vacía)
 	private ArrayList<Punto> intraedges;
 
@@ -37,7 +37,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 		coste = 0;
 		padre = null;
-		edges = new ArrayList<>();
+		interedges = new ArrayList<>();
 		intraedges = new ArrayList<>();
 	}
 
@@ -252,12 +252,12 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	public void addArcoExterno(Punto p) {
 		// Comprueba que son adyacentes y que no está en la lista; en caso contrario, no
 		// lo añade
-		if (adyacente(p) && !edges.contains(p)) {
+		if (adyacente(p) && !interedges.contains(p)) {
 			// Añade el arco en ambos puntos
-			edges.add(p);
+			interedges.add(p);
 			p.addArcoExterno(this);
 			// Ordena ambas listas
-			Collections.sort(edges);
+			Collections.sort(interedges);
 		}
 	}
 
@@ -267,7 +267,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * @return
 	 */
 	public ArrayList<Punto> getArcosExternos() {
-		return edges;
+		return interedges;
 	}
 
 	/**
@@ -286,7 +286,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	public String toStringEdges() {
 		StringBuilder sb = new StringBuilder();
 
-		int tam = edges.size();
+		int tam = interedges.size();
 		sb.append("El punto " + this.toString() + " tiene " + tam);
 		if (tam == 1)
 			sb.append(" arco externo.\n");
@@ -294,10 +294,10 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 			sb.append(" arcos externos.\n");
 
 		sb.append(this.toString()).append(" -> ");
-		if (edges.isEmpty())
+		if (interedges.isEmpty())
 			sb.append("[]");
 		else {
-			Iterator<Punto> it = edges.iterator();
+			Iterator<Punto> it = interedges.iterator();
 			while (it.hasNext()) {
 				sb.append(it.next());
 				if (it.hasNext())

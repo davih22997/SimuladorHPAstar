@@ -349,8 +349,8 @@ public class HPAstar {
 	}
 
 	/**
-	 * Método que pinta los edges entre los clusters. No se pintan los puntos de
-	 * interés (ptos inicial, final u obstáculos)
+	 * Método que pinta los edges entre los clusters. Se pintan en gris, o se
+	 * oscurecen si son puntos inicial o final
 	 * 
 	 * @param l1
 	 * @param l2
@@ -374,13 +374,9 @@ public class HPAstar {
 				// Creamos el arco externo
 				pl1_1.addArcoExterno(pl2_1);
 
-				// No se pintan los puntos de interés (no comparo si es obstáculos porque están
-				// borrados)
-				if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
-					mapa.pintarMapa(cEntrance, pl1_1);
-
-				if (!pl2_1.equals(mapa.pto_final) && !pl2_1.equals(mapa.pto_final))
-					mapa.pintarMapa(cEntrance, pl2_1);
+				// Pintamos en los nodos
+				oscurecerMapa(pl1_1, mapa);
+				oscurecerMapa(pl2_1, mapa);
 
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
@@ -404,18 +400,11 @@ public class HPAstar {
 					pl1_1.addArcoExterno(pl2_1);
 					pl1_2.addArcoExterno(pl2_2);
 
-					// Comprobamos que cada punto que tenemos no sea de interés para colorearlo
-					if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
-						mapa.pintarMapa(cEntrance, pl1_1);
-
-					if (!pl2_1.equals(mapa.pto_final) && !pl2_1.equals(mapa.pto_final))
-						mapa.pintarMapa(cEntrance, pl2_1);
-
-					if (!pl1_2.equals(mapa.pto_final) && !pl1_2.equals(mapa.pto_inicial))
-						mapa.pintarMapa(cEntrance, pl1_2);
-
-					if (!pl2_2.equals(mapa.pto_final) && !pl2_2.equals(mapa.pto_final))
-						mapa.pintarMapa(cEntrance, pl2_2);
+					// Pintamos en los nodos
+					oscurecerMapa(pl1_1, mapa);
+					oscurecerMapa(pl1_2, mapa);
+					oscurecerMapa(pl2_1, mapa);
+					oscurecerMapa(pl2_2, mapa);
 
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
 					// vienen ordenados)
@@ -438,12 +427,9 @@ public class HPAstar {
 					// Creamos el arco entre ambos puntos
 					pl1_1.addArcoExterno(pl2_1);
 
-					// Comprobamos que no sean de interés, para así colorearlos
-					if (!pl1_1.equals(mapa.pto_final) && !pl1_1.equals(mapa.pto_inicial))
-						mapa.pintarMapa(cEntrance, pl1_1);
-
-					if (!pl2_1.equals(mapa.pto_final) && !pl2_1.equals(mapa.pto_final))
-						mapa.pintarMapa(cEntrance, pl2_1);
+					// Pintamos en los nodos
+					oscurecerMapa(pl1_1, mapa);
+					oscurecerMapa(pl2_1, mapa);
 
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya
 					// vienen ordenados)
@@ -456,6 +442,23 @@ public class HPAstar {
 			index += n;
 		}
 
+	}
+
+	/**
+	 * Pinta de gris un punto dado o lo oscurece en caso de ser inicial o final
+	 * 
+	 * @param p
+	 * @param mapa
+	 */
+	private static void oscurecerMapa(Punto p, Mapa mapa) {
+		// Si no coincide con un punto inicial o final, pintamos en gris
+		if (!p.equals(mapa.pto_final) && !p.equals(mapa.pto_inicial))
+			mapa.pintarMapa(cEntrance, p);
+		// En otro caso, oscurecemos
+		else if (p.equals(mapa.pto_final))
+			mapa.pintarMapa(Mapa.cFinal.darker(), p);
+		else
+			mapa.pintarMapa(Mapa.cInicial.darker(), p);
 	}
 
 	/**
