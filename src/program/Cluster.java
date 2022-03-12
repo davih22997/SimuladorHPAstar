@@ -435,6 +435,37 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
+	 * Método para crear la lista de puntos total que contiene el cluster
+	 * 
+	 * @param m
+	 * @return
+	 */
+	public ArrayList<Punto> getSubMapa() {
+
+		// Creamos la lista que va a contener los puntos
+		ArrayList<Punto> sm = new ArrayList<>();
+		// Recorremos por filas
+		for (int f = 0; f < filas; f++)
+			// Antes de pasar a la siguiente fila, recorremos las columnas
+			for (int c = 0; c < columnas; c++) {
+				// Creamos un punto nuevo, teniendo en cuenta las coordenadas del punto inicial
+				int fil = inicio.getFila() + f;
+				int col = inicio.getCol() + c;
+
+				Punto p = new Punto(fil, col);
+				// Si ese punto está contenido en la lista de nodos, añadimos el punto del nodo
+				if (nodos.contains(p)) {
+					int index = nodos.indexOf(p);
+					p = nodos.get(index);
+				}
+
+				sm.add(p);
+			}
+
+		return sm;
+	}
+
+	/**
 	 * Método para obtener la lista de nodos del cluster
 	 * 
 	 * @return

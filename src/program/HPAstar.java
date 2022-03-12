@@ -122,7 +122,7 @@ public class HPAstar {
 			Collections.sort(c.getNodos());
 
 			// 4. Creamos los arcos internos
-			internalEdges(c, mapa);
+			intraEdges(c, mapa);
 		}
 
 	}
@@ -468,7 +468,23 @@ public class HPAstar {
 	 * @param c
 	 * @param mapa
 	 */
-	private static void internalEdges(Cluster c, Mapa mapa) {
+	private static void intraEdges(Cluster c, Mapa mapa) {
+		// Creamos el submapa que contiene todos los puntos
+		ArrayList<Punto> submapa = c.getSubMapa();
+		// Le quitamos los obstaculos
+		submapa.removeAll(mapa.obstaculos);
+
+		// Se van creando arcos entre cada par de nodos del cluster
+		ArrayList<Punto> nodos = c.getNodos();
+		for (int i = 0; i < nodos.size() - 1; i++) {
+			for (int j = 1; j < nodos.size(); j++) {
+				Punto p1 = nodos.get(i);
+				Punto p2 = nodos.get(j);
+				Edge edge = Dijkstra.intraedge(p1, p2, submapa);
+				p1.addArcoInterno(edge);
+				p2.addArcoInterno(edge.symm());
+			}
+		}
 
 	}
 

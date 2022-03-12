@@ -23,7 +23,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	// Arcos externos (puede haber 2 si coincide con una esquina)
 	private ArrayList<Punto> interedges;
 	// Arcos internos (es una lista de puntos que puede ser vacía)
-	private ArrayList<Punto> intraedges;
+	private ArrayList<Edge> intraedges;
 
 	/**
 	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
@@ -262,7 +262,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	/**
-	 * Método para obtener el arco externo que hay de un punto a otro
+	 * Método para obtener los arcos externos del punto
 	 * 
 	 * @return
 	 */
@@ -275,9 +275,17 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * 
 	 * @param p
 	 */
-	public void addArcoInterno(Punto p) {
-		intraedges.add(p);
-		p.intraedges.add(this);
+	public void addArcoInterno(Edge edge) {
+		intraedges.add(edge);
+	}
+
+	/**
+	 * Método para obtener los arcos internos del punto
+	 * 
+	 * @return
+	 */
+	public ArrayList<Edge> getArcosInternos() {
+		return intraedges;
 	}
 
 	/**
