@@ -1,17 +1,24 @@
 package program;
 
-import java.awt.Color;
 import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.border.CompoundBorder;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableCellRenderer;
 
 public class HPAstar {
 
@@ -142,23 +149,60 @@ public class HPAstar {
 		ArrayList<Punto> nodos = c.getNodos();
 		int tam = nodos.size();
 
-		// 1. Creamos los datos de la tabla
-		// DefaultTableModel model = new DefaultTableModel();
-		// model.addColumn("");
+		// Creamos el panel que va a contener todos los objetos
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		panel.setBackground(Color.WHITE);
+
+		// Creamos el título para mostrar la lista de nodos
+		JLabel lnodos = new JLabel("Lista de nodos");
+		lnodos.setAlignmentX(JFrame.LEFT_ALIGNMENT);
+		lnodos.setFont(new Font("Verdana", Font.BOLD, 18));
+
+		// Le introducimos un margen inferior
+		Border marginbottom = new EmptyBorder(0, 0, 5, 0);
+		lnodos.setBorder(new CompoundBorder(lnodos.getBorder(), marginbottom));
+
+		// Creamos un array con los datos de cada nodo
+		JLabel[] nodes = new JLabel[tam];
+
+		// Vamos añadiendo
+		for (int i = 0; i < tam; i++) {
+			nodes[i] = new JLabel(new String("n" + index + "," + i + ": " + nodos.get(i)));
+			nodes[i].setAlignmentX(JFrame.LEFT_ALIGNMENT);
+		}
+		nodes[tam - 1].setBorder(new CompoundBorder(nodes[tam - 1].getBorder(), marginbottom));
+
+		// Creamos el título para la tabla
+		JLabel ltabla = new JLabel("Arcos internos");
+		ltabla.setAlignmentX(JFrame.LEFT_ALIGNMENT);
+		ltabla.setFont(new Font("Verdana", Font.BOLD, 18));
+		ltabla.setBorder(new CompoundBorder(ltabla.getBorder(), marginbottom));
+
+		// Creamos una caja vertical para agrupar los datos:
+		Box bNodos = Box.createVerticalBox();
+		bNodos.add(lnodos);
+		for (JLabel node : nodes)
+			bNodos.add(node);
+
+		bNodos.add(ltabla);
+		// bNodos.setAlignmentX(JFrame.CENTER_ALIGNMENT);
+
+		// Añadimos los datos al panel
+		panel.add(bNodos, BorderLayout.WEST);
+
+		// Creamos los datos de la tabla
 		Object[][] data = new Object[tam][tam + 1];
 		String[] columns = new String[tam + 1];
 
 		columns[0] = "";
 		ArrayList<Punto> visitados = new ArrayList<>();
 
-		// System.out.println(nodos);
-
 		for (int i = 0; i < nodos.size(); i++) {
 			Punto p = nodos.get(i);
 			visitados.add(p);
 			String name = "n" + index + "," + i;
 			columns[i + 1] = name;
-			// model.addColumn(name);
 			data[i][0] = name;
 
 			ArrayList<Edge> edges = p.getArcosInternos();
@@ -178,19 +222,30 @@ public class HPAstar {
 
 		}
 
-		// JTable tabla = new JTable(model);
-		// 2. Creamos la tabla con los datos
+		// Creamos la tabla con los datos
 		JTable tabla = new JTable(data, columns);
 
+		// Configuramos para que el tamaño sea suficiente para mostrar todos los datos
 		tabla.setFillsViewportHeight(true);
 		tabla.setPreferredScrollableViewportSize(tabla.getPreferredScrollableViewportSize());
 		tabla.setFillsViewportHeight(true);
+		// Cancelamos que se pueda modificar el tamaño de las columnas
+		tabla.getTableHeader().setResizingAllowed(false);
 
-		// 3. Añadimos la tabla a un panel
-		JPanel panel = new JPanel();
-		panel.setLayout(new BorderLayout());
-		panel.add(tabla.getTableHeader(), BorderLayout.CENTER);
-		panel.add(tabla, BorderLayout.SOUTH);
+		// Centramos el texto dentro de la tabla
+		DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+		center.setHorizontalAlignment(SwingConstants.CENTER);
+		tabla.setDefaultRenderer(Object.class, center);
+
+		// Agrupamos la tabla y su título en una caja vertical
+		Box bTabla = Box.createVerticalBox();
+		// bTabla.add(ltabla);
+		bTabla.add(tabla.getTableHeader());
+		bTabla.add(tabla);
+		bTabla.setAlignmentX(JFrame.CENTER_ALIGNMENT);
+
+		// Añadimos la tabla al panel
+		panel.add(bTabla, BorderLayout.SOUTH);
 
 		// Creamos la ventana
 		JFrame frame = new JFrame("Nodos internos");

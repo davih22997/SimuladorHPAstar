@@ -143,7 +143,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	protected static JButton btnStart2, btnStop2;
 	// Botón para visualizar la tabla de los arcos internos en HPA*
 	private JButton btnVerTabla;
-	private boolean verTabla;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -171,6 +170,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
 	private int step = 0;
+	private boolean verTabla;
 
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
