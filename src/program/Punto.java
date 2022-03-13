@@ -1,16 +1,29 @@
 package program;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Scanner;
 
 // Clase para definir un punto dado por (fila, columna)
 public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
+	// Coordenadas del punto (fila y columna)
 	private int f;
 	private int c;
-	int pasos = 0;
-	Punto padre = null;
+	// Coste del punto (por defecto es 0)
+	protected double coste;
+	// Punto padre (por defecto es null)
+	protected Punto padre;
+	// Constante para el coste en diagonal
+	protected static final Double DIAGONAL = Math.sqrt(2);
+
+	// Arcos
+	// Arcos externos (puede haber 2 si coincide con una esquina)
+	private ArrayList<Punto> interedges;
+	// Arcos internos (es una lista de puntos que puede ser vacía)
+	private ArrayList<Edge> intraedges;
 
 	/**
 	 * Método para crear el punto, dadas sus coordenadas (fila, columna)
@@ -21,6 +34,11 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	public Punto(int f, int c) {
 		this.f = f;
 		this.c = c;
+
+		coste = 0;
+		padre = null;
+		interedges = new ArrayList<>();
+		intraedges = new ArrayList<>();
 	}
 
 	/**
@@ -73,7 +91,8 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	/**
-	 * Calcula los vecinos dadas las dimensiones del mapa
+	 * Calcula los vecinos dadas las dimensiones del mapa (para la opción de
+	 * 4-vecinos)
 	 * 
 	 * @param filas
 	 * @param columnas
@@ -87,25 +106,106 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		int derecha = this.c + 1;
 		int izda = this.c - 1;
 
+		// Vamos a seguir el orden de los puntos:
+
 		// Primero, añadimos al de arriba
 		if (arriba >= 0)
-			res.add(new Punto(arriba, this.c));
-		// Segundo, al de abajo
-		if (abajo < filas)
-			res.add(new Punto(abajo, this.c));
+			res.add(crearHijo(arriba, this.c, 1));
+		// Segundo, al de la izda
+		if (izda >= 0)
+			res.add(crearHijo(this.f, izda, 1));
 		// Tercero, al de la derecha
 		if (derecha < columnas)
-			res.add(new Punto(this.f, derecha));
-		// Por último, al de la izda
-		if (izda >= 0)
-			res.add(new Punto(this.f, izda));
-
-		for (Punto p : res) {
-			p.padre = this;
-			p.pasos = this.pasos + 1;
-		}
+			res.add(crearHijo(this.f, derecha, 1));
+		// Por último, al de abajo
+		if (abajo < filas)
+			res.add(crearHijo(abajo, this.c, 1));
 
 		return res;
+	}
+
+	/**
+	 * Calcula los vecinos dadas las dimensiones del mapa (para la opción de
+	 * 8-vecinos)
+	 * 
+	 * @param filas
+	 * @param columnas
+	 * @return
+	 */
+	public ArrayList<Punto> vecinos_8(int filas, int columnas) {
+		ArrayList<Punto> res = new ArrayList<>();
+
+		int arriba = this.f - 1;
+		int abajo = this.f + 1;
+		int izda = this.c - 1;
+		int derecha = this.c + 1;
+
+		// Vamos a introducir los datos en el orden de los puntos
+		// Primero, arriba izda, luego arriba y por último arriba derecha
+		if (arriba >= 0) {
+			// Arriba izda
+			if (izda >= 0)
+				res.add(crearHijo(arriba, izda, DIAGONAL));
+
+			// Arriba
+			res.add(crearHijo(arriba, this.c, 1));
+			// arriba derecha
+			if (derecha < columnas)
+				res.add(crearHijo(arriba, derecha, DIAGONAL));
+
+		}
+		// Ahora izquierda
+		if (izda >= 0)
+			res.add(crearHijo(this.f, izda, 1));
+
+		// Ahora derecha
+		if (derecha < columnas)
+			res.add(crearHijo(this.f, derecha, 1));
+
+		// Ahora abajo izda, abajo y abajo derecha
+		if (abajo < filas) {
+			// Abajo izda
+			if (izda >= 0)
+				res.add(crearHijo(abajo, izda, DIAGONAL));
+
+			// Abajo
+			res.add(crearHijo(abajo, this.c, 1));
+
+			// Abajo derecha
+			if (derecha < columnas)
+				res.add(crearHijo(abajo, derecha, DIAGONAL));
+		}
+
+		// Como hemos añadido los puntos de forma ordenada, no ordenamos la lista
+		return res;
+	}
+
+	/**
+	 * Método para crear un hijo de este punto, teniendo en cuenta la fila, la
+	 * columna y el coste a sumar
+	 * 
+	 * @param fila
+	 * @param col
+	 * @param extra
+	 * @return
+	 */
+	private Punto crearHijo(int fila, int col, double extra) {
+		Punto p = new Punto(fila, col);
+		p.padre = this;
+		p.coste = this.coste + extra;
+
+		return p;
+	}
+
+	/**
+	 * Método que te indica si otro punto es adyacente
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public boolean adyacente(Punto p) {
+		return (this.c == p.c && (this.f == (p.f + 1) || this.f == (p.f - 1)))
+				|| (this.f == p.f && (this.c == (p.c + 1) || this.c == (p.c - 1)));
 	}
 
 	/**
@@ -116,6 +216,108 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 */
 	public int distManhattan(Punto p) {
 		return Math.abs(this.f - p.f) + Math.abs(this.c - p.c);
+	}
+
+	/**
+	 * Calcula la distancia octil con respecto a otro punto
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public double distOctil(Punto p) {
+		double res = 0;
+
+		int df = Math.abs(this.f - p.f);
+		int dc = Math.abs(this.c - p.c);
+
+		// Si hay más filas que columnas
+		if (df > dc)
+			res = Math.sqrt(2) * dc + (df - dc);
+		// Si coincide el número de filas y de columnas
+		else if (df == dc)
+			res = Math.sqrt(2) * df;
+		// Si hay menos filas que columnas
+		else
+			res = Math.sqrt(2) * df + (dc - df);
+
+		return res;
+	}
+
+	/**
+	 * Método para añadir un arco externo (afecta tanto a este punto como al que se
+	 * le pasa como parámetro)
+	 * 
+	 * @param p
+	 */
+	public void addArcoExterno(Punto p) {
+		// Comprueba que son adyacentes y que no está en la lista; en caso contrario, no
+		// lo añade
+		if (adyacente(p) && !interedges.contains(p)) {
+			// Añade el arco en ambos puntos
+			interedges.add(p);
+			p.addArcoExterno(this);
+			// Ordena ambas listas
+			Collections.sort(interedges);
+		}
+	}
+
+	/**
+	 * Método para obtener los arcos externos del punto
+	 * 
+	 * @return
+	 */
+	public ArrayList<Punto> getArcosExternos() {
+		return interedges;
+	}
+
+	/**
+	 * Método para añadir un arco interno
+	 * 
+	 * @param p
+	 */
+	public void addArcoInterno(Edge edge) {
+		if (!intraedges.contains(edge))
+			intraedges.add(edge);
+	}
+
+	/**
+	 * Método para obtener los arcos internos del punto
+	 * 
+	 * @return
+	 */
+	public ArrayList<Edge> getArcosInternos() {
+		return intraedges;
+	}
+
+	/**
+	 * Devuelve el arco externo (se usa para depurar código)
+	 */
+	public String toStringEdges() {
+		StringBuilder sb = new StringBuilder();
+
+		int tam = interedges.size();
+		sb.append("El punto " + this.toString() + " tiene " + tam);
+		if (tam == 1)
+			sb.append(" arco externo.\n");
+		else
+			sb.append(" arcos externos.\n");
+
+		sb.append(this.toString()).append(" -> ");
+		if (interedges.isEmpty())
+			sb.append("[]");
+		else {
+			Iterator<Punto> it = interedges.iterator();
+			while (it.hasNext()) {
+				sb.append(it.next());
+				if (it.hasNext())
+					sb.append("\n\t-> ");
+				else
+					break;
+			}
+
+		}
+
+		return sb.toString();
 	}
 
 	@Override

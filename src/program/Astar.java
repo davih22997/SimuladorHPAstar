@@ -23,6 +23,10 @@ public class Astar {
 	// Temporizador con el que se irá coloreando el mapa
 	protected static Timer timer;
 
+	// Constantes para la seleccion del algoritmo en cuestión
+	public static final int VECINOS_4 = 1;
+	public static final int VECINOS_8 = 2;
+
 	/**
 	 * Método que realiza la búsqueda de A*
 	 * 
@@ -32,7 +36,7 @@ public class Astar {
 	 * 
 	 * @param mapa
 	 */
-	public static void BusquedaAstar(Mapa mapa) {
+	public static void BusquedaAstar(Mapa mapa, int modo) {
 		memoria = 1;
 		iteraciones = 0;
 
@@ -45,16 +49,37 @@ public class Astar {
 		PriorityQueue<Punto> abiertos = new PriorityQueue<>(new Comparator<Punto>() {
 			@Override
 			public int compare(Punto p1, Punto p2) {
-				int c1 = p1.pasos + p1.distManhattan(mapa.pto_final);
-				int c2 = p2.pasos + p2.distManhattan(mapa.pto_final);
+				// Primero se tiene en cuenta el que menos coste tiene
+				// Creamos los costes de cada punto:
+				double c1 = p1.coste;
+				double c2 = p2.coste;
 
-				int solucion = c1 - c2;
-
-				if (solucion == 0) {
-					solucion = p2.pasos - p1.pasos;
+				// Si hemos seleccionado 4-vecinos
+				if (modo == VECINOS_4) {
+					c1 += p1.distManhattan(mapa.pto_final);
+					c2 += p2.distManhattan(mapa.pto_final);
+				}
+				// Si hemos seleccionado 8-vecinos
+				else if (modo == VECINOS_8) {
+					c1 += p1.distOctil(mapa.pto_final);
+					c2 += p2.distOctil(mapa.pto_final);
 				}
 
-				return solucion;
+				// Los comparamos
+				int solucion = 0;
+				if (c1 > c2)
+					solucion = 1;
+				else if (c1 < c2)
+					solucion = -1;
+				// En caso de empate, ordenamos según el que más pasos haya dado
+				else {
+					if (p2.coste > p1.coste)
+						solucion = 1;
+					else if (p2.coste < p1.coste)
+						solucion = -1;
+				}
+
+				return (int) solucion;
 			}
 		});
 
@@ -87,7 +112,11 @@ public class Astar {
 					}
 
 					// Cogemos los vecinos del punto
-					ArrayList<Punto> vecinos = actual.vecinos(mapa.getFilas(), mapa.getCols());
+					ArrayList<Punto> vecinos = new ArrayList<>();
+					if (modo == VECINOS_4)
+						vecinos = actual.vecinos(mapa.getFilas(), mapa.getCols());
+					else if (modo == VECINOS_8)
+						vecinos = actual.vecinos_8(mapa.getFilas(), mapa.getCols());
 
 					// Descartamos los nodos que no van a tenerse en cuenta para ahorrar coste
 					// computacional
@@ -121,7 +150,7 @@ public class Astar {
 
 							// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
 							// la lista
-							if (p.pasos < p2.pasos) {
+							if (p.coste < p2.coste) {
 								abiertos.remove(p2);
 								abiertos.add(p);
 							}

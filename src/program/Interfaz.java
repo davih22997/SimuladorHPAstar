@@ -7,6 +7,8 @@ import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -39,7 +41,7 @@ import javax.swing.event.ChangeListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
 // Clase para crear la interfaz gráfica del simulador
-public class Interfaz extends JFrame implements ActionListener, ChangeListener {
+public class Interfaz extends JFrame implements ActionListener, ChangeListener, ItemListener {
 
 	// Constantes String muy usadas
 	private static final String newline = "\n";
@@ -58,11 +60,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Lista de las dimensiones de mapa posibles a escoger
 	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
 
+	// Lista de números de vecinos para el algoritmo A*
+	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
+
 	// Lista de las dimensiones de cluster posibles a escoger
-	private static final String[] clusters = { "10x10" };
+	private static final String[] clusters = { "10x10", "5x5" };
 
 	// Texto por defecto para seleccionar las dimensiones
 	private static final String selDims = "Seleccionar dimensiones";
+
+	// Texto por defecto para seleccionar número de vecinos
+	// private static final String selNum = "Seleccionar cantidad";
 
 	// Panel con todo el contenido
 	private JPanel panel;
@@ -85,20 +93,32 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	// Parte para la gestión de algoritmo
 	// Panel que contendrá la info de arriba (selector de algoritmo + selector de
-	// cluster)
+	// número de vecinos / selector de cluster)
 	private JPanel upPanel;
 	// Parte para la gestión de A* en la parte de algoritmo
 	private JLabel titulo2;
 	private JComboBox<String> algCB;
 	private JPanel algPanel;
 
-	// Parte para la gestión de HPA* en la parte de algoritmo (incluye cluster y lo
-	// de A*)
+	// Parte para la gestión de A* en la parte de algoritmo (incluye selector de
+	// algoritmo y de cantidad de vecinos
+	private JLabel titulo2a;
+	private Box vB2a;
+	private JPanel vecPanel;
+	private JComboBox<String> vecCB;
+
+	// Parte para la gestión de HPA* en la parte de algoritmo (incluye selector de
+	// algoritmo y de dimensiones de cluster)
 	// Parte para la gestión de selección de tamaño de cluster
 	private JLabel titulo2hpa;
 	private Box vB2hpa;
 	private JPanel clusterPanel;
 	private JComboBox<String> cbTCluster;
+	// Parte para la selección del tamaño del umbral
+	private JLabel titulo2umbral;
+	private Box vB2umbral;
+	private JPanel umbralPanel;
+	private JComboBox<Integer> umbral;
 
 	// Parte para el control de la simulación
 	private JLabel titulo3;
@@ -121,6 +141,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Panel de control de simulación solo para HPA*
 	private JPanel panelCHPAstar;
 	protected static JButton btnStart2, btnStop2;
+	// Botón para visualizar la tabla de los arcos internos en HPA*
+	private JButton btnVerTabla;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -134,6 +156,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	private ButtonGroup bGroup;
 	private JRadioButton rInic, rFin, rObs, rCons;
 	private JButton btnReverse;
+	private JButton btnDelete;
 
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
@@ -147,6 +170,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
 	private int step = 0;
+	private boolean verTabla;
 
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
@@ -241,7 +265,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 		// Definimos el apartado para la selección de ALGORITMO
 
-		// Parte de la gestión de algoritmo de A*
 		// Creamos el panel que contendrá todo
 		upPanel = new JPanel();
 		// Creamos el correspondiente titulo
@@ -256,7 +279,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		algCB.addItem("A*");
 		algCB.addItem("HPA*");
 		algCB.setBackground(Color.WHITE);
-		algCB.addActionListener(this);
+		algCB.addItemListener(this);
 
 		// Añadimos al panel el selector
 		algPanel.add(algCB);
@@ -265,9 +288,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		Box vB2 = Box.createVerticalBox();
 		vB2.add(titulo2);
 		vB2.add(algPanel);
-		// vB2.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 
-		// Parte de la gestión de algoritmo de HPA* (incluye clusters)
+		// Parte de la gestión de algoritmo de HPA* (incluye clusters y también umbral)
 		// Le creamos el título para los clusters
 		titulo2hpa = new JLabel("Clusters");
 		titulo2hpa.setAlignmentX(CENTER_ALIGNMENT);
@@ -282,7 +304,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			cbTCluster.addItem(tam);
 
 		cbTCluster.setBackground(Color.WHITE);
-		cbTCluster.addActionListener(this);
+		cbTCluster.addItemListener(this);
 
 		clusterPanel.add(cbTCluster);
 
@@ -291,13 +313,68 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		vB2hpa.add(titulo2hpa);
 		vB2hpa.add(clusterPanel);
 
+		// Creamos el título para el umbral
+		titulo2umbral = new JLabel("Umbral");
+		titulo2umbral.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivo para la gestión del tamaño del umbral
+		umbralPanel = new JPanel();
+		umbral = new JComboBox<>();
+
+		for (int i = 1; i <= 10; i++)
+			umbral.addItem(i);
+
+		umbral.setBackground(Color.WHITE);
+		umbral.addItemListener(this);
+
+		umbral.setPreferredSize(umbral.getPreferredSize());
+
+		umbralPanel.add(umbral);
+
+		// Agrupamos los elementos para que estén uno sobre el otro:
+		vB2umbral = Box.createVerticalBox();
+		vB2umbral.add(titulo2umbral);
+		vB2umbral.add(umbralPanel);
+
 		// Lo añadimos todo al panel general
 		upPanel.add(vB2);
 		upPanel.add(vB2hpa);
+		upPanel.add(vB2umbral);
 		upPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		upPanel.setPreferredSize(upPanel.getPreferredSize());
 		// Ocultamos la parte de clusters (ya que por defecto está seleccionado A*)
 		vB2hpa.setVisible(false);
+		vB2umbral.setVisible(false);
+
+		// Parte de la gestión de algoritmo A* (incluye número de vecinos)
+		// Le creamos el título para la modalidad (cantidad de vecinos)
+		titulo2a = new JLabel("Modalidad");
+		titulo2a.setAlignmentX(CENTER_ALIGNMENT);
+
+		// Añadimos un panel exclusivos para la gestión de cantidad de vecinos
+		vecPanel = new JPanel();
+		// Creamos la parte para seleccionar la cantidad de vecinos
+		vecCB = new JComboBox<>();
+
+		// Por defecto tendrá la opción de 4-vecinos
+		for (String vec : numVecinos)
+			vecCB.addItem(vec);
+
+		vecCB.setBackground(Color.WHITE);
+		vecCB.addItemListener(this);
+
+		vecPanel.add(vecCB);
+
+		// Agrupamos los elementos para que estén uno sobre el otro:
+		vB2a = Box.createVerticalBox();
+		vB2a.add(titulo2a);
+		vB2a.add(vecPanel);
+
+		// Lo añadimos al panel general
+		upPanel.add(vB2a);
+		// No quitamos la opción de que sea visible, dado que por defecto estará
+		// seleccionado el algoritmo A*
+		vB2a.setVisible(true);
 
 		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
@@ -360,9 +437,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		btnStop2 = initButtonIcon(Direccion.stop16);
 		btnStop2.setEnabled(false);
 
+		// Botón para ver tabla (tras crear los arcos internos en HPA*)
+		btnVerTabla = new JButton("No ver tabla");
+		btnVerTabla.setPreferredSize(btnVerTabla.getPreferredSize());
+		btnVerTabla.setText("Ver tabla");
+		btnVerTabla.addActionListener(this);
+		btnVerTabla.setEnabled(false);
+		// Por defecto, ver tabla no está pulsado
+		verTabla = false;
+
 		// Añadimos los botones de inicio / fin al panel
 		panelCHPAstar.add(btnStart2);
 		panelCHPAstar.add(btnStop2);
+		panelCHPAstar.add(btnVerTabla);
 
 		// Añadimos todo al panel general
 		btnPanel2.add(panelCHPAstar);
@@ -403,7 +490,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			dims.addItem(tam);
 
 		dims.setBackground(Color.WHITE);
-		dims.addActionListener(this);
+		dims.addItemListener(this);
 
 		// Añadimos los componentes al panel
 		pDims.add(titulo4_1);
@@ -437,12 +524,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		// Botón para cambiar inicio-fin
 		btnReverse = initButtonIcon(Direccion.refresh16);
 
+		// Botón para borrar el contenido del mapa
+		btnDelete = initButtonIcon(Direccion.delete16);
+
 		// Añadimos los botones al panel
 		pMalla.add(rCons);
 		pMalla.add(rInic);
 		pMalla.add(rFin);
 		pMalla.add(rObs);
 		pMalla.add(btnReverse);
+		pMalla.add(btnDelete);
+
+		// Bloqueamos el botón de borrar (se activa cuando ya hay mapa definido)
+		btnDelete.setEnabled(false);
 
 		// Añadimos todos los RadioButtons al mismo grupo
 		bGroup = new ButtonGroup();
@@ -656,7 +750,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 													scan4.useDelimiter(space + "*[)]");
 													int c = scan4.nextInt();
 													pto_inicial = new Punto(f, c);
-													mapa.MatrizBotones[f][c].setBackground(Mapa.cInicial);
+													mapa.pintarMapa(Mapa.cInicial, f, c);
+													// mapa.MatrizBotones[f][c].setBackground(Mapa.cInicial);
 													mapa.pto_inicial = pto_inicial;
 												}
 											}
@@ -703,7 +798,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 														JOptionPane.showMessageDialog(new JFrame(),
 																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
 													else {
-														mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
+														mapa.pintarMapa(Mapa.cFinal, f, c);
+														// mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
 														mapa.pto_final = pto_final;
 													}
 												}
@@ -760,7 +856,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 										}
 
 										for (Punto o : obstaculos) {
-											mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
+											mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
+											// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
 											mapa.obstaculos.add(o);
 										}
 
@@ -935,111 +1032,39 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 				log.setCaretPosition(log.getDocument().getLength());
 			}
 		}
-		// Controlador de la parte del algoritmo
-		else if (e.getSource() == algCB) {
-			String option = algCB.getSelectedItem().toString();
-			if (option.equals("A*")) {
-				log.append("Se ha seleccionado el algoritmo A*." + newline);
-				panelCHPAstar.setVisible(false);
-				vB2hpa.setVisible(false);
-				restartVelocity();
-				panelCAstar.setVisible(true);
-			} else if (option.equals("HPA*")) {
-				log.append("Se ha seleccionado el algoritmo HPA*." + newline);
-				panelCAstar.setVisible(false);
-				step = 0;
-				vB2hpa.setVisible(true);
-				panelCHPAstar.setVisible(true);
-			}
-		}
-		// Controlador del selector de las dimensiones de los clusters (solo para HPA*)
-		else if (e.getSource() == cbTCluster) {
-			String option = cbTCluster.getSelectedItem().toString();
-
-			if (option.equals(clusters[0])) { // 10x10
-
-			} else { // Seleccionar tamaño clusters
-
-			}
-
-		}
-
-		// Controlador del selector de las dimensiones del mapa
-		else if (e.getSource() == dims) {
-
-			String algoritmo = algCB.getSelectedItem().toString();
-
-			if (algoritmo.equals("A*")) {
-				datosAstar.setVisible(false);
-				if (btnStop.isEnabled()) {
-					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
-					btnStart.setEnabled(true);
-					btnStop.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
-			} else if (algoritmo.equals("HPA*")) {
-				if (btnStop2.isEnabled()) {
-					step = 0;
-					btnStop2.setEnabled(false);
-					rInic.setEnabled(true);
-					rFin.setEnabled(true);
-					rObs.setEnabled(true);
-					btnReverse.setEnabled(true);
-				}
-			}
-
-			String option = dims.getSelectedItem().toString();
-			if (option.equals(dimensiones[0])) { // 40x40
-				if (mapa != null)
-					mapa.destruirTablero();
-				mapa.setDims(40, 40);
-				mapa.crearTablero();
-
-			} else if (option.equals(dimensiones[1])) { // 20x30
-				if (mapa != null)
-					mapa.destruirTablero();
-
-				mapa.setDims(20, 30);
-				mapa.crearTablero();
-			} else if (option.equals(dimensiones[2])) { // 30x20
-				if (mapa != null)
-					mapa.destruirTablero();
-
-				mapa.setDims(30, 20);
-				mapa.crearTablero();
-			} else { // Seleccionar dimensiones
-				if (mapa != null)
-					mapa.destruirTablero();
-				mapa.setDims(0, 0);
-			}
-
-		}
 		// Si se pulsa el botón de cambio de pt inicio por pto fin
 		else if (e.getSource() == btnReverse) {
 			if (mapa.pto_final != null && mapa.pto_inicial != null) {
 				Punto aux = mapa.pto_final.clone();
 				mapa.pto_final = mapa.pto_inicial;
 				mapa.pto_inicial = aux;
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
+				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
+				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
+				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
+				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 
 				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
 			} else if (mapa.pto_final != null) {
 				mapa.pto_inicial = mapa.pto_final.clone();
-				mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
+				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
+				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 				mapa.pto_final = null;
 
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
-				mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
+				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
+				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
 				mapa.pto_inicial = null;
 
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
 			}
+		}
+
+		// Si se pulsa la opción de borrar el contenido del mapa
+		else if (e.getSource() == btnDelete) {
+			borrarMapa();
+			log.append("Se vacía el contenido del mapa." + newline);
 		}
 
 		// Control de la simulación
@@ -1060,7 +1085,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			else {
 				// Bloqueamos el selector de algoritmos
 				algCB.setEnabled(false);
+				// Bloqueamos también el selector de cantidad de vecinos
+				vecCB.setEnabled(false);
+				// Y también el de selección de dimensiones
+				dims.setEnabled(false);
 
+				// Si pulsamos la primera vez
 				if (!btnStop.isEnabled()) {
 					log.append("Iniciada la simulación del algoritmo A*." + newline);
 
@@ -1070,6 +1100,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					rFin.setEnabled(false);
 					rObs.setEnabled(false);
 					btnReverse.setEnabled(false);
+					btnDelete.setEnabled(false);
 
 					// Se bloquea el botón de iniciar y se desbloquea el botón de parar
 					btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
@@ -1079,13 +1110,30 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 					datosAstar.setVisible(true);
 					// Iniciamos la búsqueda y mostramos debajo del mapa los datos con las
 					// iteraciones y la memoria usada
-					Astar.BusquedaAstar(mapa);
-				} else {
+					// Antes vemos qué opción está seleccionada en cuanto a cantidad de vecinos
+					String option = vecCB.getSelectedItem().toString();
+					// Si seleccionamos 4-vecinos
+					if (option.equals(numVecinos[0])) {
+						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan." + newline);
+						Astar.BusquedaAstar(mapa, Astar.VECINOS_4);
+					}
+					// Si seleccionamos 8-vecinos
+					else if (option.equals(numVecinos[1])) {
+						log.append("Simulación con 8 vecinos. Se aplica la distancia octil." + newline);
+						Astar.BusquedaAstar(mapa, Astar.VECINOS_8);
+					}
+
+				}
+				// Si en cambio, ya fue iniciada la simulación
+				else {
+					// Si se ha pulsado el botón de start para pausar la simulación
 					if (start == true) {
 						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 						start = false;
 						Astar.timer.stop();
-					} else {
+					}
+					// Si se ha pulsado y la simulación continúa en marcha
+					else {
 						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
 						start = true;
 						Astar.timer.restart();
@@ -1103,26 +1151,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			datosAstar.setVisible(false);
 
 			reiniciarMapa();
-			/*
-			 * // Copiamos los datos Punto pini = mapa.pto_inicial; Punto pfin =
-			 * mapa.pto_final; ArrayList<Punto> lobs = mapa.obstaculos;
-			 * 
-			 * int tipo = mapa.getTipo();
-			 * 
-			 * // Y generamos un mapa nuevo, con los mismos datos pero sin la simulación
-			 * hecha mapa.destruirTablero(); mapa.crearTablero();
-			 * 
-			 * mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(mapa.cInicial
-			 * );
-			 * mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(mapa.cFinal);
-			 * 
-			 * for (Punto obs : lobs)
-			 * mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(mapa.cObs);
-			 * 
-			 * mapa.pto_inicial = pini; mapa.pto_final = pfin; mapa.obstaculos = lobs;
-			 * 
-			 * mapa.setTipo(tipo);
-			 */
 
 			// Se bloquea el botón de parar y se desbloquea el de iniciar
 			btnStop.setEnabled(false);
@@ -1134,14 +1162,18 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
+			btnDelete.setEnabled(true);
 
 			// Desbloqueamos el selector de algoritmos
 			algCB.setEnabled(true);
+			// Desbloqueamos también el selector de cantidad de vecinos
+			vecCB.setEnabled(true);
+			// Y también el selector de dimensiones de mapa
+			dims.setEnabled(true);
 		}
 
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo HPA*)
 		else if (e.getSource() == btnStart2) {
-			log.append("Todavía está en desarrollo el algoritmo HPA*." + newline);
 
 			// Si es la primera vez que pulsamos el botón de inicio en HPA*
 			if (!btnStop2.isEnabled()) {
@@ -1176,20 +1208,29 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 						rFin.setEnabled(false);
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
-						// 3. Bloqueamos el selector de clusters y el de algoritmos (temporalmente)
+						btnDelete.setEnabled(false);
+						// 3. Bloqueamos el selector de clusters, el de umbral y el de algoritmos
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
+						umbral.setEnabled(false);
+						// Y también el selector de dimensiones de mapa
+						dims.setEnabled(false);
 						// 4. Iniciamos el proceso de pintar bordes
+						// Bloqueamos el botón de start
+						btnStart2.setEnabled(false);
+						log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 						if (tCluster.equals(clusters[0])) {
-							log.append("Se van a dibujar los clústers de tamaño " + tCluster + "." + newline);
 							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_10X10);
-						} else {
+						} else if (tCluster.equals(clusters[1])) {
+							HPAstar.definirClusters(mapa, HPAstar.CLUSTER_5X5);
 
 						}
-
-						// Sumamos un "step", para indicar que se ha pulsado una vez el botón, y
+						// Una vez terminamos:
+						// 1. Sumamos un "step", para indicar que se ha pulsado una vez el botón, y
 						// continuar con el siguiente paso de la simulación
 						step++;
+						// 2. Desbloqueamos el botón de start
+						btnStart2.setEnabled(true);
 
 					}
 				}
@@ -1198,12 +1239,29 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			// Si no es la primera vez que se pulsa -> Vamos al siguiente paso de la
 			// simulación
 			else {
+				int vumbral = (Integer) umbral.getSelectedItem();
 				switch (step) {
 				// El segundo paso de la simulación -> Crear las entradas entre los clústers
 				case 1:
+					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
+					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+					// Realizamos la siguiente fase
+					HPAstar.definirEdges(mapa, vumbral);
+
+					log.append("Creación de nodos y arcos realizada." + newline);
+					// Incrementamos un "step"
+					step++;
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(true);
+
+					// Desbloqueamos también el botón para ver tabla
+					btnVerTabla.setEnabled(true);
 
 					break;
 				default:
+					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
+
 					break;
 				}
 			}
@@ -1216,6 +1274,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			step = 0;
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+			// Bloqueamos el botón de ver tabla
+			btnVerTabla.setEnabled(false);
+			btnVerTabla.setText("Ver tabla");
+			verTabla = false;
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1225,11 +1287,38 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 			// Desbloqueamos también los selectores
 			algCB.setEnabled(true);
 			cbTCluster.setEnabled(true);
+			umbral.setEnabled(true);
+			dims.setEnabled(true);
 			// Desbloqueamos los botones
+			rCons.setEnabled(true);
 			rInic.setEnabled(true);
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
+			btnDelete.setEnabled(true);
+		}
+
+		// Control de visualización de tabla (solo tras definir edges en HPA*)
+		else if (e.getSource() == btnVerTabla) {
+			// Si no estaba seleccionada la opción de ver la tabla
+			if (!verTabla) {
+				// Cambiamos el texto del botón
+				btnVerTabla.setText("No ver tabla");
+				rCons.setEnabled(false);
+				// Cambiamos el tipo de la tabla para que se vea la tabla
+				mapa.setTipo(Mapa.TIPO_VERTABLA);
+
+			} else {
+				// Cambiamos el texto del botón
+				btnVerTabla.setText("Ver tabla");
+				rCons.setEnabled(true);
+				// Cambiamos el tipo de la tabla para que nuevamente sea de consulta
+				mapa.setTipo(Mapa.TIPO_CONSULTA);
+			}
+
+			// Se cambia el valor de verTabla por true o por false si está a false o a true,
+			// respectivamente
+			verTabla = !verTabla;
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1291,6 +1380,133 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 
 	}
 
+	@Override
+	/**
+	 * Gestor de los JComboBox
+	 */
+	public void itemStateChanged(ItemEvent e) {
+		// Comprobamos que se ha seleccionado un nuevo valor
+		if (e.getStateChange() == ItemEvent.SELECTED) {
+			// Controlador de la parte del algoritmo
+			if (e.getSource() == algCB) {
+				String option = algCB.getSelectedItem().toString();
+				if (option.equals("A*")) {
+					log.append("Se ha seleccionado el algoritmo A*." + newline);
+					// Ocultamos elementos propios de HPA*
+					panelCHPAstar.setVisible(false);
+					vB2hpa.setVisible(false);
+					vB2umbral.setVisible(false);
+					// Reiniciamos el valor de la velocidad
+					restartVelocity();
+					// Dejamos por defecto seleccionado 4-Vecinos
+					vecCB.setSelectedIndex(0);
+					// Hacemos visible los elementos propios de A*
+					vB2a.setVisible(true);
+					panelCAstar.setVisible(true);
+				} else if (option.equals("HPA*")) {
+					log.append("Se ha seleccionado el algoritmo HPA*." + newline);
+					// Ocultamos los elementos propios de A*
+					vB2a.setVisible(false);
+					panelCAstar.setVisible(false);
+					// Reiniciamos las variables de HPA*
+					step = 0;
+					// Dejamos por defecto seleccionada la opción para escoger las dimensiones de
+					// clusters
+					cbTCluster.setSelectedIndex(0);
+					// Borramos los umbrales y bloqueamos el selector
+					umbral.removeAllItems();
+					umbral.addItem(1);
+					umbral.setEnabled(false);
+
+					// Mostramos los elementos propios de HPA*
+					vB2hpa.setVisible(true);
+					vB2umbral.setVisible(true);
+					panelCHPAstar.setVisible(true);
+				}
+			}
+
+			// Controlador del selector del número de vecinos
+			else if (e.getSource() == vecCB) {
+				String option = vecCB.getSelectedItem().toString();
+
+				if (option.equals(numVecinos[0])) { // 4-vecinos
+
+				} else if (option.equals(numVecinos[1])) { // 8-vecinos
+
+				}
+			}
+
+			// Controlador del selector de las dimensiones de los clusters (solo para HPA*)
+			else if (e.getSource() == cbTCluster) {
+				String option = cbTCluster.getSelectedItem().toString();
+
+				if (option.equals(clusters[0])) { // 10x10
+					// Borramos todos los elementos
+					umbral.removeAllItems();
+					// Añadimos opciones al umbral
+					for (int i = 1; i <= 10; i++)
+						umbral.addItem(i);
+
+					// Reactivamos el selector
+					umbral.setEnabled(true);
+
+				} else if (option.equals(clusters[1])) { // 5x5
+					// Borramos todos los elementos
+					umbral.removeAllItems();
+					// Añadimos opciones al umbral
+					for (int i = 1; i <= 5; i++)
+						umbral.addItem(i);
+
+					// Reactivamos el selector
+					umbral.setEnabled(true);
+
+				} else { // Seleccionar dimensiones
+					// Borramos todas las opciones del umbral
+					umbral.removeAllItems();
+					// Para que no se note el borrado, añadimos 1 elemento y borramos
+					umbral.addItem(1);
+					// Bloqueamos el selector
+					umbral.setEnabled(false);
+				}
+
+			}
+
+			// Controlador del selector del umbral
+			else if (e.getSource() == umbral) {
+
+			}
+
+			// Controlador del selector de las dimensiones del mapa
+			else if (e.getSource() == dims) {
+				String option = dims.getSelectedItem().toString();
+
+				if (option.equals(selDims)) { // Seleccionar dimensiones
+					mapaNuevo(0, 0);
+					// Bloqueamos el botón de borrar contenido del mapa (ya que no hay mapa en este
+					// caso)
+					btnDelete.setEnabled(false);
+
+				} else { // Si se selecciona alguna de las dimensiones
+
+					// 1. Se crea el mapa
+					log.append("Se crea un mapa tamaño " + option + "." + newline);
+					if (option.equals(dimensiones[0])) { // 40x40
+						mapaNuevo(40, 40);
+					} else if (option.equals(dimensiones[1])) { // 20x30
+						mapaNuevo(20, 30);
+					} else if (option.equals(dimensiones[2])) { // 30x20
+						mapaNuevo(30, 20);
+					}
+
+					// 2. Desbloqueamos el botón de borrar contenido del mapa
+					btnDelete.setEnabled(true);
+				}
+
+			}
+
+		}
+	}
+
 	/**
 	 * Para reiniciar la parte de la velocidad
 	 */
@@ -1320,17 +1536,44 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener {
 		mapa.destruirTablero();
 		mapa.crearTablero();
 
-		mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
-		mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
+		mapa.pintarMapa(Mapa.cInicial, pini);
+		mapa.pintarMapa(Mapa.cFinal, pfin);
+		// mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
+		// mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
 
 		for (Punto obs : lobs)
-			mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
+			mapa.pintarMapa(Mapa.cObs, obs);
+		// mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
 
 		mapa.pto_inicial = pini;
 		mapa.pto_final = pfin;
 		mapa.obstaculos = lobs;
 
 		mapa.setTipo(tipo);
+	}
+
+	/**
+	 * Crea el mapa vacío, dadas las dimensiones del mismo
+	 * 
+	 * @param fils
+	 * @param cols
+	 */
+	private void mapaNuevo(int fils, int cols) {
+		if (mapa != null)
+			mapa.destruirTablero();
+		mapa.setDims(fils, cols);
+		if (fils != 0 && cols != 0)
+			mapa.crearTablero();
+	}
+
+	/**
+	 * Te deja el mapa vacío (para el botón de borrar)
+	 */
+	private void borrarMapa() {
+		if (!dims.getSelectedItem().toString().equals(selDims)) {
+			mapa.destruirTablero();
+			mapa.crearTablero();
+		}
 	}
 
 }
