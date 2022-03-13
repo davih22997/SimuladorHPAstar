@@ -10,7 +10,7 @@ import java.util.Iterator;
  * @author david
  *
  */
-public class Edge {
+public class Edge implements Cloneable {
 
 	// Los puntos que se unen entre sí
 	protected Punto pini;
@@ -68,8 +68,8 @@ public class Edge {
 	 */
 	public Edge symm() {
 		Edge e = new Edge();
-		e.pfin = pini;
-		e.pini = pfin;
+		e.pfin = pini.clone();
+		e.pini = pfin.clone();
 		e.coste = coste;
 
 		if (camino != null)

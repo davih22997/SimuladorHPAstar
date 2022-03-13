@@ -141,6 +141,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Panel de control de simulación solo para HPA*
 	private JPanel panelCHPAstar;
 	protected static JButton btnStart2, btnStop2;
+	// Botón para visualizar la tabla de los arcos internos en HPA*
+	private JButton btnVerTabla;
+	private boolean verTabla;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -434,9 +437,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		btnStop2 = initButtonIcon(Direccion.stop16);
 		btnStop2.setEnabled(false);
 
+		// Botón para ver tabla (tras crear los arcos internos en HPA*)
+		btnVerTabla = new JButton("No ver tabla");
+		btnVerTabla.setPreferredSize(btnVerTabla.getPreferredSize());
+		btnVerTabla.setText("Ver tabla");
+		btnVerTabla.addActionListener(this);
+		btnVerTabla.setEnabled(false);
+		// Por defecto, ver tabla no está pulsado
+		verTabla = false;
+
 		// Añadimos los botones de inicio / fin al panel
 		panelCHPAstar.add(btnStart2);
 		panelCHPAstar.add(btnStop2);
+		panelCHPAstar.add(btnVerTabla);
 
 		// Añadimos todo al panel general
 		btnPanel2.add(panelCHPAstar);
@@ -1235,12 +1248,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					btnStart2.setEnabled(false);
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
+
+					log.append("Creación de nodos y arcos realizada." + newline);
 					// Incrementamos un "step"
 					step++;
 					// Desbloqueamos el botón de start
 					btnStart2.setEnabled(true);
 
-					log.append("Creación de nodos y arcos realizado");
+					// Desbloqueamos también el botón para ver tabla
+					btnVerTabla.setEnabled(true);
 
 					break;
 				default:
@@ -1258,6 +1274,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			step = 0;
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+			// Bloqueamos el botón de ver tabla
+			btnVerTabla.setEnabled(false);
+			btnVerTabla.setText("Ver tabla");
+			verTabla = false;
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1270,11 +1290,35 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			umbral.setEnabled(true);
 			dims.setEnabled(true);
 			// Desbloqueamos los botones
+			rCons.setEnabled(true);
 			rInic.setEnabled(true);
 			rFin.setEnabled(true);
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
+		}
+
+		// Control de visualización de tabla (solo tras definir edges en HPA*)
+		else if (e.getSource() == btnVerTabla) {
+			// Si no estaba seleccionada la opción de ver la tabla
+			if (!verTabla) {
+				// Cambiamos el texto del botón
+				btnVerTabla.setText("No ver tabla");
+				rCons.setEnabled(false);
+				// Cambiamos el tipo de la tabla para que se vea la tabla
+				mapa.setTipo(Mapa.TIPO_VERTABLA);
+
+			} else {
+				// Cambiamos el texto del botón
+				btnVerTabla.setText("Ver tabla");
+				rCons.setEnabled(true);
+				// Cambiamos el tipo de la tabla para que nuevamente sea de consulta
+				mapa.setTipo(Mapa.TIPO_CONSULTA);
+			}
+
+			// Se cambia el valor de verTabla por true o por false si está a false o a true,
+			// respectivamente
+			verTabla = !verTabla;
 		}
 
 		// Control de la velocidad (solo para A*)

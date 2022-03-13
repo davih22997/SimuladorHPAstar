@@ -27,10 +27,26 @@ public class Dijkstra {
 		Punto p;
 		Datos p_anterior;
 
+		/**
+		 * Crea los datos a partir del número de iteraciones, el coste y un punto
+		 * 
+		 * @param iter
+		 * @param coste
+		 * @param p
+		 */
 		public Datos(int iter, double coste, Punto p) {
 			this(iter, coste, p, null);
 		}
 
+		/**
+		 * Crea los datos a partir del número de iteraciones, el coste, un punto y los
+		 * datos anteriores
+		 * 
+		 * @param iter
+		 * @param coste
+		 * @param p
+		 * @param anterior
+		 */
 		public Datos(int iter, double coste, Punto p, Datos anterior) {
 			iteraciones = iter;
 			this.p = p;
@@ -98,16 +114,12 @@ public class Dijkstra {
 		 * @param ptos
 		 * @return
 		 */
-		public Datos getPuntoLista(int iter, double coste, Punto p, ArrayList<Punto> lista, ArrayList<Datos> ptos) {
-			Datos par = null;
+		public void getPuntoLista(int iter, double coste, Punto p, ArrayList<Punto> lista, ArrayList<Datos> ptos) {
 			if (lista.contains(p)) {
 				int index = lista.indexOf(p);
 				p = lista.get(index);
-				par = new Datos(iter, coste, p, this);
-				ptos.add(par);
+				ptos.add(new Datos(iter, coste, p, this));
 			}
-
-			return par;
 		}
 
 	}
@@ -221,7 +233,7 @@ public class Dijkstra {
 	private static ArrayList<Punto> crearCamino(Datos p) {
 		ArrayList<Punto> camino = new ArrayList<>();
 
-		while (p.p_anterior != null) {
+		while (p != null) {
 			camino.add(p.p);
 			p = p.p_anterior;
 		}

@@ -276,7 +276,8 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * @param p
 	 */
 	public void addArcoInterno(Edge edge) {
-		intraedges.add(edge);
+		if (!intraedges.contains(edge))
+			intraedges.add(edge);
 	}
 
 	/**

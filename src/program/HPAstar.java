@@ -1,12 +1,16 @@
 package program;
 
 import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.GridLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 
@@ -124,6 +128,76 @@ public class HPAstar {
 			// 4. Creamos los arcos internos
 			intraEdges(c, mapa);
 		}
+
+	}
+
+	/**
+	 * Método para ver la tabla de los arcos internos del índice del cluster en la
+	 * lista de clusters
+	 * 
+	 * @param index
+	 */
+	public static void verTabla(int index) {
+		Cluster c = clusters.get(index);
+
+		ArrayList<Punto> nodos = c.getNodos();
+		int tam = nodos.size();
+
+		// 1. Creamos los datos de la tabla
+		// DefaultTableModel model = new DefaultTableModel();
+		// model.addColumn("");
+		Object[][] data = new Object[tam][tam + 1];
+		String[] columns = new String[tam + 1];
+
+		columns[0] = "";
+		ArrayList<Punto> visitados = new ArrayList<>();
+
+		// System.out.println(nodos);
+
+		for (int i = 0; i < nodos.size(); i++) {
+			Punto p = nodos.get(i);
+			visitados.add(p);
+			String name = "n" + index + "," + i;
+			columns[i + 1] = name;
+			// model.addColumn(name);
+			data[i][0] = name;
+
+			ArrayList<Edge> edges = p.getArcosInternos();
+
+			for (int j = 1; j <= i + 1; j++) {
+				data[i][j] = "X";
+			}
+			int idx = i + 2;
+			for (Edge edge : edges) {
+				if (!visitados.contains(edge.pfin))
+					data[i][idx++] = edge.coste;
+			}
+
+		}
+
+		// JTable tabla = new JTable(model);
+		// 2. Creamos la tabla con los datos
+		JTable tabla = new JTable(data, columns);
+
+		tabla.setFillsViewportHeight(true);
+		tabla.setPreferredScrollableViewportSize(tabla.getPreferredScrollableViewportSize());
+		tabla.setFillsViewportHeight(true);
+
+		// 3. Añadimos la tabla a un panel
+		JPanel panel = new JPanel();
+		panel.add(tabla);
+		panel.setLayout(new GridLayout(1, 1));
+
+		// Creamos la ventana
+		JFrame frame = new JFrame("Nodos internos");
+		frame.setResizable(false);
+
+		// Le añadimos el panel
+		frame.setContentPane(panel);
+
+		// Lo mostramos
+		frame.pack();
+		frame.setVisible(true);
 
 	}
 
@@ -476,13 +550,19 @@ public class HPAstar {
 
 		// Se van creando arcos entre cada par de nodos del cluster
 		ArrayList<Punto> nodos = c.getNodos();
+		// Copiamos la lista
+		ArrayList<Punto> nodos2 = (ArrayList<Punto>) c.getNodos().clone();
 		for (int i = 0; i < nodos.size() - 1; i++) {
-			for (int j = 1; j < nodos.size(); j++) {
+			// Vamos eliminando el elemento que se coge de la lista de nodos en la copia
+			nodos2.remove(nodos.get(i));
+			for (int j = 0; j < nodos2.size(); j++) {
 				Punto p1 = nodos.get(i);
-				Punto p2 = nodos.get(j);
+				Punto p2 = nodos2.get(j);
+
 				Edge edge = Dijkstra.intraedge(p1, p2, submapa);
 				p1.addArcoInterno(edge);
 				p2.addArcoInterno(edge.symm());
+
 			}
 		}
 

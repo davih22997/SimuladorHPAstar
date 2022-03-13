@@ -29,6 +29,7 @@ public class Mapa {
 	protected static final Color cAbierto = Color.CYAN;
 	protected static final Color cCerrado = Color.BLUE;
 	protected static final Color cRecorrido = Color.PINK;
+	protected static final Color cDefault = UIManager.getColor("Button.background");
 
 	// Para insertar una nueva línea
 	private final static String newline = "\n";
@@ -38,6 +39,7 @@ public class Mapa {
 	public static final int TIPO_INICIAL = 1;
 	public static final int TIPO_FINAL = 2;
 	public static final int TIPO_OBSTACULO = 3;
+	public static final int TIPO_VERTABLA = 4;
 
 	// Variable para controlar el tipo del mapa al pulsar un botón
 	private int tipo;
@@ -258,7 +260,7 @@ public class Mapa {
 			if (pto_inicial != null) {
 				// Si el mismo pto coincide
 				if (pto_inicial.equals(aux)) {
-					btn.setBackground(UIManager.getColor("Button.background"));
+					btn.setBackground(Mapa.cDefault);
 					pto_inicial = null;
 					Interfaz.log.append("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
 							+ aux.toString() + newline);
@@ -275,8 +277,7 @@ public class Mapa {
 					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cInicial);
-					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()]
-							.setBackground(UIManager.getColor("Button.background"));
+					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()].setBackground(Mapa.cDefault);
 					pto_inicial = aux;
 				}
 				// Si no existe
@@ -300,7 +301,7 @@ public class Mapa {
 			if (pto_final != null) {
 				// Si el mismo pto coincide
 				if (pto_final.equals(aux)) {
-					btn.setBackground(UIManager.getColor("Button.background"));
+					btn.setBackground(Mapa.cDefault);
 					pto_final = null;
 					Interfaz.log.append("Se ha seleccionado quitar el punto final, que estaba en la posición: "
 							+ aux.toString() + "." + newline);
@@ -317,8 +318,7 @@ public class Mapa {
 					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cFinal);
-					MatrizBotones[pto_final.getFila()][pto_final.getCol()]
-							.setBackground(UIManager.getColor("Button.background"));
+					MatrizBotones[pto_final.getFila()][pto_final.getCol()].setBackground(Mapa.cDefault);
 					pto_final = aux;
 				}
 				// Si no existe
@@ -343,7 +343,7 @@ public class Mapa {
 			if (obstaculos.contains(aux)) {
 				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
 				obstaculos.remove(aux);
-				btn.setBackground(UIManager.getColor("Button.background"));
+				btn.setBackground(Mapa.cDefault);
 			} else {
 				// Si coincide con el pto inicial
 				if (pto_inicial != null && pto_inicial.equals(aux)) {
@@ -362,6 +362,17 @@ public class Mapa {
 				Collections.sort(obstaculos);
 
 			}
+			break;
+		case TIPO_VERTABLA: // Opción de ver tabla activada (solo cuando tenemos los arcos hechos en HPA*)
+			// Cogemos la lista de clusters de HPAstar
+			ArrayList<Cluster> clusters = HPAstar.clusters;
+			// Creamos la variable con el índice del cluster del botón
+			int i = 0;
+			for (i = 0; i < clusters.size() && !clusters.get(i).inCluster(aux); i++)
+				;
+			// Vemos la tabla de los arcos externos
+			HPAstar.verTabla(i);
+
 			break;
 		default:
 			break;
