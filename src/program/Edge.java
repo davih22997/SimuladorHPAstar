@@ -86,7 +86,19 @@ public class Edge implements Cloneable {
 		// Si es otro edge
 		if (res) {
 			Edge e = (Edge) o;
-			res = e.coste == coste && e.camino.size() == camino.size();
+
+			// Primero, comparamos el coste
+			res = e.coste == coste; // && e.camino.size() == camino.size();
+
+			// Ahora, vemos si los caminos son null
+			if (res && e.camino == null)
+				res = camino == null;
+			else if (res) {
+				if (camino == null)
+					res = false;
+				else
+					res = e.camino.size() == camino.size();
+			}
 
 			// Si los costes y la longitud del camino coinciden
 			if (res) {
@@ -94,18 +106,20 @@ public class Edge implements Cloneable {
 
 				// Si coinciden los puntos inicial y final
 				if (res)
-					for (int i = 0; res && i < camino.size(); i++)
-						res = e.camino.get(i).equals(camino.get(i));
+					if (camino != null)
+						for (int i = 0; res && i < camino.size(); i++)
+							res = e.camino.get(i).equals(camino.get(i));
 
-				// Si no, comprobamos que coincida con el simétrico
-				else {
-					Edge sym = symm();
+					// Si no, comprobamos que coincida con el simétrico
+					else {
+						Edge sym = symm();
 
-					res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
+						res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
 
-					for (int i = 0; res && i < sym.camino.size(); i++)
-						res = e.camino.get(i).equals(camino.get(i));
-				}
+						if (camino != null)
+							for (int i = 0; res && i < sym.camino.size(); i++)
+								res = e.camino.get(i).equals(camino.get(i));
+					}
 
 			}
 

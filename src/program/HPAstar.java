@@ -1,8 +1,7 @@
 package program;
 
 import java.awt.Color;
-import java.awt.Dimension;
-import java.awt.GridLayout;
+import java.awt.BorderLayout;
 import java.util.ArrayList;
 import java.util.Collections;
 
@@ -169,8 +168,12 @@ public class HPAstar {
 			}
 			int idx = i + 2;
 			for (Edge edge : edges) {
-				if (!visitados.contains(edge.pfin))
-					data[i][idx++] = edge.coste;
+				if (!visitados.contains(edge.pfin)) {
+					if (edge.coste != Double.MAX_VALUE)
+						data[i][idx++] = edge.coste;
+					else
+						data[i][idx++] = "Infinito";
+				}
 			}
 
 		}
@@ -185,8 +188,9 @@ public class HPAstar {
 
 		// 3. Añadimos la tabla a un panel
 		JPanel panel = new JPanel();
-		panel.add(tabla);
-		panel.setLayout(new GridLayout(1, 1));
+		panel.setLayout(new BorderLayout());
+		panel.add(tabla.getTableHeader(), BorderLayout.CENTER);
+		panel.add(tabla, BorderLayout.SOUTH);
 
 		// Creamos la ventana
 		JFrame frame = new JFrame("Nodos internos");
@@ -560,6 +564,7 @@ public class HPAstar {
 				Punto p2 = nodos2.get(j);
 
 				Edge edge = Dijkstra.intraedge(p1, p2, submapa);
+
 				p1.addArcoInterno(edge);
 				p2.addArcoInterno(edge.symm());
 
