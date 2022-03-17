@@ -56,8 +56,8 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private final int dimY = 700; // Y -> alto
-	private final int dimX = 500; // X -> ancho
+	private final int dimY = 650; // Y -> alto
+	private final int dimX = 600; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -195,17 +195,16 @@ public class Mapa {
 					// bNew.setSize(tamX, tamY);
 
 					// Si son iguales, el tamaño será el alto (ya que es más alto el mapa)
-					if (dY == dX) 
+					if (dY == dX)
 						bNew.setPreferredSize(new Dimension(tamY, tamY));
-					 // Si hay más filas que columnas (más alto que largo), se coge el tamaño de
-						// columna (ancho)
-					else if (dX < dY) 
+					// Si hay más filas que columnas (más alto que largo), se coge el tamaño de
+					// columna (ancho)
+					else if (dX < dY)
 						bNew.setPreferredSize(new Dimension(tamX, tamX));
-					
+
 					// Si hay más filas que columnas, se coge el tamaño de fila (largo)
-					else 
+					else
 						bNew.setPreferredSize(new Dimension(tamY, tamY));
-					
 
 					// se asigna un texto con la posición del botón en la matriz al botón, al
 					// tooltip del botón
@@ -222,7 +221,7 @@ public class Mapa {
 					// Definimos la posición
 					gbc.gridx = contX;
 					gbc.gridy = contY;
-					//gbc.fill = GridBagConstraints.BOTH;
+					// gbc.fill = GridBagConstraints.BOTH;
 
 					// Se agrega al panel
 					tablero.add(MatrizBotones[contY][contX], gbc);

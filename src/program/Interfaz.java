@@ -556,13 +556,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
 		// vertical
 		mapaBox.add(mapa.tablero);
-		datosAstar = new JLabel();
+		datosAstar = new JLabel("Texto para ajustar el tamaño");
 		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
 		mapaBox.add(datosAstar);
 
 		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
 		// la simulación
 		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
+		datosAstar.setText("");
 		// Escondemos los datos (se van a mostrar solo en simulación).
 		datosAstar.setVisible(false);
 
