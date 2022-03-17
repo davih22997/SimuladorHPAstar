@@ -126,12 +126,24 @@ public class HPAstar {
 			// 2. Creamos los edges por la derecha
 			rigthEdge(c, clusters, mapa);
 
+			// 3. Añadimos los puntos inicial y final en caso de no estar y corresponder con
+			// el cluster:
+			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
+				c.addNodo(mapa.pto_inicial, false);
+				oscurecerMapa(mapa.pto_inicial, mapa);
+			}
+
+			if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
+				c.addNodo(mapa.pto_final, false);
+				oscurecerMapa(mapa.pto_final, mapa);
+			}
+
 			// CREACIÓN DE ARCOS INTERNOS
-			// 3. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
+			// 4. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
 			// (edges)
 			Collections.sort(c.getNodos());
 
-			// 4. Creamos los arcos internos
+			// 5. Creamos los arcos internos
 			intraEdges(c, mapa);
 		}
 
