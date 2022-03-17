@@ -128,6 +128,7 @@ public class HPAstar {
 
 			// 3. Añadimos los puntos inicial y final en caso de no estar y corresponder con
 			// el cluster:
+
 			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
 				c.addNodo(mapa.pto_inicial, false);
 				oscurecerMapa(mapa.pto_inicial, mapa);

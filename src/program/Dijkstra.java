@@ -219,7 +219,7 @@ public class Dijkstra {
 			edge.intraEdge(p1, p2, camino, pto.coste);
 		} // En caso contrario, añade un camino vacío con coste infinito
 		else
-			edge.intraEdge(p1, p2, null, Double.MAX_VALUE);
+			edge.intraEdge(p1, p2, new ArrayList<>(), Double.MAX_VALUE);
 
 		return edge;
 	}

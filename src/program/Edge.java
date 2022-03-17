@@ -72,8 +72,7 @@ public class Edge implements Cloneable {
 		e.pini = pfin.clone();
 		e.coste = coste;
 
-		if (camino != null)
-			e.camino = (ArrayList<Punto>) camino.clone();
+		e.camino = (ArrayList<Punto>) camino.clone();
 		Collections.reverse(e.camino);
 
 		return e;
@@ -91,14 +90,9 @@ public class Edge implements Cloneable {
 			res = e.coste == coste; // && e.camino.size() == camino.size();
 
 			// Ahora, vemos si los caminos son null
-			if (res && e.camino == null)
-				res = camino == null;
-			else if (res) {
-				if (camino == null)
-					res = false;
-				else
-					res = e.camino.size() == camino.size();
-			}
+
+			if (res)
+				res = e.camino.size() == camino.size();
 
 			// Si los costes y la longitud del camino coinciden
 			if (res) {
@@ -106,20 +100,18 @@ public class Edge implements Cloneable {
 
 				// Si coinciden los puntos inicial y final
 				if (res)
-					if (camino != null)
-						for (int i = 0; res && i < camino.size(); i++)
-							res = e.camino.get(i).equals(camino.get(i));
+					for (int i = 0; res && i < camino.size(); i++)
+						res = e.camino.get(i).equals(camino.get(i));
 
-					// Si no, comprobamos que coincida con el simétrico
-					else {
-						Edge sym = symm();
+				// Si no, comprobamos que coincida con el simétrico
+				else {
+					Edge sym = symm();
 
-						res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
+					res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
 
-						if (camino != null)
-							for (int i = 0; res && i < sym.camino.size(); i++)
-								res = e.camino.get(i).equals(camino.get(i));
-					}
+					for (int i = 0; res && i < sym.camino.size(); i++)
+						res = e.camino.get(i).equals(camino.get(i));
+				}
 
 			}
 
@@ -137,7 +129,7 @@ public class Edge implements Cloneable {
 		sb.append("Coste: " + this.coste + "\n");
 		sb.append("Camino: ");
 
-		if (camino != null && !camino.isEmpty()) {
+		if (!camino.isEmpty()) {
 			Iterator<Punto> iter = camino.iterator();
 			Punto p = iter.next();
 			sb.append(p);

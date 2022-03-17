@@ -2,6 +2,8 @@ package program;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,7 +56,7 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private final int dimY = 500; // Y -> alto
+	private final int dimY = 700; // Y -> alto
 	private final int dimX = 500; // X -> ancho
 
 	// Elementos del mapa
@@ -139,7 +141,7 @@ public class Mapa {
 	 */
 	private void initComponents() {
 		tablero = new JPanel();
-		tablero.setPreferredSize(new Dimension(dimY, dimX));
+		tablero.setPreferredSize(new Dimension(dimX, dimY));
 
 		tablero.setBackground(new Color(204, 204, 204));
 		tablero.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
@@ -149,9 +151,9 @@ public class Mapa {
 		tablero.setLayout(tableroLayout);
 
 		tableroLayout.setHorizontalGroup(
-				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, dimX, Short.MAX_VALUE));
 		tableroLayout.setVerticalGroup(
-				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, dimY, Short.MAX_VALUE));
 
 	}
 
@@ -175,7 +177,10 @@ public class Mapa {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
 			// Se crea el tamaño de gridLayout de nuestro panel del tablero
-			tablero.setLayout(new GridLayout(dY, dX));
+			// tablero.setLayout(new GridLayout(dY, dX));
+			tablero.setLayout(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+
 			// Se obtiene las dimensiones de cada botón
 			getDimButtons(dY, dX);
 
@@ -187,7 +192,21 @@ public class Mapa {
 					// Se crea un nuevo JButton
 					JButton bNew = new JButton();
 					// Se le asignan sus dimensiones (ancho, alto)
-					bNew.setSize(tamY, tamX);
+					// bNew.setSize(tamX, tamY);
+
+					// Si son iguales, el tamaño será el alto (ya que es más alto el mapa)
+					if (dY == dX) 
+						bNew.setPreferredSize(new Dimension(tamY, tamY));
+					 // Si hay más filas que columnas (más alto que largo), se coge el tamaño de
+						// columna (ancho)
+					else if (dX < dY) 
+						bNew.setPreferredSize(new Dimension(tamX, tamX));
+					
+					// Si hay más filas que columnas, se coge el tamaño de fila (largo)
+					else 
+						bNew.setPreferredSize(new Dimension(tamY, tamY));
+					
+
 					// se asigna un texto con la posición del botón en la matriz al botón, al
 					// tooltip del botón
 					bNew.setToolTipText(Integer.toString(contY) + ", " + Integer.toString(contX));
@@ -200,8 +219,14 @@ public class Mapa {
 						}
 					});
 
+					// Definimos la posición
+					gbc.gridx = contX;
+					gbc.gridy = contY;
+					//gbc.fill = GridBagConstraints.BOTH;
+
 					// Se agrega al panel
-					tablero.add(MatrizBotones[contY][contX]);
+					tablero.add(MatrizBotones[contY][contX], gbc);
+					// tablero.add(MatrizBotones[contY][contX]);
 					// Se redibuja el panel
 					redibujar();
 				}
@@ -448,8 +473,10 @@ public class Mapa {
 	 * @param cY cantidad de botones por columna
 	 */
 	private void getDimButtons(int cX, int cY) {
+
 		tamX = dimX / cX;
 		tamY = dimY / cY;
+
 	}
 
 	/**

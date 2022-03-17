@@ -82,6 +82,8 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 			int c = sc.nextInt();
 			this.c = c;
 			this.f = f;
+			this.interedges = new ArrayList<>();
+			this.intraedges = new ArrayList<>();
 		} catch (NumberFormatException e) {
 			e.getStackTrace();
 		} catch (Exception e) {
