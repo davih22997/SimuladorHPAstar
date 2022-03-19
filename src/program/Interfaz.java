@@ -171,6 +171,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
 	private int step = 0;
+	// Lista de frames abiertos
+	private static ArrayList<JFrame> frames = new ArrayList<>();
 
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
@@ -1256,6 +1258,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 									+ newline);
 
 					break;
+				case 2:
+					log.append("Mostrando los arcos del mapa." + newline);
+					// Bloqueamos el botón de start
+					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
 
@@ -1269,6 +1275,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		else if (e.getSource() == btnStop2) {
 			// Reiniciamos el contador de pasos:
 			step = 0;
+			// Cerramos todos los frames de haberlos:
+			for (JFrame frame : frames)
+				frame.dispose();
+
+			// Y reseteamos la lista de frames
+			frames = new ArrayList<>();
+
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
 			// Bloqueamos el botón de ver tabla
@@ -1561,6 +1574,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 */
 	protected static void escribir(String text) {
 		log.append(text);
+	}
+
+	/**
+	 * Añade un frame a la lista de frames
+	 * 
+	 * @param frame
+	 */
+	protected static void addFrame(JFrame frame) {
+		frames.add(frame);
 	}
 
 }

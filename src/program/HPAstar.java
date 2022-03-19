@@ -263,6 +263,9 @@ public class HPAstar {
 		JFrame frame = new JFrame("Nodos internos");
 		frame.setResizable(false);
 
+		// Le indicamos que no cierre la aplicación al cerrar la ventana
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
 		// Le añadimos el panel
 		frame.setContentPane(panel);
 
@@ -270,8 +273,18 @@ public class HPAstar {
 		frame.pack();
 		frame.setVisible(true);
 
+		Interfaz.addFrame(frame);
+
 		// Se escribe la acción en el logger
-		Interfaz.escribir("Mostrados los arcos y nodos internos del cluster " + index + "\n");
+		Interfaz.escribir("Mostrados los arcos y nodos internos del cluster " + index + ".\n");
+		Interfaz.escribir("(0 es el primer cluster; " + (clusters.size() - 1) + " es el último.\n");
+	}
+
+	/**
+	 * Método para la visualización de los arcos de los nodos del mapa
+	 */
+	public static void visualizarArcos() {
+
 	}
 
 	/**
