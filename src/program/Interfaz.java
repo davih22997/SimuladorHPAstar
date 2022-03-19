@@ -25,6 +25,7 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -76,7 +77,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private JPanel panel;
 
 	// Control de todas las acciones
-	protected static JTextArea log;
+	private static JTextArea log;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
@@ -142,7 +143,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private JPanel panelCHPAstar;
 	protected static JButton btnStart2, btnStop2;
 	// Botón para visualizar la tabla de los arcos internos en HPA*
-	private JButton btnVerTabla;
+	private JCheckBox chbVerTabla;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -170,7 +171,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
 	private int step = 0;
-	private boolean verTabla;
 
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
@@ -438,30 +438,22 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		btnStop2.setEnabled(false);
 
 		// Botón para ver tabla (tras crear los arcos internos en HPA*)
-		btnVerTabla = new JButton("No ver tabla");
-		btnVerTabla.setPreferredSize(btnVerTabla.getPreferredSize());
-		btnVerTabla.setText("Ver tabla");
-		btnVerTabla.addActionListener(this);
-		btnVerTabla.setEnabled(false);
-		// Por defecto, ver tabla no está pulsado
-		verTabla = false;
+		chbVerTabla = new JCheckBox("Ver nodos internos");
+		chbVerTabla.setSelected(false);
+		chbVerTabla.setEnabled(false);
+		chbVerTabla.addChangeListener(this);
 
 		// Añadimos los botones de inicio / fin al panel
 		panelCHPAstar.add(btnStart2);
 		panelCHPAstar.add(btnStop2);
-		panelCHPAstar.add(btnVerTabla);
+		panelCHPAstar.add(chbVerTabla);
 
 		// Añadimos todo al panel general
 		btnPanel2.add(panelCHPAstar);
 		// Y ocultamos la parte de HPA* (por defecto está en A*)
 		panelCHPAstar.setVisible(false);
 
-		/*
-		 * // Añadimos todo al panel de botones btnPanel2.add(btnStart);
-		 * btnPanel2.add(btnStop); btnPanel2.add(vel); btnPanel2.add(btnMinus);
-		 * btnPanel2.add(velocity); btnPanel2.add(btnPlus);
-		 */
-
+		// Lo añadimos a una caja vertical
 		Box vB3 = Box.createVerticalBox();
 		vB3.add(titulo3);
 		vB3.add(btnPanel2);
@@ -1257,7 +1249,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					btnStart2.setEnabled(true);
 
 					// Desbloqueamos también el botón para ver tabla
-					btnVerTabla.setEnabled(true);
+					chbVerTabla.setEnabled(true);
+
+					log.append(
+							"Pulsa en la opción de ver nodos internos y en algún punto para ver la lista de nodos internos del cluster que contiene al punto."
+									+ newline);
 
 					break;
 				default:
@@ -1276,9 +1272,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
 			// Bloqueamos el botón de ver tabla
-			btnVerTabla.setEnabled(false);
-			btnVerTabla.setText("Ver tabla");
-			verTabla = false;
+			chbVerTabla.setEnabled(false);
+			// Y provocamos que no esté seleccionado por defecto
+			chbVerTabla.setSelected(false);
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1297,29 +1293,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
-		}
-
-		// Control de visualización de tabla (solo tras definir edges en HPA*)
-		else if (e.getSource() == btnVerTabla) {
-			// Si no estaba seleccionada la opción de ver la tabla
-			if (!verTabla) {
-				// Cambiamos el texto del botón
-				btnVerTabla.setText("No ver tabla");
-				rCons.setEnabled(false);
-				// Cambiamos el tipo de la tabla para que se vea la tabla
-				mapa.setTipo(Mapa.TIPO_VERTABLA);
-
-			} else {
-				// Cambiamos el texto del botón
-				btnVerTabla.setText("Ver tabla");
-				rCons.setEnabled(true);
-				// Cambiamos el tipo de la tabla para que nuevamente sea de consulta
-				mapa.setTipo(Mapa.TIPO_CONSULTA);
-			}
-
-			// Se cambia el valor de verTabla por true o por false si está a false o a true,
-			// respectivamente
-			verTabla = !verTabla;
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1366,8 +1339,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Gestor de los JRadioButtons
 	 */
 	public void stateChanged(ChangeEvent e) {
+		// Si seleccionamos la opción de ver nodos internos. Lo ponemos arriba del todo,
+		// ya que su prioridad es máxima (y va a estar siempre seleccionado al mismo
+		// tiempo la opción de consulta)
+		if (chbVerTabla.isSelected())
+			mapa.setTipo(Mapa.TIPO_VERTABLA);
 		// Si seleccionamos la opción de consulta
-		if (rCons.isSelected())
+		else if (rCons.isSelected())
 			mapa.setTipo(Mapa.TIPO_CONSULTA);
 		// Si seleccionamos la opción de pto inicial
 		else if (rInic.isSelected())
@@ -1537,14 +1515,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		mapa.destruirTablero();
 		mapa.crearTablero();
 
+		// Volvemos a pintar el mapa tal y como estaba tras seleccionar los puntos de
+		// interés
 		mapa.pintarMapa(Mapa.cInicial, pini);
 		mapa.pintarMapa(Mapa.cFinal, pfin);
-		// mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
-		// mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
 
 		for (Punto obs : lobs)
 			mapa.pintarMapa(Mapa.cObs, obs);
-		// mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
 
 		mapa.pto_inicial = pini;
 		mapa.pto_final = pfin;
@@ -1575,6 +1552,15 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			mapa.destruirTablero();
 			mapa.crearTablero();
 		}
+	}
+
+	/**
+	 * Función para escribir un texto en el logger
+	 * 
+	 * @param text
+	 */
+	protected static void escribir(String text) {
+		log.append(text);
 	}
 
 }

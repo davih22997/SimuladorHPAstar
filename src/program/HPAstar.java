@@ -199,7 +199,6 @@ public class HPAstar {
 			bNodos.add(node);
 
 		bNodos.add(ltabla);
-		// bNodos.setAlignmentX(JFrame.CENTER_ALIGNMENT);
 
 		// Añadimos los datos al panel
 		panel.add(bNodos, BorderLayout.WEST);
@@ -271,6 +270,8 @@ public class HPAstar {
 		frame.pack();
 		frame.setVisible(true);
 
+		// Se escribe la acción en el logger
+		Interfaz.escribir("Mostrados los arcos y nodos internos del cluster " + index + "\n");
 	}
 
 	/**
@@ -331,7 +332,7 @@ public class HPAstar {
 		}
 		// Finalmente, se ordena la lista de clusters
 		Collections.sort(clusters);
-		Interfaz.log.append("Se han creado los clústers.\n");
+		Interfaz.escribir("Se han creado los clústers.\n");
 	}
 
 	/**

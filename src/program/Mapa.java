@@ -276,7 +276,7 @@ public class Mapa {
 		Punto aux = new Punto(btn.getToolTipText());
 		switch (tipo) {
 		case TIPO_CONSULTA: // Consulta
-			Interfaz.log.append("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")" + newline);
+			Interfaz.escribir("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")" + newline);
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		case TIPO_INICIAL: // Pto inicial
@@ -286,19 +286,19 @@ public class Mapa {
 				if (pto_inicial.equals(aux)) {
 					btn.setBackground(Mapa.cDefault);
 					pto_inicial = null;
-					Interfaz.log.append("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
+					Interfaz.escribir("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
 							+ aux.toString() + newline);
 				} else {
 					// Si coincide con el pto_final -> Lo borramos
 					if (pto_final != null && pto_final.equals(aux)) {
-						Interfaz.log.append("Se quita el punto final establecido." + newline);
+						Interfaz.escribir("Se quita el punto final establecido." + newline);
 						pto_final = null;
 					} else if (obstaculos.contains(aux)) {
-						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 						obstaculos.remove(aux);
 					}
 
-					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
+					Interfaz.escribir("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cInicial);
 					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()].setBackground(Mapa.cDefault);
@@ -307,12 +307,12 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_final no es null y coincide: Lo borramos
-				Interfaz.log.append("Se establece el punto inicial en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se establece el punto inicial en la posición: " + aux.toString() + "." + newline);
 				if (pto_final != null && pto_final.equals(aux)) {
-					Interfaz.log.append("Se quita el punto final establecido." + newline);
+					Interfaz.escribir("Se quita el punto final establecido." + newline);
 					pto_final = null;
 				} else if (obstaculos.contains(aux)) {
-					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 					obstaculos.remove(aux);
 				}
 
@@ -327,19 +327,19 @@ public class Mapa {
 				if (pto_final.equals(aux)) {
 					btn.setBackground(Mapa.cDefault);
 					pto_final = null;
-					Interfaz.log.append("Se ha seleccionado quitar el punto final, que estaba en la posición: "
+					Interfaz.escribir("Se ha seleccionado quitar el punto final, que estaba en la posición: "
 							+ aux.toString() + "." + newline);
 				} else {
 					// Si coincide con el pto_inicial -> Lo borramos
 					if (pto_inicial != null && pto_inicial.equals(aux)) {
-						Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+						Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 						pto_inicial = null;
 					} else if (obstaculos.contains(aux)) {
-						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 						obstaculos.remove(aux);
 					}
 
-					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
+					Interfaz.escribir("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cFinal);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()].setBackground(Mapa.cDefault);
@@ -348,12 +348,12 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_inicial no es null y coincide: Lo borramos
-				Interfaz.log.append("Se establece el punto final en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se establece el punto final en la posición: " + aux.toString() + "." + newline);
 				if (pto_inicial != null && pto_inicial.equals(aux)) {
-					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+					Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 					pto_inicial = null;
 				} else if (obstaculos.contains(aux)) {
-					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 					obstaculos.remove(aux);
 				}
 
@@ -365,20 +365,20 @@ public class Mapa {
 			btn.setBackground(cObs);
 			// Si la lista de obstaculos contiene el punto seleccionado
 			if (obstaculos.contains(aux)) {
-				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
 				obstaculos.remove(aux);
 				btn.setBackground(Mapa.cDefault);
 			} else {
 				// Si coincide con el pto inicial
 				if (pto_inicial != null && pto_inicial.equals(aux)) {
-					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+					Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 					pto_inicial = null;
 				} // Si coincide con el pto final
 				else if (pto_final != null && pto_final.equals(aux)) {
-					Interfaz.log.append("Se quita el punto final establecido." + newline);
+					Interfaz.escribir("Se quita el punto final establecido." + newline);
 					pto_final = null;
 				}
-				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
 				obstaculos.add(aux);
 				btn.setBackground(cObs);
 
@@ -393,7 +393,7 @@ public class Mapa {
 			// Creamos la variable con el índice del cluster del botón
 			int i = 0;
 			for (i = 0; i < clusters.size() && !clusters.get(i).inCluster(aux); i++)
-				;
+				continue;
 			// Vemos la tabla de los arcos externos
 			HPAstar.verTabla(i);
 
