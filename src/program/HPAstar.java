@@ -273,6 +273,7 @@ public class HPAstar {
 		frame.pack();
 		frame.setVisible(true);
 
+		// Lo añadimos a la lista de frames a eliminar de la interfaz
 		Interfaz.addFrame(frame);
 
 		// Se escribe la acción en el logger
@@ -281,9 +282,37 @@ public class HPAstar {
 	}
 
 	/**
-	 * Método para la visualización de los arcos de los nodos del mapa
+	 * Método para la visualización de todos los arcos de los nodos del mapa
+	 * (visualización del grafo abstracto)
 	 */
-	public static void visualizarArcos() {
+	public static void visualizarArcos(Mapa mapa) {
+		// Creamos el panel con todo el contenido
+		PanelArcos panel = new PanelArcos(mapa, clusters);
+
+		// Creamos el frame
+		JFrame frame = new JFrame();
+
+		// Le ponemos el título
+		frame.setTitle("Grafo abstracto");
+
+		// Le indicamos que no cierre la aplicación completa al cerrar la ventana
+		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+		// Le añadimos el panel
+		frame.add(panel);
+
+		// Hacemos que el tamaño sea siempre igual
+		frame.setResizable(false);
+
+		// Lo mostramos
+		frame.pack();
+		frame.setVisible(true);
+
+		// Lo añadimos a la lista de frames a eliminar de la interfaz
+		Interfaz.addFrame(frame);
+
+		// Se escribe la acción en el logger
+		Interfaz.escribir("Mostados todos los arcos.\n");
 
 	}
 

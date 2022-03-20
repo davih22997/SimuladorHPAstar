@@ -59,6 +59,24 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	/**
+	 * Método para obtener la cantidad de filas del cluster
+	 * 
+	 * @return
+	 */
+	public int getFilas() {
+		return filas;
+	}
+
+	/**
+	 * Método para obtener la cantidad de columnas del cluster
+	 * 
+	 * @return
+	 */
+	public int getCols() {
+		return columnas;
+	}
+
+	/**
 	 * Método para devolver el contorno del cluster
 	 * 
 	 * @return

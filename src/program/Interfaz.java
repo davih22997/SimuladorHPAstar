@@ -1261,6 +1261,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				case 2:
 					log.append("Mostrando los arcos del mapa." + newline);
 					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+
+					// Realizamos la siguiente fase
+					HPAstar.visualizarArcos(mapa);
+
+					log.append("Arcos visualizados." + newline);
+					// Incrementamos un "step"
+					step++;
+
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(false);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);

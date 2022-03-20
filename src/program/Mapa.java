@@ -477,6 +477,14 @@ public class Mapa {
 		tamY = dimY / cY;
 
 	}
+	
+	/**
+	 * Función para obtener las dimensiones de los botones
+	 * @return
+	 */
+	public Dimension getDimsButton () {
+		return MatrizBotones[0][0].getPreferredSize();
+	}
 
 	/**
 	 * Método para pintar el mapa de dados un color una posición

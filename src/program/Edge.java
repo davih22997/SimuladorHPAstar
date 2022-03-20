@@ -78,6 +78,34 @@ public class Edge implements Cloneable {
 		return e;
 	}
 
+	/**
+	 * Método para imprimir edge (se va a usar como debug)
+	 */
+	protected void imprimirEdge() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Arco de " + this.pini + " hasta " + this.pfin + ":\n");
+		sb.append("Coste: " + this.coste + "\n");
+		sb.append("Camino: ");
+
+		if (!camino.isEmpty()) {
+			Iterator<Punto> iter = camino.iterator();
+			Punto p = iter.next();
+			sb.append(p);
+			if (iter.hasNext())
+				sb.append(" -> ");
+
+			while (iter.hasNext()) {
+				p = iter.next();
+				sb.append(p);
+				if (iter.hasNext())
+					sb.append(" -> ");
+			}
+
+		}
+
+		System.out.println(sb.toString());
+	}
+
 	@Override
 	public boolean equals(Object o) {
 		boolean res = o instanceof Edge;
@@ -118,34 +146,6 @@ public class Edge implements Cloneable {
 		}
 
 		return res;
-	}
-
-	/**
-	 * Método para imprimir edge (se va a usar como debug)
-	 */
-	public void imprimirEdge() {
-		StringBuilder sb = new StringBuilder();
-		sb.append("Arco de " + this.pini + " hasta " + this.pfin + ":\n");
-		sb.append("Coste: " + this.coste + "\n");
-		sb.append("Camino: ");
-
-		if (!camino.isEmpty()) {
-			Iterator<Punto> iter = camino.iterator();
-			Punto p = iter.next();
-			sb.append(p);
-			if (iter.hasNext())
-				sb.append(" -> ");
-
-			while (iter.hasNext()) {
-				p = iter.next();
-				sb.append(p);
-				if (iter.hasNext())
-					sb.append(" -> ");
-			}
-
-		}
-
-		System.out.println(sb.toString());
 	}
 
 	@Override
