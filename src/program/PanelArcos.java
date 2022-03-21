@@ -189,6 +189,12 @@ public class PanelArcos extends JPanel {
 
 				// Cogemos las coordenadas del botón
 				Point p2 = centroBoton(b2);
+				
+				// Prueba para ver cómo funcionan las posiciones
+				/*
+				System.out.println("Punto: " + p + " -> " + p1);
+				System.out.println("Punto: " + p_2 + " -> " + p2);
+				*/
 
 				// Dibujamos la línea recta
 				g.drawLine(p1.x, p1.y, p2.x, p2.y);
