@@ -152,7 +152,6 @@ public class PanelArcos extends JPanel {
 	 * @param g
 	 */
 	private void pintarArcos(Punto p, Graphics g) {
-
 		// Definimos el color negro para los arcos
 		g.setColor(Color.BLACK);
 
@@ -191,9 +190,8 @@ public class PanelArcos extends JPanel {
 				// Cogemos las coordenadas del botón
 				Point p2 = centroBoton(b2);
 
-				// Dibujamos la línea
+				// Dibujamos la línea recta
 				g.drawLine(p1.x, p1.y, p2.x, p2.y);
-				
 			}
 			// Borramos del punto final este edge para no repetir
 			p_2.getArcosInternos().remove(edge);
