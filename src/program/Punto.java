@@ -322,6 +322,25 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		return sb.toString();
 	}
 
+	/**
+	 * Te indica si otro punto se encuentra en la misma fila
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public boolean sameRow(Punto p) {
+		return p.f == f;
+	}
+
+	/**
+	 * Te indica si otro punto se encuentra en la misma columna
+	 * @param p
+	 * @return
+	 */
+	public boolean sameColumn(Punto p) {
+		return p.c == c;
+	}
+
 	@Override
 	public String toString() {
 		return "(" + f + ", " + c + ")";

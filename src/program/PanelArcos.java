@@ -9,6 +9,7 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 
@@ -119,7 +120,7 @@ public class PanelArcos extends JPanel {
 				pintarNodo(p, g);
 
 				// 2. Pintamos los arcos
-				pintarArcos(p, g);
+				pintarArcos(p, g, c);
 			}
 		}
 
@@ -151,7 +152,7 @@ public class PanelArcos extends JPanel {
 	 * @param p
 	 * @param g
 	 */
-	private void pintarArcos(Punto p, Graphics g) {
+	private void pintarArcos(Punto p, Graphics g, Cluster c) {
 		// Definimos el color negro para los arcos
 		g.setColor(Color.BLACK);
 
@@ -177,6 +178,16 @@ public class PanelArcos extends JPanel {
 			p_2.getArcosExternos().remove(p);
 		}
 
+		// Cogemos el total de filas que hay
+		int filas = c.getFilas();
+		int cols = c.getCols();
+		// Cogemos el punto intermedio
+		Punto pm = new Punto(c.getPuntoInicial().getFila() + (int) Math.round((double) filas / 2) - 1,
+				c.getColInicial() + (int) Math.round((double) cols / 2) - 1);
+
+		int nfils = 0;
+		int ncols = 0;
+
 		// Cogemos ahora los arcos internos
 		for (Edge edge : p.getArcosInternos()) {
 			// Cogemos el punto final del edge
@@ -189,15 +200,66 @@ public class PanelArcos extends JPanel {
 
 				// Cogemos las coordenadas del botón
 				Point p2 = centroBoton(b2);
-				
-				// Prueba para ver cómo funcionan las posiciones
-				/*
-				System.out.println("Punto: " + p + " -> " + p1);
-				System.out.println("Punto: " + p_2 + " -> " + p2);
-				*/
 
-				// Dibujamos la línea recta
-				g.drawLine(p1.x, p1.y, p2.x, p2.y);
+				// Comprobamos si tenemos que curvar los arcos
+				boolean curvar = false;
+
+				// Comprobamos si se encuentra en la misma fila
+				if (p.sameRow(p_2)) {
+					// Si ya hay más de uno repetido, curvamos
+					if (nfils++ > 0)
+						curvar = true;
+				}
+
+				// Comprobamos si se encuentra en la misma columna
+				if (p.sameColumn(p_2)) {
+					// Si ya hay más de uno repetido, curvamos
+					if (ncols++ > 0)
+						curvar = true;
+				}
+
+				// Si tenemos que curvar:
+				if (curvar) {
+					// Cogemos el punto intermedio del cluster
+					Point pmid = centroBoton(matrizBotones[pm.getFila()][pm.getCol()]);
+
+					/*
+					// Prueba para ver cómo funcionan las posiciones
+
+					System.out.println("Punto: " + p + " -> " + p1);
+					System.out.println("Punto intermedio " + pm + " -> " + pmid);
+					System.out.println("Punto: " + p_2 + " -> " + p2);
+					*/
+
+					// Si la columna se encuentra en la primera mitad
+					if (p1.x <= pmid.x) {
+						pmid.x = (int) 1.75 * pmid.x;
+					} else {
+						pmid.x -= (int) 0.25 * pmid.x;
+					}
+
+					// Si la fila se encuentra en la primera mitad
+					if (p1.y <= pmid.y) {
+						pmid.y = (int) 1.75 * pmid.y;
+					} else {
+						pmid.y -= (int) 0.25 * pmid.y;
+					}
+
+					// Definimos la línea curva
+					QuadCurve2D.Double quad = new QuadCurve2D.Double();
+					quad.setCurve(p1, pmid, p2);
+
+					// Y pintamos de negro la línea curva
+					Graphics2D g2 = (Graphics2D) g;
+					g2.setPaint(Color.BLACK);
+					g2.draw(quad);
+
+				} // En caso contrario -> Línea recta
+				else {
+					// Dibujamos la línea recta
+					g.drawLine(p1.x, p1.y, p2.x, p2.y);
+				}
+
 			}
 			// Borramos del punto final este edge para no repetir
 			p_2.getArcosInternos().remove(edge);
