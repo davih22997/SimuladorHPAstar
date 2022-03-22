@@ -224,25 +224,25 @@ public class PanelArcos extends JPanel {
 					Point pmid = centroBoton(matrizBotones[pm.getFila()][pm.getCol()]);
 
 					/*
-					// Prueba para ver cómo funcionan las posiciones
-
-					System.out.println("Punto: " + p + " -> " + p1);
-					System.out.println("Punto intermedio " + pm + " -> " + pmid);
-					System.out.println("Punto: " + p_2 + " -> " + p2);
-					*/
+					 * // Prueba para ver cómo funcionan las posiciones
+					 * 
+					 * System.out.println("Punto: " + p + " -> " + p1);
+					 * System.out.println("Punto intermedio " + pm + " -> " + pmid);
+					 * System.out.println("Punto: " + p_2 + " -> " + p2);
+					 */
 
 					// Si la columna se encuentra en la primera mitad
 					if (p1.x <= pmid.x) {
-						pmid.x = (int) 1.75 * pmid.x;
+						pmid.x += pmid.x / 10;
 					} else {
-						pmid.x -= (int) 0.25 * pmid.x;
+						pmid.x -= pmid.x / 10;
 					}
 
 					// Si la fila se encuentra en la primera mitad
 					if (p1.y <= pmid.y) {
-						pmid.y = (int) 1.75 * pmid.y;
+						pmid.y += pmid.y / 10;
 					} else {
-						pmid.y -= (int) 0.25 * pmid.y;
+						pmid.y -= pmid.y / 10;
 					}
 
 					// Definimos la línea curva

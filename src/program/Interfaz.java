@@ -677,6 +677,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Registramos la apertura de fichero
 					log.append("Abriendo fichero: " + file.getName() + "." + newline);
 
+					// Borramos el contenido del mapa que ya había
 					borrarMapa();
 					try (Scanner sc = new Scanner(file)) {
 						log.append("Cargando datos..." + newline);
