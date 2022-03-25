@@ -3,6 +3,7 @@ package program;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 
 public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 
@@ -504,23 +505,6 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		// Para que dos clusters sean iguales, han de coincidir sus puntos inicial y
-		// final
-		// Comparamos primero que tengan las mismas dimensiones
-		return o instanceof Cluster
-				? (this.filas == ((Cluster) o).filas && this.columnas == ((Cluster) o).columnas)
-						&& (this.getPuntoInicial().equals(((Cluster) o).getPuntoInicial())
-								&& this.getPuntoFinal().equals(((Cluster) o).getPuntoFinal()))
-				: false;
-	}
-
-	@Override
-	public int hashCode() {
-		return inicio.hashCode();
-	}
-
-	@Override
 	public int compareTo(Cluster c) {
 		// Los clusters se ordenan teniendo en cuenta su fila inicial, columna inicial
 		int val = 0;
@@ -533,6 +517,23 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 			val = -1;
 
 		return val;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(columnas, filas, inicio);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// Para que dos clusters sean iguales, han de coincidir sus puntos inicial y
+		// final
+		// Comparamos primero que tengan las mismas dimensiones
+		return o instanceof Cluster
+				? (this.filas == ((Cluster) o).filas && this.columnas == ((Cluster) o).columnas)
+						&& (this.getPuntoInicial().equals(((Cluster) o).getPuntoInicial())
+								&& this.getPuntoFinal().equals(((Cluster) o).getPuntoFinal()))
+				: false;
 	}
 
 	@Override

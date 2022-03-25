@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Scanner;
 
 // Clase para definir un punto dado por (fila, columna)
@@ -334,6 +335,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	/**
 	 * Te indica si otro punto se encuentra en la misma columna
+	 * 
 	 * @param p
 	 * @return
 	 */
@@ -347,19 +349,19 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		// Para que dos puntos sean iguales, ha de coincidir su fila y su columna
-		return o instanceof Punto ? (this.f == ((Punto) o).f && this.c == ((Punto) o).c) : false;
+	public Punto clone() {
+		return new Punto(this.f, this.c);
 	}
 
 	@Override
 	public int hashCode() {
-		return f + c;
+		return Objects.hash(c, f);
 	}
 
 	@Override
-	public Punto clone() {
-		return new Punto(this.f, this.c);
+	public boolean equals(Object o) {
+		// Para que dos puntos sean iguales, ha de coincidir su fila y su columna
+		return o instanceof Punto ? (this.f == ((Punto) o).f && this.c == ((Punto) o).c) : false;
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package program;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Esta es la clase de los edges
@@ -106,8 +107,18 @@ public class Edge implements Cloneable {
 		System.out.println(sb.toString());
 	}
 
+	public void intraEdge() {
+
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(camino, coste, pfin, pini);
+	}
+
 	@Override
 	public boolean equals(Object o) {
+
 		boolean res = o instanceof Edge;
 
 		// Si es otro edge
@@ -139,15 +150,6 @@ public class Edge implements Cloneable {
 		}
 
 		return res;
-	}
-
-	@Override
-	public int hashCode() {
-		return pini.hashCode() + pfin.hashCode() + camino.size();
-	}
-
-	public void intraEdge() {
-
 	}
 
 }

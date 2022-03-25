@@ -223,14 +223,6 @@ public class PanelArcos extends JPanel {
 					// Cogemos el punto intermedio del cluster
 					Point pmid = centroBoton(matrizBotones[pm.getFila()][pm.getCol()]);
 
-					/*
-					 * // Prueba para ver cómo funcionan las posiciones
-					 * 
-					 * System.out.println("Punto: " + p + " -> " + p1);
-					 * System.out.println("Punto intermedio " + pm + " -> " + pmid);
-					 * System.out.println("Punto: " + p_2 + " -> " + p2);
-					 */
-
 					// Si la columna se encuentra en la primera mitad
 					if (p1.x <= pmid.x) {
 						pmid.x += pmid.x / 10;
