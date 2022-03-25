@@ -1260,6 +1260,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 									+ newline);
 
 					break;
+				// Tercer paso -> Mostrar el grafo abstracto (grafo con los arcos)
 				case 2:
 					log.append("Mostrando los arcos del mapa." + newline);
 					// Bloqueamos el botón de start
@@ -1274,6 +1275,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 					// Desbloqueamos el botón de start
 					btnStart2.setEnabled(false);
+					break;
+				// Cuarto paso -> Aplicar A*
+				case 3:
+					HPAstar.aplicarAstar(mapa);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);

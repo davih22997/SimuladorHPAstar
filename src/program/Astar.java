@@ -196,5 +196,12 @@ public class Astar {
 		timer.start();
 
 	}
+	
+	/**
+	 * Método que será llamado en HPAstar
+	 */
+	public static void busquedaEnHPAstar() {
+		
+	}
 
 }

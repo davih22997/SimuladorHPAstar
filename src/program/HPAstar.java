@@ -5,6 +5,7 @@ import java.awt.Color;
 import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -70,6 +71,11 @@ public class HPAstar {
 	// clústers
 	// (No se pone final porque puede variar según el tamaño de cluster).
 	private static int umbral;
+
+	// Constantes para las tablas hash:
+	protected static HashMap<Punto, Punto> sucesores;
+	protected static HashMap<Arco, Double> costes;
+	protected static HashMap<Arco, ArrayList<Punto>> caminos;
 
 	/**
 	 * Método para definir el tamaño de los clusters dada una constante que
@@ -313,6 +319,57 @@ public class HPAstar {
 
 		// Se escribe la acción en el logger
 		Interfaz.escribir("Mostados todos los arcos.\n");
+
+	}
+
+	/**
+	 * Método para crear las hashTables y aplicar A*
+	 * 
+	 * @param mapa
+	 */
+	public static void aplicarAstar(Mapa mapa) {
+		// Creamos las hashTables:
+		sucesores = new HashMap<>();
+		costes = new HashMap<>();
+		caminos = new HashMap<>();
+
+		// Vamos cogiendo cluster por cluster
+		for (Cluster c : clusters) {
+			// Vamos cogiendo los nodos
+			for (Punto p : c.getNodos()) {
+				// Añadimos los arcos externos
+				for (Punto p2 : p.getArcosExternos()) {
+					// Creamos el camino
+					ArrayList<Punto> camino = new ArrayList<>();
+					camino.add(p);
+					camino.add(p2);
+
+					// Vamos a rellenar las tablas:
+					// 1. Añadimos el punto del arco externo a los sucesores de p
+					// 2. Creamos un arco entre ambos puntos
+					// 3. Añadimos el coste (1 en este caso).
+					// 4. Añadimos el camino
+					rellenarTablas(p, p2, 1, camino);
+				}
+
+				// Añadimos los arcos internos
+				for (Edge edge : p.getArcosInternos()) {
+					// Comprobamos que el camino sea mayor que 0 (si hay unión entre ambos puntos)
+					if (edge.camino.size() > 0) {
+						Punto p2 = edge.pfin;
+						// Vamos a rellenar las tablas:
+						// 1. Añadimos el punto del arco interno a los sucesores de p
+						// 2. Creamos un arco entre ambos puntos
+						// 3. A ese arco le añadimos el coste
+						// 4. A ese arco le añadimos el camino
+						rellenarTablas(p, p2, edge.coste, edge.camino);
+					}
+				}
+			}
+		}
+
+		// 2. Aplicamos A* para hallar el camino de menor coste
+		Astar.busquedaEnHPAstar();
 
 	}
 
@@ -682,6 +739,25 @@ public class HPAstar {
 			}
 		}
 
+	}
+
+	/**
+	 * Método para ir rellenando los hashmaps
+	 * 
+	 * @param p1     Punto inicial
+	 * @param p2     Punto final
+	 * @param coste  Coste para llegar de p1 a p2
+	 * @param camino Camino para llegar de p1 a p2
+	 */
+	private static void rellenarTablas(Punto p1, Punto p2, double coste, ArrayList<Punto> camino) {
+		// Añadimos el punto p2 a los sucesores de p1
+		sucesores.put(p1, p2);
+		// Creamos un arco entre ambos
+		Arco arco = new Arco(p1, p2);
+		// Añadimos el coste
+		costes.put(arco, coste);
+		// Añadimos el camino
+		caminos.put(arco, camino);
 	}
 
 	/**
