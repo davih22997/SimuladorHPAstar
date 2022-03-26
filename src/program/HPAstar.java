@@ -73,7 +73,7 @@ public class HPAstar {
 	private static int umbral;
 
 	// Constantes para las tablas hash:
-	protected static HashMap<Punto, Punto> sucesores;
+	protected static HashMap<Punto, ArrayList<Punto>> sucesores;
 	protected static HashMap<Arco, Double> costes;
 	protected static HashMap<Arco, ArrayList<Punto>> caminos;
 
@@ -337,8 +337,13 @@ public class HPAstar {
 		for (Cluster c : clusters) {
 			// Vamos cogiendo los nodos
 			for (Punto p : c.getNodos()) {
+				// Creamos la lista de sucesores del punto p
+				ArrayList<Punto> sucs = new ArrayList<>();
 				// Añadimos los arcos externos
 				for (Punto p2 : p.getArcosExternos()) {
+					// Añadimos el punto a la lista de sucesores
+					sucs.add(p2);
+
 					// Creamos el camino
 					ArrayList<Punto> camino = new ArrayList<>();
 					camino.add(p);
@@ -357,19 +362,23 @@ public class HPAstar {
 					// Comprobamos que el camino sea mayor que 0 (si hay unión entre ambos puntos)
 					if (edge.camino.size() > 0) {
 						Punto p2 = edge.pfin;
-						// Vamos a rellenar las tablas:
 						// 1. Añadimos el punto del arco interno a los sucesores de p
+						sucs.add(p2);
+						// Vamos a rellenar las tablas:
 						// 2. Creamos un arco entre ambos puntos
 						// 3. A ese arco le añadimos el coste
 						// 4. A ese arco le añadimos el camino
 						rellenarTablas(p, p2, edge.coste, edge.camino);
 					}
 				}
+
+				// Finalmente, añadimos la lista de sucesores a la tabla
+				sucesores.put(p, sucs);
 			}
 		}
 
 		// 2. Aplicamos A* para hallar el camino de menor coste
-		Astar.busquedaEnHPAstar();
+		Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
 
 	}
 
@@ -734,8 +743,10 @@ public class HPAstar {
 				Edge edge = Dijkstra.intraedge(p1, p2, submapa);
 
 				p1.addArcoInterno(edge);
+				// Cogemos el punto p2 de la lista de nodos original
+				p2 = nodos.get(nodos.indexOf(p2));
+				// Le añadimos el edge simétrico
 				p2.addArcoInterno(edge.symm());
-
 			}
 		}
 
@@ -750,9 +761,7 @@ public class HPAstar {
 	 * @param camino Camino para llegar de p1 a p2
 	 */
 	private static void rellenarTablas(Punto p1, Punto p2, double coste, ArrayList<Punto> camino) {
-		// Añadimos el punto p2 a los sucesores de p1
-		sucesores.put(p1, p2);
-		// Creamos un arco entre ambos
+		// Creamos un arco entre ambos puntos
 		Arco arco = new Arco(p1, p2);
 		// Añadimos el coste
 		costes.put(arco, coste);

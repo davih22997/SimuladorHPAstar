@@ -1274,11 +1274,21 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					step++;
 
 					// Desbloqueamos el botón de start
-					btnStart2.setEnabled(false);
+					btnStart2.setEnabled(true);
 					break;
 				// Cuarto paso -> Aplicar A*
 				case 3:
+					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+					// Aplicamos A*
 					HPAstar.aplicarAstar(mapa);
+
+					log.append("Aplicado A* para calcular el menor coste entre los nodos" + newline);
+					// Incrementamos un "step"
+					step++;
+
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
