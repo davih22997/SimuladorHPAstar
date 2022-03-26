@@ -233,16 +233,16 @@ public class PanelArcos extends JPanel {
 
 						// Si la columna se encuentra en la primera mitad
 						if (p1.x <= pmid.x) {
-							pmid.x += pmid.x / 10;
+							pmid.x += pmid.x - p1.x;
 						} else {
-							pmid.x -= pmid.x / 10;
+							pmid.x -= p1.x - pmid.x;
 						}
 
 						// Si la fila se encuentra en la primera mitad
 						if (p1.y <= pmid.y) {
-							pmid.y += pmid.y / 10;
+							pmid.y += pmid.y - p1.y;
 						} else {
-							pmid.y -= pmid.y / 10;
+							pmid.y -= p1.y - pmid.y;
 						}
 
 						// Definimos la línea curva
