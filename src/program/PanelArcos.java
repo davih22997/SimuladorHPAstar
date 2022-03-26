@@ -28,7 +28,7 @@ public class PanelArcos extends JPanel {
 
 	public PanelArcos(Mapa mapa, ArrayList<Cluster> clusters) {
 		// 1. Copiamos la lista de clusters
-		this.clusters = (ArrayList<Cluster>) clusters.clone();
+		this.clusters = clusters;
 		// 1. Vamos a crear todo el mapa
 		crearMapa(mapa);
 
@@ -114,13 +114,17 @@ public class PanelArcos extends JPanel {
 
 		// Vamos cogiendo los clusters uno a uno
 		for (Cluster c : clusters) {
-			// Y dentro de él, los nodos uno a uno
+			// Creamos una lista de nodos visitados para no repetir la impresión de arcos
+			ArrayList<Punto> visitados = new ArrayList<>();
+
+			// Y ahora, recorremos la lista
 			for (Punto p : c.getNodos()) {
 				// 1. Pintamos los nodos en negro
 				pintarNodo(p, g);
 
 				// 2. Pintamos los arcos
-				pintarArcos(p, g, c);
+				pintarArcos(p, g, c, visitados);
+				visitados.add(p);
 			}
 		}
 
@@ -152,7 +156,7 @@ public class PanelArcos extends JPanel {
 	 * @param p
 	 * @param g
 	 */
-	private void pintarArcos(Punto p, Graphics g, Cluster c) {
+	private void pintarArcos(Punto p, Graphics g, Cluster c, ArrayList<Punto> visitados) {
 		// Definimos el color negro para los arcos
 		g.setColor(Color.BLACK);
 
@@ -164,18 +168,20 @@ public class PanelArcos extends JPanel {
 
 		// Vamos cogiendo los arcos externos
 		for (Punto p_2 : p.getArcosExternos()) {
-			// Cogemos el botón que corresponde con el punto
-			JButton b2 = matrizBotones[p_2.getFila()][p_2.getCol()];
+			if (!visitados.contains(p_2)) {
+				// Cogemos el botón que corresponde con el punto
+				JButton b2 = matrizBotones[p_2.getFila()][p_2.getCol()];
 
-			// Cogemos las coordenadas del centro del botón
-			Point p2 = centroBoton(b2);
+				// Cogemos las coordenadas del centro del botón
+				Point p2 = centroBoton(b2);
 
-			// Dibujamos la línea
-			g.drawLine(p1.x, p1.y, p2.x, p2.y);
+				// Dibujamos la línea
+				g.drawLine(p1.x, p1.y, p2.x, p2.y);
 
-			// Borramos de la lista de arcos externos el punto p1 del punto p_2 (para no
-			// repetir)
-			p_2.getArcosExternos().remove(p);
+				// Borramos de la lista de arcos externos el punto p1 del punto p_2 (para no
+				// repetir)
+				// p_2.getArcosExternos().remove(p);
+			}
 		}
 
 		// Cogemos el total de filas que hay
@@ -192,69 +198,72 @@ public class PanelArcos extends JPanel {
 		for (Edge edge : p.getArcosInternos()) {
 			// Cogemos el punto final del edge
 			Punto p_2 = edge.pfin;
-			// Miramos que exista un camino entre los arcos
-			if (edge.camino.size() > 0) {
+			if (!visitados.contains(p_2)) {
 
-				// Cogemos el botón que corresponde
-				JButton b2 = matrizBotones[p_2.getFila()][p_2.getCol()];
+				// Miramos que exista un camino entre los arcos
+				if (edge.camino.size() > 0) {
 
-				// Cogemos las coordenadas del botón
-				Point p2 = centroBoton(b2);
+					// Cogemos el botón que corresponde
+					JButton b2 = matrizBotones[p_2.getFila()][p_2.getCol()];
 
-				// Comprobamos si tenemos que curvar los arcos
-				boolean curvar = false;
+					// Cogemos las coordenadas del botón
+					Point p2 = centroBoton(b2);
 
-				// Comprobamos si se encuentra en la misma fila
-				if (p.sameRow(p_2)) {
-					// Si ya hay más de uno repetido, curvamos
-					if (nfils++ > 0)
-						curvar = true;
-				}
+					// Comprobamos si tenemos que curvar los arcos
+					boolean curvar = false;
 
-				// Comprobamos si se encuentra en la misma columna
-				if (p.sameColumn(p_2)) {
-					// Si ya hay más de uno repetido, curvamos
-					if (ncols++ > 0)
-						curvar = true;
-				}
-
-				// Si tenemos que curvar:
-				if (curvar) {
-					// Cogemos el punto intermedio del cluster
-					Point pmid = centroBoton(matrizBotones[pm.getFila()][pm.getCol()]);
-
-					// Si la columna se encuentra en la primera mitad
-					if (p1.x <= pmid.x) {
-						pmid.x += pmid.x / 10;
-					} else {
-						pmid.x -= pmid.x / 10;
+					// Comprobamos si se encuentra en la misma fila
+					if (p.sameRow(p_2)) {
+						// Si ya hay más de uno repetido, curvamos
+						if (nfils++ > 0)
+							curvar = true;
 					}
 
-					// Si la fila se encuentra en la primera mitad
-					if (p1.y <= pmid.y) {
-						pmid.y += pmid.y / 10;
-					} else {
-						pmid.y -= pmid.y / 10;
+					// Comprobamos si se encuentra en la misma columna
+					if (p.sameColumn(p_2)) {
+						// Si ya hay más de uno repetido, curvamos
+						if (ncols++ > 0)
+							curvar = true;
 					}
 
-					// Definimos la línea curva
-					QuadCurve2D.Double quad = new QuadCurve2D.Double();
-					quad.setCurve(p1, pmid, p2);
+					// Si tenemos que curvar:
+					if (curvar) {
+						// Cogemos el punto intermedio del cluster
+						Point pmid = centroBoton(matrizBotones[pm.getFila()][pm.getCol()]);
 
-					// Y pintamos de negro la línea curva
-					Graphics2D g2 = (Graphics2D) g;
-					g2.setPaint(Color.BLACK);
-					g2.draw(quad);
+						// Si la columna se encuentra en la primera mitad
+						if (p1.x <= pmid.x) {
+							pmid.x += pmid.x / 10;
+						} else {
+							pmid.x -= pmid.x / 10;
+						}
 
-				} // En caso contrario -> Línea recta
-				else {
-					// Dibujamos la línea recta
-					g.drawLine(p1.x, p1.y, p2.x, p2.y);
+						// Si la fila se encuentra en la primera mitad
+						if (p1.y <= pmid.y) {
+							pmid.y += pmid.y / 10;
+						} else {
+							pmid.y -= pmid.y / 10;
+						}
+
+						// Definimos la línea curva
+						QuadCurve2D.Double quad = new QuadCurve2D.Double();
+						quad.setCurve(p1, pmid, p2);
+
+						// Y pintamos de negro la línea curva
+						Graphics2D g2 = (Graphics2D) g;
+						g2.setPaint(Color.BLACK);
+						g2.draw(quad);
+
+					} // En caso contrario -> Línea recta
+					else {
+						// Dibujamos la línea recta
+						g.drawLine(p1.x, p1.y, p2.x, p2.y);
+					}
+
 				}
-
+				// Borramos del punto final este edge para no repetir
+				// p_2.getArcosInternos().remove(edge);
 			}
-			// Borramos del punto final este edge para no repetir
-			p_2.getArcosInternos().remove(edge);
 		}
 
 	}

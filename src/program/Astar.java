@@ -259,22 +259,17 @@ public class Astar {
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
 			sucesores = HPAstar.sucesores.get(actual.p);
-//			System.out.println(actual);
 
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
 				sucesores.remove(d.p);
 
-			// System.out.println(sucesores);
 			// Vamos comprobando los sucesores
 			for (Punto p : sucesores) {
 				// Creamos el arco entre los dos puntos
 				Arco arco = new Arco(actual.p, p);
 				// Calculamos la distancia (coste) con respecto al punto
 				double dist = HPAstar.costes.get(arco);
-
-				// Le añadimos la distancia octil con respecto al punto final
-				dist += p.distOctil(mapa.pto_final);
 
 				// Además, le añadimos el coste acumulado
 				dist += actual.coste;
@@ -310,10 +305,28 @@ public class Astar {
 		// 1. Si la encuentra: Muestra el camino y te lo indica.
 		if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
 			Datos d = abiertos.poll();
-			while (!d.p_anterior.p.equals(mapa.pto_inicial)) {
+			while (d.p_anterior != null) {
+				// Vamos a pintar todo el recorrido
+				// 1. Cogemos el punto anterior
+				Punto p = d.p;
+				// Cogemos los datos anteriores para sacar el siguiente punto
 				d = d.p_anterior;
-				mapa.pintarMapa(Mapa.cRecorrido, d.p.getFila(), d.p.getCol());
+
+				// Cogemos cada punto del camino existente entre el punto anterior y su
+				// siguiente
+				for (Punto pt : HPAstar.caminos.get(new Arco(p, d.p))) {
+					// Coloreamos de rosa si no es un nodo
+					if (!HPAstar.sucesores.containsKey(pt))
+						mapa.pintarMapa(Mapa.cRecorrido, pt.getFila(), pt.getCol());
+
+					// Si es un nodo y no es punto inicial ni final, pintamos de rosa oscuro
+					if (HPAstar.sucesores.keySet().contains(pt)
+							&& !(pt.equals(mapa.pto_inicial) || pt.equals(mapa.pto_final)))
+						mapa.pintarMapa(Mapa.cRecorrido.darker(), pt);
+
+				}
 			}
+
 			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
 		}
 

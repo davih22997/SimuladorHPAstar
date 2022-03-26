@@ -86,7 +86,14 @@ public class HPAstar {
 	 */
 	public static void definirClusters(Mapa mapa, int tam) {
 
+		// Inicializamos la lista de clusters
 		clusters = new ArrayList<>();
+
+		// Y las tablas hash
+		sucesores = new HashMap<>();
+		costes = new HashMap<>();
+		caminos = new HashMap<>();
+
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
 		case CLUSTER_10X10:
@@ -733,21 +740,25 @@ public class HPAstar {
 		ArrayList<Punto> nodos = c.getNodos();
 		// Copiamos la lista
 		ArrayList<Punto> nodos2 = (ArrayList<Punto>) c.getNodos().clone();
+
 		for (int i = 0; i < nodos.size() - 1; i++) {
+			// Cogemos el nodo del punto i
+			Punto p1 = nodos.get(i);
 			// Vamos eliminando el elemento que se coge de la lista de nodos en la copia
-			nodos2.remove(nodos.get(i));
+			nodos2.remove(p1);
 			for (int j = 0; j < nodos2.size(); j++) {
-				Punto p1 = nodos.get(i);
-				Punto p2 = nodos2.get(j);
+				// Cogemos el otro nodo de la lista de nodos original
+				int idx = nodos.indexOf(nodos2.get(j));
+				Punto p2 = nodos.get(idx);
 
 				Edge edge = Dijkstra.intraedge(p1, p2, submapa);
+				Edge symm = edge.symm();
 
 				p1.addArcoInterno(edge);
-				// Cogemos el punto p2 de la lista de nodos original
-				p2 = nodos.get(nodos.indexOf(p2));
 				// Le añadimos el edge simétrico
-				p2.addArcoInterno(edge.symm());
+				p2.addArcoInterno(symm);
 			}
+
 		}
 
 	}

@@ -22,4 +22,9 @@ public class Arco {
 		// Se comparan los dos puntos
 		return o instanceof Arco ? Objects.equals(p1, ((Arco) o).p1) && Objects.equals(p2, ((Arco) o).p2) : false;
 	}
+
+	@Override
+	public String toString() {
+		return "(" + p1.toString() + ", " + p2.toString() + ")";
+	}
 }

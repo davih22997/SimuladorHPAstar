@@ -69,12 +69,13 @@ public class Edge implements Cloneable {
 	 */
 	public Edge symm() {
 		Edge e = new Edge();
-		e.pfin = pini.clone();
-		e.pini = pfin.clone();
+		e.pfin = pini;
+		e.pini = pfin;
 		e.coste = coste;
 
-		e.camino = (ArrayList<Punto>) camino.clone();
-		Collections.reverse(e.camino);
+		for(int i = camino.size() - 1 ; i >= 0; i--) {
+			e.camino.add(camino.get(i));
+		}
 
 		return e;
 	}
@@ -151,5 +152,6 @@ public class Edge implements Cloneable {
 
 		return res;
 	}
+	
 
 }

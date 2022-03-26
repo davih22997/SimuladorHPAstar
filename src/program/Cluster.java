@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.Objects;
 
-public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
+public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Cluster> {
 
 	// Los atributos que necesitamos de los clústers son:
 	// Los límites que delimitan al cluster
@@ -473,10 +473,8 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 
 				Punto p = new Punto(fil, col);
 				// Si ese punto está contenido en la lista de nodos, añadimos el punto del nodo
-				if (nodos.contains(p)) {
-					int index = nodos.indexOf(p);
-					p = nodos.get(index);
-				}
+				if (nodos.contains(p))
+					p = nodos.get(nodos.indexOf(p));
 
 				sm.add(p);
 			}

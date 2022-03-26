@@ -177,7 +177,6 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		return res;
 	}
 
-
 	/**
 	 * Método que te indica si otro punto es adyacente
 	 * 
@@ -328,7 +327,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	@Override
 	public Punto clone() {
-		return new Punto(this.f, this.c);
+		return new Punto(f, c);
 	}
 
 	@Override

@@ -202,11 +202,7 @@ public class Dijkstra {
 					if (p.coste < par2.coste) {
 						abiertos.remove(par2);
 						abiertos.add(p);
-					} // En caso de empate, quitamos el anterior si tiene menos iteraciones
-					else if (p.coste == par2.coste && par2.iteraciones < p.iteraciones) {
-						abiertos.remove(par2);
-						abiertos.add(p);
-					}
+					} 
 				}
 			}
 		}
