@@ -651,10 +651,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 		// Si pulsamos el botón de "nuevo"
 		if (e.getSource() == btnNew) {
+			// Quitamos la referencia al fichero
 			direccion.setText("");
-
+			// Borramos la selección de tamaño de mapa
+			dims.setSelectedItem(selDims);
 			log.append("Se ha seleccionado reiniciar el contenido." + newline);
-			log.setCaretPosition(log.getDocument().getLength());
 		}
 		// Si pulsamos en abrir
 		else if (e.getSource() == btnOpen) {
@@ -1067,7 +1068,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Control de la simulación
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
 		else if (e.getSource() == btnStart) {
-			// String option = algCB.getSelectedItem().toString();
 			// Primero, comprobamos que está el mapa creado
 			if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
 				JOptionPane.showMessageDialog(new JFrame(),
@@ -1086,6 +1086,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				vecCB.setEnabled(false);
 				// Y también el de selección de dimensiones
 				dims.setEnabled(false);
+
+				// Bloqueamos los selectores de ficheros (abrir, guardar y nuevo)
+				btnNew.setEnabled(false);
+				btnOpen.setEnabled(false);
+				btnSave.setEnabled(false);
 
 				// Si pulsamos la primera vez
 				if (!btnStop.isEnabled()) {
@@ -1161,6 +1166,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
 
+			// Desbloqueamos los botones de gestión de ficheros
+			btnNew.setEnabled(true);
+			btnOpen.setEnabled(true);
+			btnSave.setEnabled(true);
+
 			// Desbloqueamos el selector de algoritmos
 			algCB.setEnabled(true);
 			// Desbloqueamos también el selector de cantidad de vecinos
@@ -1206,12 +1216,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
 						btnDelete.setEnabled(false);
+						// Bloqueamos también los botones de gestión de ficheros (abrir, guardar y
+						// nuevo)
+						btnNew.setEnabled(false);
+						btnSave.setEnabled(false);
+						btnOpen.setEnabled(false);
+
 						// 3. Bloqueamos el selector de clusters, el de umbral y el de algoritmos
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
 						umbral.setEnabled(false);
 						// Y también el selector de dimensiones de mapa
 						dims.setEnabled(false);
+
 						// 4. Iniciamos el proceso de pintar bordes
 						// Bloqueamos el botón de start
 						btnStart2.setEnabled(false);
@@ -1334,6 +1351,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
+			// Y también los de gestión de ficheros
+			btnNew.setEnabled(true);
+			btnSave.setEnabled(true);
+			btnOpen.setEnabled(true);
 		}
 
 		// Control de la velocidad (solo para A*)
