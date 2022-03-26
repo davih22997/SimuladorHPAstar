@@ -13,10 +13,6 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	// Coordenadas del punto (fila y columna)
 	private int f;
 	private int c;
-	// Coste del punto (por defecto es 0)
-	protected double coste;
-	// Punto padre (por defecto es null)
-	protected Punto padre;
 	// Constante para el coste en diagonal
 	protected static final Double DIAGONAL = Math.sqrt(2);
 
@@ -36,8 +32,6 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		this.f = f;
 		this.c = c;
 
-		coste = 0;
-		padre = null;
 		interedges = new ArrayList<>();
 		intraedges = new ArrayList<>();
 	}
@@ -113,16 +107,16 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 		// Primero, añadimos al de arriba
 		if (arriba >= 0)
-			res.add(crearHijo(arriba, this.c, 1));
+			res.add(new Punto(arriba, c));
 		// Segundo, al de la izda
 		if (izda >= 0)
-			res.add(crearHijo(this.f, izda, 1));
+			res.add(new Punto(f, izda));
 		// Tercero, al de la derecha
 		if (derecha < columnas)
-			res.add(crearHijo(this.f, derecha, 1));
+			res.add(new Punto(f, derecha));
 		// Por último, al de abajo
 		if (abajo < filas)
-			res.add(crearHijo(abajo, this.c, 1));
+			res.add(new Punto(abajo, c));
 
 		return res;
 	}
@@ -148,57 +142,41 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 		if (arriba >= 0) {
 			// Arriba izda
 			if (izda >= 0)
-				res.add(crearHijo(arriba, izda, DIAGONAL));
+				res.add(new Punto(arriba, izda));
 
 			// Arriba
-			res.add(crearHijo(arriba, this.c, 1));
+			res.add(new Punto(arriba, c));
 			// arriba derecha
 			if (derecha < columnas)
-				res.add(crearHijo(arriba, derecha, DIAGONAL));
+				res.add(new Punto(arriba, derecha));
 
 		}
 		// Ahora izquierda
 		if (izda >= 0)
-			res.add(crearHijo(this.f, izda, 1));
+			res.add(new Punto(f, izda));
 
 		// Ahora derecha
 		if (derecha < columnas)
-			res.add(crearHijo(this.f, derecha, 1));
+			res.add(new Punto(f, derecha));
 
 		// Ahora abajo izda, abajo y abajo derecha
 		if (abajo < filas) {
 			// Abajo izda
 			if (izda >= 0)
-				res.add(crearHijo(abajo, izda, DIAGONAL));
+				res.add(new Punto(abajo, izda));
 
 			// Abajo
-			res.add(crearHijo(abajo, this.c, 1));
+			res.add(new Punto(abajo, c));
 
 			// Abajo derecha
 			if (derecha < columnas)
-				res.add(crearHijo(abajo, derecha, DIAGONAL));
+				res.add(new Punto(abajo, derecha));
 		}
 
 		// Como hemos añadido los puntos de forma ordenada, no ordenamos la lista
 		return res;
 	}
 
-	/**
-	 * Método para crear un hijo de este punto, teniendo en cuenta la fila, la
-	 * columna y el coste a sumar
-	 * 
-	 * @param fila
-	 * @param col
-	 * @param extra
-	 * @return
-	 */
-	private Punto crearHijo(int fila, int col, double extra) {
-		Punto p = new Punto(fila, col);
-		p.padre = this;
-		p.coste = this.coste + extra;
-
-		return p;
-	}
 
 	/**
 	 * Método que te indica si otro punto es adyacente
@@ -235,13 +213,13 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 		// Si hay más filas que columnas
 		if (df > dc)
-			res = Math.sqrt(2) * dc + (df - dc);
+			res = DIAGONAL * dc + (df - dc);
 		// Si coincide el número de filas y de columnas
 		else if (df == dc)
-			res = Math.sqrt(2) * df;
+			res = DIAGONAL * df;
 		// Si hay menos filas que columnas
 		else
-			res = Math.sqrt(2) * df + (dc - df);
+			res = DIAGONAL * df + (dc - df);
 
 		return res;
 	}
