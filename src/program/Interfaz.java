@@ -25,6 +25,7 @@ import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -58,7 +59,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
 	// Lista de las dimensiones de mapa posibles a escoger
-	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
+	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50", "100x100" };
 
 	// Lista de números de vecinos para el algoritmo A*
 	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
@@ -76,7 +77,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private JPanel panel;
 
 	// Control de todas las acciones
-	protected static JTextArea log;
+	private static JTextArea log;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
@@ -142,7 +143,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private JPanel panelCHPAstar;
 	protected static JButton btnStart2, btnStop2;
 	// Botón para visualizar la tabla de los arcos internos en HPA*
-	private JButton btnVerTabla;
+	private JCheckBox chbVerTabla;
 
 	// Parte para la configuración del mapa
 	private JLabel titulo4;
@@ -170,7 +171,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
 	private int step = 0;
-	private boolean verTabla;
+	// Lista de frames abiertos
+	private static ArrayList<JFrame> frames = new ArrayList<>();
 
 	// Para la creación de puntos desde el fichero
 	// private Punto pto_inicial;
@@ -438,30 +440,22 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		btnStop2.setEnabled(false);
 
 		// Botón para ver tabla (tras crear los arcos internos en HPA*)
-		btnVerTabla = new JButton("No ver tabla");
-		btnVerTabla.setPreferredSize(btnVerTabla.getPreferredSize());
-		btnVerTabla.setText("Ver tabla");
-		btnVerTabla.addActionListener(this);
-		btnVerTabla.setEnabled(false);
-		// Por defecto, ver tabla no está pulsado
-		verTabla = false;
+		chbVerTabla = new JCheckBox("Ver nodos internos");
+		chbVerTabla.setSelected(false);
+		chbVerTabla.setEnabled(false);
+		chbVerTabla.addChangeListener(this);
 
 		// Añadimos los botones de inicio / fin al panel
 		panelCHPAstar.add(btnStart2);
 		panelCHPAstar.add(btnStop2);
-		panelCHPAstar.add(btnVerTabla);
+		panelCHPAstar.add(chbVerTabla);
 
 		// Añadimos todo al panel general
 		btnPanel2.add(panelCHPAstar);
 		// Y ocultamos la parte de HPA* (por defecto está en A*)
 		panelCHPAstar.setVisible(false);
 
-		/*
-		 * // Añadimos todo al panel de botones btnPanel2.add(btnStart);
-		 * btnPanel2.add(btnStop); btnPanel2.add(vel); btnPanel2.add(btnMinus);
-		 * btnPanel2.add(velocity); btnPanel2.add(btnPlus);
-		 */
-
+		// Lo añadimos a una caja vertical
 		Box vB3 = Box.createVerticalBox();
 		vB3.add(titulo3);
 		vB3.add(btnPanel2);
@@ -556,13 +550,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
 		// vertical
 		mapaBox.add(mapa.tablero);
-		datosAstar = new JLabel();
+		datosAstar = new JLabel("Texto para ajustar el tamaño");
 		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
 		mapaBox.add(datosAstar);
 
 		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
 		// la simulación
 		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
+		datosAstar.setText("");
 		// Escondemos los datos (se van a mostrar solo en simulación).
 		datosAstar.setVisible(false);
 
@@ -656,10 +651,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 		// Si pulsamos el botón de "nuevo"
 		if (e.getSource() == btnNew) {
+			// Quitamos la referencia al fichero
 			direccion.setText("");
-
+			// Borramos la selección de tamaño de mapa
+			dims.setSelectedItem(selDims);
 			log.append("Se ha seleccionado reiniciar el contenido." + newline);
-			log.setCaretPosition(log.getDocument().getLength());
 		}
 		// Si pulsamos en abrir
 		else if (e.getSource() == btnOpen) {
@@ -682,6 +678,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Registramos la apertura de fichero
 					log.append("Abriendo fichero: " + file.getName() + "." + newline);
 
+					// Borramos el contenido del mapa que ya había
+					borrarMapa();
 					try (Scanner sc = new Scanner(file)) {
 						log.append("Cargando datos..." + newline);
 						// Son 5 líneas
@@ -1070,7 +1068,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Control de la simulación
 		// Si pulsamos el botón de iniciar (con la opción del algoritmo A*)
 		else if (e.getSource() == btnStart) {
-			// String option = algCB.getSelectedItem().toString();
 			// Primero, comprobamos que está el mapa creado
 			if (mapa.getFilas() == 0 && mapa.getCols() == 0) {
 				JOptionPane.showMessageDialog(new JFrame(),
@@ -1089,6 +1086,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				vecCB.setEnabled(false);
 				// Y también el de selección de dimensiones
 				dims.setEnabled(false);
+
+				// Bloqueamos los selectores de ficheros (abrir, guardar y nuevo)
+				btnNew.setEnabled(false);
+				btnOpen.setEnabled(false);
+				btnSave.setEnabled(false);
 
 				// Si pulsamos la primera vez
 				if (!btnStop.isEnabled()) {
@@ -1164,6 +1166,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
 
+			// Desbloqueamos los botones de gestión de ficheros
+			btnNew.setEnabled(true);
+			btnOpen.setEnabled(true);
+			btnSave.setEnabled(true);
+
 			// Desbloqueamos el selector de algoritmos
 			algCB.setEnabled(true);
 			// Desbloqueamos también el selector de cantidad de vecinos
@@ -1209,12 +1216,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						rObs.setEnabled(false);
 						btnReverse.setEnabled(false);
 						btnDelete.setEnabled(false);
+						// Bloqueamos también los botones de gestión de ficheros (abrir, guardar y
+						// nuevo)
+						btnNew.setEnabled(false);
+						btnSave.setEnabled(false);
+						btnOpen.setEnabled(false);
+
 						// 3. Bloqueamos el selector de clusters, el de umbral y el de algoritmos
 						algCB.setEnabled(false);
 						cbTCluster.setEnabled(false);
 						umbral.setEnabled(false);
 						// Y también el selector de dimensiones de mapa
 						dims.setEnabled(false);
+
 						// 4. Iniciamos el proceso de pintar bordes
 						// Bloqueamos el botón de start
 						btnStart2.setEnabled(false);
@@ -1256,8 +1270,42 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					btnStart2.setEnabled(true);
 
 					// Desbloqueamos también el botón para ver tabla
-					btnVerTabla.setEnabled(true);
+					chbVerTabla.setEnabled(true);
 
+					log.append(
+							"Pulsa en la opción de ver nodos internos y en algún punto para ver la lista de nodos internos del cluster que contiene al punto."
+									+ newline);
+
+					break;
+				// Tercer paso -> Mostrar el grafo abstracto (grafo con los arcos)
+				case 2:
+					log.append("Mostrando los arcos del mapa." + newline);
+					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+
+					// Realizamos la siguiente fase
+					HPAstar.visualizarArcos(mapa);
+
+					log.append("Arcos visualizados." + newline);
+					// Incrementamos un "step"
+					step++;
+
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(true);
+					break;
+				// Cuarto paso -> Aplicar A*
+				case 3:
+					// Bloqueamos el botón de start
+					btnStart2.setEnabled(false);
+					// Aplicamos A*
+					HPAstar.aplicarAstar(mapa);
+
+					log.append("Aplicado A* para calcular el menor coste entre los nodos" + newline);
+					// Incrementamos un "step"
+					step++;
+
+					// Desbloqueamos el botón de start
+					btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
@@ -1272,12 +1320,19 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		else if (e.getSource() == btnStop2) {
 			// Reiniciamos el contador de pasos:
 			step = 0;
+			// Cerramos todos los frames de haberlos:
+			for (JFrame frame : frames)
+				frame.dispose();
+
+			// Y reseteamos la lista de frames
+			frames = new ArrayList<>();
+
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
 			// Bloqueamos el botón de ver tabla
-			btnVerTabla.setEnabled(false);
-			btnVerTabla.setText("Ver tabla");
-			verTabla = false;
+			chbVerTabla.setEnabled(false);
+			// Y provocamos que no esté seleccionado por defecto
+			chbVerTabla.setSelected(false);
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1296,29 +1351,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			rObs.setEnabled(true);
 			btnReverse.setEnabled(true);
 			btnDelete.setEnabled(true);
-		}
-
-		// Control de visualización de tabla (solo tras definir edges en HPA*)
-		else if (e.getSource() == btnVerTabla) {
-			// Si no estaba seleccionada la opción de ver la tabla
-			if (!verTabla) {
-				// Cambiamos el texto del botón
-				btnVerTabla.setText("No ver tabla");
-				rCons.setEnabled(false);
-				// Cambiamos el tipo de la tabla para que se vea la tabla
-				mapa.setTipo(Mapa.TIPO_VERTABLA);
-
-			} else {
-				// Cambiamos el texto del botón
-				btnVerTabla.setText("Ver tabla");
-				rCons.setEnabled(true);
-				// Cambiamos el tipo de la tabla para que nuevamente sea de consulta
-				mapa.setTipo(Mapa.TIPO_CONSULTA);
-			}
-
-			// Se cambia el valor de verTabla por true o por false si está a false o a true,
-			// respectivamente
-			verTabla = !verTabla;
+			// Y también los de gestión de ficheros
+			btnNew.setEnabled(true);
+			btnSave.setEnabled(true);
+			btnOpen.setEnabled(true);
 		}
 
 		// Control de la velocidad (solo para A*)
@@ -1365,8 +1401,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Gestor de los JRadioButtons
 	 */
 	public void stateChanged(ChangeEvent e) {
+		// Si seleccionamos la opción de ver nodos internos. Lo ponemos arriba del todo,
+		// ya que su prioridad es máxima (y va a estar siempre seleccionado al mismo
+		// tiempo la opción de consulta)
+		if (chbVerTabla.isSelected())
+			mapa.setTipo(Mapa.TIPO_VERTABLA);
 		// Si seleccionamos la opción de consulta
-		if (rCons.isSelected())
+		else if (rCons.isSelected())
 			mapa.setTipo(Mapa.TIPO_CONSULTA);
 		// Si seleccionamos la opción de pto inicial
 		else if (rInic.isSelected())
@@ -1496,6 +1537,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						mapaNuevo(20, 30);
 					} else if (option.equals(dimensiones[2])) { // 30x20
 						mapaNuevo(30, 20);
+					} else if (option.equals(dimensiones[3])) { // 50x50
+						mapaNuevo(50, 50);
+					} else if (option.equals(dimensiones[4])) { // 100x100
+						mapaNuevo(100, 100);
 					}
 
 					// 2. Desbloqueamos el botón de borrar contenido del mapa
@@ -1536,14 +1581,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		mapa.destruirTablero();
 		mapa.crearTablero();
 
+		// Volvemos a pintar el mapa tal y como estaba tras seleccionar los puntos de
+		// interés
 		mapa.pintarMapa(Mapa.cInicial, pini);
 		mapa.pintarMapa(Mapa.cFinal, pfin);
-		// mapa.MatrizBotones[pini.getFila()][pini.getCol()].setBackground(Mapa.cInicial);
-		// mapa.MatrizBotones[pfin.getFila()][pfin.getCol()].setBackground(Mapa.cFinal);
 
 		for (Punto obs : lobs)
 			mapa.pintarMapa(Mapa.cObs, obs);
-		// mapa.MatrizBotones[obs.getFila()][obs.getCol()].setBackground(Mapa.cObs);
 
 		mapa.pto_inicial = pini;
 		mapa.pto_final = pfin;
@@ -1570,10 +1614,54 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Te deja el mapa vacío (para el botón de borrar)
 	 */
 	private void borrarMapa() {
+		// Comprobamos primero que no está la opción de "Seleccionar dimensiones"
+		// seleccionada
 		if (!dims.getSelectedItem().toString().equals(selDims)) {
-			mapa.destruirTablero();
-			mapa.crearTablero();
+			// Luego, comprobamos también que alguno de los puntos de interés (obstáculos,
+			// puntos inicial y final) estén seleccionados
+
+			// Si la lista de puntos no está vacía:
+			if (!mapa.obstaculos.isEmpty()) {
+				// Primero, devolvemos el color original
+				for (Punto p : mapa.obstaculos)
+					mapa.pintarMapa(Mapa.cDefault, p);
+
+				// Luego, borramos el contenido de la lista:
+				mapa.obstaculos = new ArrayList<>();
+			}
+			// Si contiene punto inicial definido
+			if (mapa.pto_inicial != null) {
+				// Devolvemos el color original
+				mapa.pintarMapa(Mapa.cDefault, mapa.pto_inicial);
+				// Borramos el punto
+				mapa.pto_inicial = null;
+			}
+			// Si contiene punto final definido
+			if (mapa.pto_final != null) {
+				// Devolvemos el color original
+				mapa.pintarMapa(Mapa.cDefault, mapa.pto_final);
+				// Borramos el punto
+				mapa.pto_final = null;
+			}
 		}
+	}
+
+	/**
+	 * Función para escribir un texto en el logger
+	 * 
+	 * @param text
+	 */
+	protected static void escribir(String text) {
+		log.append(text);
+	}
+
+	/**
+	 * Añade un frame a la lista de frames
+	 * 
+	 * @param frame
+	 */
+	protected static void addFrame(JFrame frame) {
+		frames.add(frame);
 	}
 
 }

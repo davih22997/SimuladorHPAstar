@@ -3,6 +3,7 @@ package program;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Objects;
 
 /**
  * Esta es la clase de los edges
@@ -68,76 +69,27 @@ public class Edge implements Cloneable {
 	 */
 	public Edge symm() {
 		Edge e = new Edge();
-		e.pfin = pini.clone();
-		e.pini = pfin.clone();
+		e.pfin = pini;
+		e.pini = pfin;
 		e.coste = coste;
 
-		if (camino != null)
-			e.camino = (ArrayList<Punto>) camino.clone();
-		Collections.reverse(e.camino);
-
-		return e;
-	}
-
-	@Override
-	public boolean equals(Object o) {
-		boolean res = o instanceof Edge;
-
-		// Si es otro edge
-		if (res) {
-			Edge e = (Edge) o;
-
-			// Primero, comparamos el coste
-			res = e.coste == coste; // && e.camino.size() == camino.size();
-
-			// Ahora, vemos si los caminos son null
-			if (res && e.camino == null)
-				res = camino == null;
-			else if (res) {
-				if (camino == null)
-					res = false;
-				else
-					res = e.camino.size() == camino.size();
-			}
-
-			// Si los costes y la longitud del camino coinciden
-			if (res) {
-				res = e.pini.equals(pini) && e.pfin.equals(pfin);
-
-				// Si coinciden los puntos inicial y final
-				if (res)
-					if (camino != null)
-						for (int i = 0; res && i < camino.size(); i++)
-							res = e.camino.get(i).equals(camino.get(i));
-
-					// Si no, comprobamos que coincida con el simétrico
-					else {
-						Edge sym = symm();
-
-						res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
-
-						if (camino != null)
-							for (int i = 0; res && i < sym.camino.size(); i++)
-								res = e.camino.get(i).equals(camino.get(i));
-					}
-
-			}
-
+		for(int i = camino.size() - 1 ; i >= 0; i--) {
+			e.camino.add(camino.get(i));
 		}
 
-		return res;
+		return e;
 	}
 
 	/**
 	 * Método para imprimir edge (se va a usar como debug)
 	 */
-	public void imprimirEdge() {
+	protected void imprimirEdge() {
 		StringBuilder sb = new StringBuilder();
 		sb.append("Arco de " + this.pini + " hasta " + this.pfin + ":\n");
 		sb.append("Coste: " + this.coste + "\n");
 		sb.append("Camino: ");
 
-		if (camino != null && !camino.isEmpty()) {
+		if (!camino.isEmpty()) {
 			Iterator<Punto> iter = camino.iterator();
 			Punto p = iter.next();
 			sb.append(p);
@@ -156,13 +108,50 @@ public class Edge implements Cloneable {
 		System.out.println(sb.toString());
 	}
 
-	@Override
-	public int hashCode() {
-		return pini.hashCode() + pfin.hashCode() + camino.size();
-	}
-
 	public void intraEdge() {
 
 	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(camino, coste, pfin, pini);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+
+		boolean res = o instanceof Edge;
+
+		// Si es otro edge
+		if (res) {
+			Edge e = (Edge) o;
+
+			// Primero, comparamos el coste y el tamaño del camino
+			res = e.coste == coste && e.camino.size() == camino.size();
+
+			// Si los costes y la longitud del camino coinciden
+			if (res) {
+
+				// Si coinciden los puntos inicial y final
+				if (e.pini.equals(pini) && e.pfin.equals(pfin))
+					for (int i = 0; res && i < camino.size(); i++)
+						res = e.camino.get(i).equals(camino.get(i));
+
+				// Si no, comprobamos que coincida con el simétrico
+				else {
+					Edge sym = symm();
+					res = e.pini.equals(sym.pini) && e.pfin.equals(sym.pfin);
+
+					for (int i = 0; res && i < sym.camino.size(); i++)
+						res = e.camino.get(i).equals(sym.camino.get(i));
+				}
+
+			}
+
+		}
+
+		return res;
+	}
+	
 
 }

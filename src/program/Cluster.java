@@ -3,8 +3,9 @@ package program;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Objects;
 
-public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
+public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Cluster> {
 
 	// Los atributos que necesitamos de los clústers son:
 	// Los límites que delimitan al cluster
@@ -56,6 +57,24 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	public Cluster(ArrayList<Punto> limites) {
 		this((1 + limites.get(limites.size() - 1).getFila() - limites.get(0).getFila()),
 				(1 + limites.get(limites.size() - 1).getCol() - limites.get(0).getCol()), limites.get(0));
+	}
+
+	/**
+	 * Método para obtener la cantidad de filas del cluster
+	 * 
+	 * @return
+	 */
+	public int getFilas() {
+		return filas;
+	}
+
+	/**
+	 * Método para obtener la cantidad de columnas del cluster
+	 * 
+	 * @return
+	 */
+	public int getCols() {
+		return columnas;
 	}
 
 	/**
@@ -454,10 +473,8 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 
 				Punto p = new Punto(fil, col);
 				// Si ese punto está contenido en la lista de nodos, añadimos el punto del nodo
-				if (nodos.contains(p)) {
-					int index = nodos.indexOf(p);
-					p = nodos.get(index);
-				}
+				if (nodos.contains(p))
+					p = nodos.get(nodos.indexOf(p));
 
 				sm.add(p);
 			}
@@ -486,23 +503,6 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 	}
 
 	@Override
-	public boolean equals(Object o) {
-		// Para que dos clusters sean iguales, han de coincidir sus puntos inicial y
-		// final
-		// Comparamos primero que tengan las mismas dimensiones
-		return o instanceof Cluster
-				? (this.filas == ((Cluster) o).filas && this.columnas == ((Cluster) o).columnas)
-						&& (this.getPuntoInicial().equals(((Cluster) o).getPuntoInicial())
-								&& this.getPuntoFinal().equals(((Cluster) o).getPuntoFinal()))
-				: false;
-	}
-
-	@Override
-	public int hashCode() {
-		return inicio.hashCode();
-	}
-
-	@Override
 	public int compareTo(Cluster c) {
 		// Los clusters se ordenan teniendo en cuenta su fila inicial, columna inicial
 		int val = 0;
@@ -515,6 +515,23 @@ public class Cluster implements Comparator<Cluster>, Comparable<Cluster> {
 			val = -1;
 
 		return val;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(columnas, filas, inicio);
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		// Para que dos clusters sean iguales, han de coincidir sus puntos inicial y
+		// final
+		// Comparamos primero que tengan las mismas dimensiones
+		return o instanceof Cluster
+				? (this.filas == ((Cluster) o).filas && this.columnas == ((Cluster) o).columnas)
+						&& (this.getPuntoInicial().equals(((Cluster) o).getPuntoInicial())
+								&& this.getPuntoFinal().equals(((Cluster) o).getPuntoFinal()))
+				: false;
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package program;
 
 import java.awt.Color;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -54,8 +56,8 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private final int dimY = 500; // Y -> alto
-	private final int dimX = 500; // X -> ancho
+	private final int dimY = 650; // Y -> alto
+	private final int dimX = 600; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -139,7 +141,7 @@ public class Mapa {
 	 */
 	private void initComponents() {
 		tablero = new JPanel();
-		tablero.setPreferredSize(new Dimension(dimY, dimX));
+		tablero.setPreferredSize(new Dimension(dimX, dimY));
 
 		tablero.setBackground(new Color(204, 204, 204));
 		tablero.setBorder(BorderFactory.createLineBorder(new Color(0, 0, 0)));
@@ -149,9 +151,9 @@ public class Mapa {
 		tablero.setLayout(tableroLayout);
 
 		tableroLayout.setHorizontalGroup(
-				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, dimX, Short.MAX_VALUE));
 		tableroLayout.setVerticalGroup(
-				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, 500, Short.MAX_VALUE));
+				tableroLayout.createParallelGroup(GroupLayout.Alignment.LEADING).addGap(0, dimY, Short.MAX_VALUE));
 
 	}
 
@@ -175,7 +177,10 @@ public class Mapa {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
 			// Se crea el tamaño de gridLayout de nuestro panel del tablero
-			tablero.setLayout(new GridLayout(dY, dX));
+			// tablero.setLayout(new GridLayout(dY, dX));
+			tablero.setLayout(new GridBagLayout());
+			GridBagConstraints gbc = new GridBagConstraints();
+
 			// Se obtiene las dimensiones de cada botón
 			getDimButtons(dY, dX);
 
@@ -187,7 +192,20 @@ public class Mapa {
 					// Se crea un nuevo JButton
 					JButton bNew = new JButton();
 					// Se le asignan sus dimensiones (ancho, alto)
-					bNew.setSize(tamY, tamX);
+					// bNew.setSize(tamX, tamY);
+
+					// Si son iguales, el tamaño será el alto (ya que es más alto el mapa)
+					if (dY == dX)
+						bNew.setPreferredSize(new Dimension(tamY, tamY));
+					// Si hay más filas que columnas (más alto que largo), se coge el tamaño de
+					// columna (ancho)
+					else if (dX < dY)
+						bNew.setPreferredSize(new Dimension(tamX, tamX));
+
+					// Si hay más filas que columnas, se coge el tamaño de fila (largo)
+					else
+						bNew.setPreferredSize(new Dimension(tamY, tamY));
+
 					// se asigna un texto con la posición del botón en la matriz al botón, al
 					// tooltip del botón
 					bNew.setToolTipText(Integer.toString(contY) + ", " + Integer.toString(contX));
@@ -200,8 +218,14 @@ public class Mapa {
 						}
 					});
 
+					// Definimos la posición
+					gbc.gridx = contX;
+					gbc.gridy = contY;
+					// gbc.fill = GridBagConstraints.BOTH;
+
 					// Se agrega al panel
-					tablero.add(MatrizBotones[contY][contX]);
+					tablero.add(MatrizBotones[contY][contX], gbc);
+					// tablero.add(MatrizBotones[contY][contX]);
 					// Se redibuja el panel
 					redibujar();
 				}
@@ -252,7 +276,7 @@ public class Mapa {
 		Punto aux = new Punto(btn.getToolTipText());
 		switch (tipo) {
 		case TIPO_CONSULTA: // Consulta
-			Interfaz.log.append("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")" + newline);
+			Interfaz.escribir("Se ha seleccionado la celda de la posición: (" + btn.getToolTipText() + ")" + newline);
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		case TIPO_INICIAL: // Pto inicial
@@ -262,19 +286,19 @@ public class Mapa {
 				if (pto_inicial.equals(aux)) {
 					btn.setBackground(Mapa.cDefault);
 					pto_inicial = null;
-					Interfaz.log.append("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
+					Interfaz.escribir("Se ha seleccionado quitar el punto inicial, que estaba en la posición: "
 							+ aux.toString() + newline);
 				} else {
 					// Si coincide con el pto_final -> Lo borramos
 					if (pto_final != null && pto_final.equals(aux)) {
-						Interfaz.log.append("Se quita el punto final establecido." + newline);
+						Interfaz.escribir("Se quita el punto final establecido." + newline);
 						pto_final = null;
 					} else if (obstaculos.contains(aux)) {
-						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 						obstaculos.remove(aux);
 					}
 
-					Interfaz.log.append("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
+					Interfaz.escribir("Se cambia el punto inicial de la posición: " + pto_inicial.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cInicial);
 					MatrizBotones[pto_inicial.getFila()][pto_inicial.getCol()].setBackground(Mapa.cDefault);
@@ -283,12 +307,12 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_final no es null y coincide: Lo borramos
-				Interfaz.log.append("Se establece el punto inicial en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se establece el punto inicial en la posición: " + aux.toString() + "." + newline);
 				if (pto_final != null && pto_final.equals(aux)) {
-					Interfaz.log.append("Se quita el punto final establecido." + newline);
+					Interfaz.escribir("Se quita el punto final establecido." + newline);
 					pto_final = null;
 				} else if (obstaculos.contains(aux)) {
-					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 					obstaculos.remove(aux);
 				}
 
@@ -303,19 +327,19 @@ public class Mapa {
 				if (pto_final.equals(aux)) {
 					btn.setBackground(Mapa.cDefault);
 					pto_final = null;
-					Interfaz.log.append("Se ha seleccionado quitar el punto final, que estaba en la posición: "
+					Interfaz.escribir("Se ha seleccionado quitar el punto final, que estaba en la posición: "
 							+ aux.toString() + "." + newline);
 				} else {
 					// Si coincide con el pto_inicial -> Lo borramos
 					if (pto_inicial != null && pto_inicial.equals(aux)) {
-						Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+						Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 						pto_inicial = null;
 					} else if (obstaculos.contains(aux)) {
-						Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+						Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 						obstaculos.remove(aux);
 					}
 
-					Interfaz.log.append("Se cambia el punto final de la posición: " + pto_final.toString()
+					Interfaz.escribir("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cFinal);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()].setBackground(Mapa.cDefault);
@@ -324,12 +348,12 @@ public class Mapa {
 				// Si no existe
 			} else {
 				// Si el pto_inicial no es null y coincide: Lo borramos
-				Interfaz.log.append("Se establece el punto final en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se establece el punto final en la posición: " + aux.toString() + "." + newline);
 				if (pto_inicial != null && pto_inicial.equals(aux)) {
-					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+					Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 					pto_inicial = null;
 				} else if (obstaculos.contains(aux)) {
-					Interfaz.log.append("Se elimina el obstáculo de la posición seleccionada." + newline);
+					Interfaz.escribir("Se elimina el obstáculo de la posición seleccionada." + newline);
 					obstaculos.remove(aux);
 				}
 
@@ -341,20 +365,20 @@ public class Mapa {
 			btn.setBackground(cObs);
 			// Si la lista de obstaculos contiene el punto seleccionado
 			if (obstaculos.contains(aux)) {
-				Interfaz.log.append("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se quita un obstáculo de la posición: " + aux.toString() + "." + newline);
 				obstaculos.remove(aux);
 				btn.setBackground(Mapa.cDefault);
 			} else {
 				// Si coincide con el pto inicial
 				if (pto_inicial != null && pto_inicial.equals(aux)) {
-					Interfaz.log.append("Se quita el punto inicial establecido." + newline);
+					Interfaz.escribir("Se quita el punto inicial establecido." + newline);
 					pto_inicial = null;
 				} // Si coincide con el pto final
 				else if (pto_final != null && pto_final.equals(aux)) {
-					Interfaz.log.append("Se quita el punto final establecido." + newline);
+					Interfaz.escribir("Se quita el punto final establecido." + newline);
 					pto_final = null;
 				}
-				Interfaz.log.append("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
+				Interfaz.escribir("Se añade un obstáculo en la posición: " + aux.toString() + "." + newline);
 				obstaculos.add(aux);
 				btn.setBackground(cObs);
 
@@ -369,7 +393,7 @@ public class Mapa {
 			// Creamos la variable con el índice del cluster del botón
 			int i = 0;
 			for (i = 0; i < clusters.size() && !clusters.get(i).inCluster(aux); i++)
-				;
+				continue;
 			// Vemos la tabla de los arcos externos
 			HPAstar.verTabla(i);
 
@@ -448,8 +472,18 @@ public class Mapa {
 	 * @param cY cantidad de botones por columna
 	 */
 	private void getDimButtons(int cX, int cY) {
+
 		tamX = dimX / cX;
 		tamY = dimY / cY;
+
+	}
+	
+	/**
+	 * Función para obtener las dimensiones de los botones
+	 * @return
+	 */
+	public Dimension getDimsButton () {
+		return MatrizBotones[0][0].getPreferredSize();
 	}
 
 	/**
