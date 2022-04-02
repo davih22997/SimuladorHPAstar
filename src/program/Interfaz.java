@@ -59,7 +59,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
 	// Lista de las dimensiones de mapa posibles a escoger
-	private static final String[] dimensiones = { "40x40", "20x30", "30x20" };
+	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50", "100x100" };
 
 	// Lista de números de vecinos para el algoritmo A*
 	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
@@ -1537,6 +1537,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						mapaNuevo(20, 30);
 					} else if (option.equals(dimensiones[2])) { // 30x20
 						mapaNuevo(30, 20);
+					} else if (option.equals(dimensiones[3])) { // 50x50
+						mapaNuevo(50, 50);
+					} else if (option.equals(dimensiones[4])) { // 100x100
+						mapaNuevo(100, 100);
 					}
 
 					// 2. Desbloqueamos el botón de borrar contenido del mapa
@@ -1610,9 +1614,35 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Te deja el mapa vacío (para el botón de borrar)
 	 */
 	private void borrarMapa() {
+		// Comprobamos primero que no está la opción de "Seleccionar dimensiones"
+		// seleccionada
 		if (!dims.getSelectedItem().toString().equals(selDims)) {
-			mapa.destruirTablero();
-			mapa.crearTablero();
+			// Luego, comprobamos también que alguno de los puntos de interés (obstáculos,
+			// puntos inicial y final) estén seleccionados
+
+			// Si la lista de puntos no está vacía:
+			if (!mapa.obstaculos.isEmpty()) {
+				// Primero, devolvemos el color original
+				for (Punto p : mapa.obstaculos)
+					mapa.pintarMapa(Mapa.cDefault, p);
+
+				// Luego, borramos el contenido de la lista:
+				mapa.obstaculos = new ArrayList<>();
+			}
+			// Si contiene punto inicial definido
+			if (mapa.pto_inicial != null) {
+				// Devolvemos el color original
+				mapa.pintarMapa(Mapa.cDefault, mapa.pto_inicial);
+				// Borramos el punto
+				mapa.pto_inicial = null;
+			}
+			// Si contiene punto final definido
+			if (mapa.pto_final != null) {
+				// Devolvemos el color original
+				mapa.pintarMapa(Mapa.cDefault, mapa.pto_final);
+				// Borramos el punto
+				mapa.pto_final = null;
+			}
 		}
 	}
 
