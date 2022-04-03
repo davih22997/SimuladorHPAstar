@@ -1,11 +1,24 @@
 package program;
 
+import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.TimeUnit;
+
+import org.jfree.chart.ChartFactory;
+import org.jfree.chart.ChartUtils;
+import org.jfree.chart.JFreeChart;
+import org.jfree.chart.axis.NumberAxis;
+import org.jfree.chart.axis.NumberTickUnit;
+import org.jfree.chart.plot.PlotOrientation;
+import org.jfree.chart.plot.XYPlot;
+import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
+import org.jfree.data.xy.XYSeries;
+import org.jfree.data.xy.XYSeriesCollection;
 
 public class Test {
 
@@ -23,7 +36,7 @@ public class Test {
 
 	// Datos que recogemos de A*:
 	// Datos de tiempo
-	private long[] timeAstar = new long[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de A*
+	private double[] timeAstar = new double[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de A*
 	// Datos de longitud de la solución (coste)
 	private double[] costAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de A*
 	// Datos de nodos expandidos (memoria)
@@ -31,11 +44,21 @@ public class Test {
 
 	// Datos que recogemos de HPA*:
 	// Datos de tiempo
-	private long[] timeHPAstar = new long[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de HPA*
+	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de HPA*
 	// Datos de longitud de la solución (coste)
 	private double[] costHPAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de HPA*
 	// Datos de nodos expandidos (memoria)
 	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de 100 muestras de memoria usada por HPA*
+
+	// Colores para las graficas
+	private static final Color COLOR_A = Color.RED;
+	private static final Color COLOR_HPA = Color.ORANGE;
+	private static final Color COLOR_FONDO = Color.WHITE;
+	private static final Color COLOR_RECUADROS = Color.BLACK;
+
+	// Dimensiones de las graficas
+	private static final int ANCHO = 1000;
+	private static final int ALTO = 500;
 
 	public Test() {
 		// 1. Tratar el mapa:
@@ -72,7 +95,10 @@ public class Test {
 			// Guardamos los resultados obtenidos
 			// Tiempo:Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo de
 			// inicio
-			timeAstar[i] = System.nanoTime() - start;
+			long fin = System.nanoTime() - start;
+			// Lo pasamos a segundos
+			timeAstar[i] = ((double) fin) / 10E9;
+
 			// Coste: La longitud de la solución
 			costAstar[i] = Astar.coste;
 			// Nodos expandidos: La memoria usada
@@ -102,8 +128,8 @@ public class Test {
 		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
 		// primer nivel)
 
-		// 3. Mostrar gráficas
-
+		// 3. Mostrar gráficas -> JFreeChart
+		mostrarGraficas();
 		// 4. Imprimir en fichero
 
 	}
@@ -181,6 +207,9 @@ public class Test {
 			// finales
 			while (ini.equals(fin = generarPuntoAleatorio()) && contienePunto(finales, fin))
 				continue;
+
+			iniciales[n] = ini;
+			finales[n] = fin;
 		}
 	}
 
@@ -213,6 +242,113 @@ public class Test {
 	private boolean contienePunto(Punto[] array, Punto point) {
 		// Vemos si algún punto del array coincide con el punto dado
 		return Arrays.stream(array).anyMatch(i -> i != null && i.equals(point));
+	}
+
+	/**
+	 * Método para mostrar las gráficas (usa librerías externas JFreeChart y
+	 * JCommon)
+	 */
+	private void mostrarGraficas() {
+		// Gráficas del tiempo:
+		// A*
+		XYSeries serieA1 = new XYSeries("A*");
+		// HPA*
+		XYSeries serieHPA1 = new XYSeries("HPA*");
+
+		// Gráficas de los nodos abiertos
+		XYSeries serieA2 = new XYSeries("A*");
+		XYSeries serieHPA2 = new XYSeries("HPA*");
+
+		for (int i = 0; i < NPRUEBAS; i++) {
+			serieA1.add(costAstar[i], timeAstar[i]);
+			serieA2.add(costAstar[i], memAstar[i]);
+		}
+
+		// Añadimos a una colección
+		// Tiempo:
+		XYSeriesCollection collection1 = new XYSeriesCollection();
+		collection1.addSeries(serieA1);
+		collection1.addSeries(serieHPA1);
+
+		// Nodos abiertos:
+		XYSeriesCollection collection2 = new XYSeriesCollection();
+		collection2.addSeries(serieA2);
+		collection2.addSeries(serieHPA2);
+
+		// Guardamos las gráficas en un archivo.png
+		try {
+			// Gráfica del tiempo de ejecución
+			JFreeChart grafica1 = crearGrafica(collection1, "Tiempo de CPU", "Longitud de la solución",
+					"Tiempo total de CPU (segundos)");
+			// La exportamos a un PNG
+			ChartUtils.saveChartAsPNG(new File("CPU_Time.png"), grafica1, ANCHO, ALTO);
+
+			// Gráfica de los nodos abiertos
+			JFreeChart grafica2 = crearGrafica(collection2, "Total de nodos expandidos", "Longitud de la solución",
+					"Número de nodos");
+			// La exportamos a un PNG
+			ChartUtils.saveChartAsPNG(new File("Expanded_Nodes.png"), grafica2, ANCHO, ALTO);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public JFreeChart crearGrafica(XYSeriesCollection dataset, String titulo, String ejeX, String ejeY) {
+
+		final JFreeChart chart = ChartFactory.createXYLineChart(titulo, ejeX, ejeY, dataset, PlotOrientation.VERTICAL,
+				true, // uso de leyenda
+				false, // uso de tooltips
+				false // uso de urls
+		);
+		// color de fondo de la gráfica
+		chart.setBackgroundPaint(COLOR_FONDO);
+
+		final XYPlot plot = (XYPlot) chart.getPlot();
+		configurarPlot(plot);
+
+		final NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+		configurarDomainAxis(domainAxis);
+
+		// final NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
+		// configurarRangeAxis(rangeAxis);
+
+		final XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+		configurarRendered(renderer);
+
+		return chart;
+	}
+
+	// configuramos el contenido del gráfico (damos un color a las líneas que sirven
+	// de guía)
+	private void configurarPlot(XYPlot plot) {
+		plot.setDomainGridlinePaint(COLOR_RECUADROS);
+		plot.setRangeGridlinePaint(COLOR_RECUADROS);
+	}
+
+	// configuramos el eje X de la gráfica (se muestran números enteros y de uno en
+	// uno)
+	private void configurarDomainAxis(NumberAxis domainAxis) {
+		domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+		domainAxis.setTickUnit(new NumberTickUnit(100));
+	}
+
+	// configuramos el eje y de la gráfica (números enteros de dos en dos y rango
+	// entre 120 y 135)
+	private void configurarRangeAxis(NumberAxis rangeAxis) {
+		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
+		rangeAxis.setTickUnit(new NumberTickUnit(0.1));
+		rangeAxis.setRange(0, 0.9);
+	}
+
+	// configuramos las líneas de las series (añadimos un círculo en los puntos y
+	// asignamos el color de cada serie)
+	private void configurarRendered(XYLineAndShapeRenderer renderer) {
+		renderer.setSeriesShapesVisible(0, true);
+		renderer.setSeriesShapesVisible(1, true);
+		renderer.setSeriesPaint(0, COLOR_A);
+		renderer.setSeriesPaint(1, COLOR_HPA);
 	}
 
 }
