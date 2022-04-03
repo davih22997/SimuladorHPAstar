@@ -72,6 +72,9 @@ public class Astar {
 	protected static int memoria = 0;
 	protected static int iteraciones = 0;
 
+	// Longitud de la solución (de haberla)
+	protected static double coste = 0;
+
 	// Temporizador con el que se irá coloreando el mapa
 	protected static Timer timer;
 
@@ -335,6 +338,86 @@ public class Astar {
 			JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
 		}
 
+	}
+
+	/**
+	 * Método para aplicar Astar desde la clase Test (sin Timers)
+	 * 
+	 * @param mapa
+	 */
+	protected static void TestAstar(Mapa mapa, int modo) {
+		// Se crea la lista de puntos cerrados (ya visitados)
+		ArrayList<Datos> cerrados = new ArrayList<>();
+
+		// Se crea una lista de sucesores ordenada según el coste que tenga
+		PriorityQueue<Datos> abiertos = crearAbiertos(mapa, modo);
+
+		// Inicialmente, añadimos el punto inicial
+		abiertos.add(new Datos(0, mapa.pto_inicial));
+		
+		memoria = 1;
+
+		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
+		// encontremos el punto final
+		while (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
+			// El punto con el menor coste
+			Datos actual = abiertos.poll();
+
+			// Lo añadimos a los puntos ya visitados (cerrados)
+			cerrados.add(actual);
+
+			// Cogemos los sucesores del punto
+			ArrayList<Punto> sucesores = actual.p.vecinos_8(mapa.getFilas(), mapa.getCols());
+
+			// Descartamos los puntos ya analizados
+			for (Datos d : cerrados)
+				sucesores.remove(d.p);
+
+			// Creamos un contador de memoria
+			int cantMem = 0;
+			// Vamos comprobando los sucesores
+			for (Punto p : sucesores) {
+				// Calculamos la distancia (coste) con respecto al punto
+				double dist = p.distOctil(actual.p);
+
+				// Además, le añadimos el coste acumulado
+				dist += actual.coste;
+
+				// Creamos una estructura tipo datos para el punto
+				Datos d = new Datos(dist, p, actual);
+
+				// Si el punto vecino no está en la cola (se abre un nuevo nodo)
+				if ((!abiertos.contains(d))) {
+					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
+					abiertos.add(d);
+					// Incrementamos el contador de nodos abiertos
+					cantMem++;
+				}
+
+				// O si está en la cola comprobamos si ya tiene menos pasos:
+				else {
+					Iterator<Datos> it = abiertos.iterator();
+					Datos d2 = it.next();
+
+					while (!d2.p.equals(p) && it.hasNext())
+						d2 = it.next();
+
+					// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
+					// la lista
+					if (dist < d2.coste) {
+						abiertos.remove(d2);
+						abiertos.add(d);
+					}
+				}
+				
+			}
+			// Sumamos los nodos abiertos a la memoria usada
+			memoria += cantMem;
+		}
+
+		// Recogemos los datos (suponemos que encuentra la solución)
+		Datos d = abiertos.peek();
+		coste = d != null ? d.coste : Double.MAX_VALUE;
 	}
 
 	/**

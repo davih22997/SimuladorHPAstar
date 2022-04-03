@@ -21,6 +21,22 @@ public class Test {
 	private Punto[] iniciales = new Punto[NPRUEBAS]; // Array de 100 puntos iniciales
 	private Punto[] finales = new Punto[NPRUEBAS]; // Array de 100 puntos finales
 
+	// Datos que recogemos de A*:
+	// Datos de tiempo
+	private long[] timeAstar = new long[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de A*
+	// Datos de longitud de la solución (coste)
+	private double[] costAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de A*
+	// Datos de nodos expandidos (memoria)
+	private int[] memAstar = new int[NPRUEBAS]; // Array de 100 muestras de memoria usada por A*
+
+	// Datos que recogemos de HPA*:
+	// Datos de tiempo
+	private long[] timeHPAstar = new long[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de HPA*
+	// Datos de longitud de la solución (coste)
+	private double[] costHPAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de HPA*
+	// Datos de nodos expandidos (memoria)
+	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de 100 muestras de memoria usada por HPA*
+
 	public Test() {
 		// 1. Tratar el mapa:
 		// Paso 1: Leer el fichero y convertirlo en mapa
@@ -35,24 +51,60 @@ public class Test {
 		mapa.obstaculos = obstaculos;
 
 		// Paso 4: ¿Mostrar mapa?
+		// Se hablará con el tutor
 
 		// 2. Ejecución. Para cada pareja de puntos (y el mismo mapa):
 		// Paso 1: Utilizar A* y medir tiempo
+
+		// Creamos un bucle
+
+		for (int i = 0; i < NPRUEBAS; i++) {
+			// Asignamos los puntos de inicio y de fin al mapa
+			mapa.pto_inicial = iniciales[i];
+			mapa.pto_final = finales[i];
+
+			// Cogemos el tiempo de inicio
+			long start = System.nanoTime();
+
+			// Aplicamos A*
+			Astar.TestAstar(mapa, Astar.VECINOS_8);
+
+			// Guardamos los resultados obtenidos
+			// Tiempo:Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo de
+			// inicio
+			timeAstar[i] = System.nanoTime() - start;
+			// Coste: La longitud de la solución
+			costAstar[i] = Astar.coste;
+			// Nodos expandidos: La memoria usada
+			memAstar[i] = Astar.memoria;
+
+			// Reseteamos el mapa (de momento, ponemos el mapa a null; si tuviéramos que
+			// representarlo, hacemos reinicio)
+			mapa.pto_inicial = null;
+			mapa.pto_final = null;
+		}
 
 		// Paso 2: Utilizar HPA* y medir tiempo
 
 		// 3. Gráficas:
 		// Son 2 gráficas. En ambas debe obtenerse:
 		// -> La longitud de la solución (se puede usar el coste total)
-		// Gráfica 1: Comparativa entre el número de nodos y la longitud de la solución
+		// Gráfica 1: Comparativa entre el número de nodos expandidos y la longitud de
+		// la solución
 		// Debe obtenerse:
-		// -> El número de nodos (tamaño del mapa)
+		// -> El número de nodos expandidos (memoria)
+		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
+		// primer nivel)
 
 		// Gráfica 2: Compara los tiempos de CPU
 		// Debe obtenerse:
 		// -> El tiempo de ejecución
 		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
 		// primer nivel)
+
+		// 3. Mostrar gráficas
+
+		// 4. Imprimir en fichero
 
 	}
 
