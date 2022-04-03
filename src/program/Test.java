@@ -3,11 +3,12 @@ package program;
 import java.awt.Color;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -31,34 +32,47 @@ public class Test {
 	private int width; // Anchura (num columnas)
 	private ArrayList<Punto> obstaculos = new ArrayList<>(); // Lista de obstaculos
 	// Datos que generamos para el mapa
-	private Punto[] iniciales = new Punto[NPRUEBAS]; // Array de 100 puntos iniciales
-	private Punto[] finales = new Punto[NPRUEBAS]; // Array de 100 puntos finales
+	private Punto[] iniciales = new Punto[NPRUEBAS]; // Array de NPRUEBAS puntos iniciales
+	private Punto[] finales = new Punto[NPRUEBAS]; // Array de NPRUEBAS puntos finales
 
 	// Datos que recogemos de A*:
 	// Datos de tiempo
-	private double[] timeAstar = new double[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de A*
+	private double[] timeAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de A*
 	// Datos de longitud de la solución (coste)
-	private double[] costAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de A*
+	private double[] costAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de A*
 	// Datos de nodos expandidos (memoria)
-	private int[] memAstar = new int[NPRUEBAS]; // Array de 100 muestras de memoria usada por A*
+	private int[] memAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por A*
 
 	// Datos que recogemos de HPA*:
 	// Datos de tiempo
-	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de 100 muestras de tiempo de ejecución de HPA*
+	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de HPA*
 	// Datos de longitud de la solución (coste)
-	private double[] costHPAstar = new double[NPRUEBAS]; // Array de 100 muestras de coste de HPA*
+	private double[] costHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de HPA*
 	// Datos de nodos expandidos (memoria)
-	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de 100 muestras de memoria usada por HPA*
+	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
+	// Datos de la calidad de la solución (porcentaje de éxito):
+	// costAstar/costHPAStar * 100
+	private double[] calidadHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras del porcentaje de acierto
 
 	// Colores para las graficas
-	private static final Color COLOR_A = Color.RED;
-	private static final Color COLOR_HPA = Color.ORANGE;
-	private static final Color COLOR_FONDO = Color.WHITE;
-	private static final Color COLOR_RECUADROS = Color.BLACK;
+	private static final Color COLOR_A = Color.RED; // Color para A*
+	private static final Color COLOR_HPA = Color.ORANGE; // Color para HPA*
+	private static final Color COLOR_FONDO = Color.WHITE; // Color de fondo
+	private static final Color COLOR_RECUADROS = Color.BLACK; // Color para las líneas guía
 
 	// Dimensiones de las graficas
-	private static final int ANCHO = 1000;
-	private static final int ALTO = 500;
+	private static final int ANCHO = 1500;
+	private static final int ALTO = 750;
+
+	// Nombres de los archivos generados
+	// Imágenes:
+	private static final String imagen1 = "CPU_Time.png";
+	private static final String imagen2 = "Expanded_Nodes.png";
+	// Ficheros con las muestras y sus resultados
+	private static final String fichero = "results.txt";
+
+	// Constante para imprimir una nueva línea
+	private static final String newline = "\n";
 
 	public Test() {
 		// 1. Tratar el mapa:
@@ -128,9 +142,14 @@ public class Test {
 		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
 		// primer nivel)
 
+		// Gráfica 3: Calidad de la solución
+		// Debe obtenerse:
+		// -> El porcentaje de error
+
 		// 3. Mostrar gráficas -> JFreeChart
 		mostrarGraficas();
-		// 4. Imprimir en fichero
+		// 4. Guardar en fichero los resultados
+		guardarFichero();
 
 	}
 
@@ -281,13 +300,13 @@ public class Test {
 			JFreeChart grafica1 = crearGrafica(collection1, "Tiempo de CPU", "Longitud de la solución",
 					"Tiempo total de CPU (segundos)");
 			// La exportamos a un PNG
-			ChartUtils.saveChartAsPNG(new File("CPU_Time.png"), grafica1, ANCHO, ALTO);
+			ChartUtils.saveChartAsPNG(new File(imagen1), grafica1, ANCHO, ALTO);
 
 			// Gráfica de los nodos abiertos
 			JFreeChart grafica2 = crearGrafica(collection2, "Total de nodos expandidos", "Longitud de la solución",
 					"Número de nodos");
 			// La exportamos a un PNG
-			ChartUtils.saveChartAsPNG(new File("Expanded_Nodes.png"), grafica2, ANCHO, ALTO);
+			ChartUtils.saveChartAsPNG(new File(imagen2), grafica2, ANCHO, ALTO);
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -295,60 +314,176 @@ public class Test {
 
 	}
 
-	public JFreeChart crearGrafica(XYSeriesCollection dataset, String titulo, String ejeX, String ejeY) {
+	/**
+	 * Método para crear la gráfica
+	 * 
+	 * @param dataset
+	 * @param titulo
+	 * @param ejeX
+	 * @param ejeY
+	 * @return
+	 */
+	private JFreeChart crearGrafica(XYSeriesCollection dataset, String titulo, String ejeX, String ejeY) {
 
+		// Creamos la gráfica de líneas
 		final JFreeChart chart = ChartFactory.createXYLineChart(titulo, ejeX, ejeY, dataset, PlotOrientation.VERTICAL,
 				true, // uso de leyenda
 				false, // uso de tooltips
 				false // uso de urls
 		);
-		// color de fondo de la gráfica
+		// Establecemos el color de fondo
 		chart.setBackgroundPaint(COLOR_FONDO);
 
-		final XYPlot plot = (XYPlot) chart.getPlot();
+		// Configuramos el contenido
+		XYPlot plot = (XYPlot) chart.getPlot();
 		configurarPlot(plot);
 
-		final NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
+		// Configuramos el eje X
+		NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
 		configurarDomainAxis(domainAxis);
 
 		// final NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
 		// configurarRangeAxis(rangeAxis);
 
-		final XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
+		// Configuramos la manera de imprimir las líneas
+		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
 		configurarRendered(renderer);
 
 		return chart;
 	}
 
-	// configuramos el contenido del gráfico (damos un color a las líneas que sirven
-	// de guía)
+	/**
+	 * Configuración del contenido del gráfico (se le da un color a las líneas guía)
+	 * 
+	 * @param plot
+	 */
 	private void configurarPlot(XYPlot plot) {
 		plot.setDomainGridlinePaint(COLOR_RECUADROS);
 		plot.setRangeGridlinePaint(COLOR_RECUADROS);
 	}
 
-	// configuramos el eje X de la gráfica (se muestran números enteros y de uno en
-	// uno)
+	/**
+	 * Configuración del eje X de la gráfica (se muestran números enteros de 100 en
+	 * 100)
+	 * 
+	 * @param domainAxis
+	 */
 	private void configurarDomainAxis(NumberAxis domainAxis) {
 		domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 		domainAxis.setTickUnit(new NumberTickUnit(100));
 	}
 
-	// configuramos el eje y de la gráfica (números enteros de dos en dos y rango
-	// entre 120 y 135)
+	/**
+	 * Configuración del eje Y de la gráfica (no se usa)
+	 * 
+	 * @param rangeAxis
+	 */
 	private void configurarRangeAxis(NumberAxis rangeAxis) {
 		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
 		rangeAxis.setTickUnit(new NumberTickUnit(0.1));
 		rangeAxis.setRange(0, 0.9);
 	}
 
-	// configuramos las líneas de las series (añadimos un círculo en los puntos y
-	// asignamos el color de cada serie)
+	/**
+	 * Método de configuración de las líneas de las series. Se añaden los círculos
+	 * en los puntos y se asignan los colores para cada serie
+	 * 
+	 * @param renderer
+	 */
 	private void configurarRendered(XYLineAndShapeRenderer renderer) {
 		renderer.setSeriesShapesVisible(0, true);
 		renderer.setSeriesShapesVisible(1, true);
 		renderer.setSeriesPaint(0, COLOR_A);
 		renderer.setSeriesPaint(1, COLOR_HPA);
+	}
+
+	/**
+	 * Método para guardar los resultados en un fichero
+	 */
+	private void guardarFichero() {
+		File file = new File(fichero);
+
+		try (FileWriter fw = new FileWriter(file)) {
+			StringBuilder sb = new StringBuilder();
+
+			sb.append("Mapa empleado: " + map + newline);
+			sb.append("Dimensiones del mapa: " + height + "x" + width + newline);
+			sb.append("Muestras generadas: " + NPRUEBAS + " pares de puntos (punto inicial y punto final)" + newline);
+			sb.append("Puntos iniciales: {");
+
+			StringBuilder finals = new StringBuilder();
+			finals.append("Puntos finales: {");
+
+			// Datos para A*
+			StringBuilder times_A = new StringBuilder();
+			times_A.append("Valores obtenidos para A*:" + newline);
+			times_A.append("Tiempo de ejecución: {");
+			StringBuilder costs_A = new StringBuilder();
+			costs_A.append("Longitud de la solución: {");
+			StringBuilder mems_A = new StringBuilder();
+			mems_A.append("Nodos expandidos: {");
+
+			// Datos para HPA*
+			StringBuilder times_HPA = new StringBuilder();
+			times_HPA.append("Valores obtenidos para HPA*:" + newline);
+			times_HPA.append("Tiempo de ejecución: {");
+			StringBuilder costs_HPA = new StringBuilder();
+			costs_HPA.append("Longitud de la solución: {");
+			StringBuilder mems_HPA = new StringBuilder();
+			mems_HPA.append("Nodos expandidos: {");
+			StringBuilder q = new StringBuilder();
+			q.append("Porcentaje de acierto con respecto al camino óptimo: {");
+
+			for (int i = 0; i < NPRUEBAS; i++) {
+				// Datos generados
+				sb.append(iniciales[i]);
+				finals.append(finales[i]);
+				// Datos obtenidos por A*
+				times_A.append(timeAstar[i]);
+				costs_A.append(costAstar[i]);
+				mems_A.append(memAstar[i]);
+				// Datos obtenidos por HPA*
+				times_HPA.append(timeHPAstar[i]);
+				costs_HPA.append(costHPAstar[i]);
+				mems_HPA.append(memHPAAstar[i]);
+				q.append(calidadHPAstar[i] + "%");
+				if (i < NPRUEBAS - 1) {
+					sb.append(", ");
+					finals.append(", ");
+					times_A.append(", ");
+					costs_A.append(", ");
+					mems_A.append(", ");
+					times_HPA.append(", ");
+					costs_HPA.append(", ");
+					mems_HPA.append(", ");
+					q.append(", ");
+				} else {
+					sb.append("}" + newline);
+					finals.append("}" + newline);
+					times_A.append("}" + newline);
+					costs_A.append("}" + newline);
+					mems_A.append("}" + newline);
+					times_HPA.append("}" + newline);
+					costs_HPA.append("}" + newline);
+					mems_HPA.append("}" + newline);
+					q.append("}" + newline);
+				}
+			}
+
+			sb.append(finals);
+			sb.append(times_A);
+			sb.append(costs_A);
+			sb.append(mems_A);
+			sb.append(times_HPA);
+			sb.append(costs_HPA);
+			sb.append(mems_HPA);
+			sb.append(q);
+
+			fw.write(sb.toString());
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }
