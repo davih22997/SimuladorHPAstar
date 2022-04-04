@@ -26,7 +26,7 @@ public class Test {
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
-	private static final Integer NPRUEBAS = 100;
+	private static final Integer NPRUEBAS = 1;
 	// Datos predefinidos del mapa
 	private int height; // Altura (num filas)
 	private int width; // Anchura (num columnas)
@@ -43,6 +43,9 @@ public class Test {
 	// Datos de nodos expandidos (memoria)
 	private int[] memAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por A*
 
+	// Datos predefinidos de HPA*
+	private int umbral = 6;
+	private int dCluster = HPAstar.CLUSTER_10X10;
 	// Datos que recogemos de HPA*:
 	// Datos de tiempo
 	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de HPA*
@@ -51,8 +54,7 @@ public class Test {
 	// Datos de nodos expandidos (memoria)
 	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
 	// Datos de la calidad de la solución (porcentaje de éxito):
-	// costAstar/costHPAStar * 100
-	private double[] calidadHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras del porcentaje de acierto
+	// calidad(%) = costAstar/costHPAStar * 100
 
 	// Colores para las graficas
 	private static final Color COLOR_A = Color.RED; // Color para A*
@@ -91,10 +93,9 @@ public class Test {
 		// Se hablará con el tutor
 
 		// 2. Ejecución. Para cada pareja de puntos (y el mismo mapa):
+
 		// Paso 1: Utilizar A* y medir tiempo
-
 		// Creamos un bucle
-
 		for (int i = 0; i < NPRUEBAS; i++) {
 			// Asignamos los puntos de inicio y de fin al mapa
 			mapa.pto_inicial = iniciales[i];
@@ -104,11 +105,11 @@ public class Test {
 			long start = System.nanoTime();
 
 			// Aplicamos A*
-			Astar.TestAstar(mapa, Astar.VECINOS_8);
+			Astar.testAstar(mapa, Astar.VECINOS_8);
 
 			// Guardamos los resultados obtenidos
-			// Tiempo:Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo de
-			// inicio
+			// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
+			// de inicio
 			long fin = System.nanoTime() - start;
 			// Lo pasamos a segundos
 			timeAstar[i] = ((double) fin) / 10E9;
@@ -125,6 +126,36 @@ public class Test {
 		}
 
 		// Paso 2: Utilizar HPA* y medir tiempo
+		// Creamos un bucle
+		for (int i = 0; i < NPRUEBAS; i++) {
+			// Asignamos los puntos de inicio y de fin al mapa
+			mapa.pto_inicial = iniciales[i];
+			mapa.pto_final = finales[i];
+
+			// Cogemos el tiempo de inicio
+			long start = System.nanoTime();
+
+			// Aplicamos HPA*
+			HPAstar.TestHPAstar(mapa, umbral, dCluster);
+
+			// Guardamos los resultados obtenidos
+			// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
+			// de inicio
+			long fin = System.nanoTime() - start;
+			// Lo pasamos a segundos
+			timeHPAstar[i] = ((double) fin) / 10E9;
+
+			// Coste: La longitud de la solucion
+			costHPAstar[i] = HPAstar.coste;
+			// Nodos expandidos: La memoria usada
+			memHPAAstar[i] = HPAstar.refmemoria;
+
+			// Reseteamos el mapa (de momento, ponemos a null; si tuviéramos que
+			// representarlo, haríamos reinicio)
+			mapa.pto_inicial = null;
+			mapa.pto_final = null;
+
+		}
 
 		// 3. Gráficas:
 		// Son 2 gráficas. En ambas debe obtenerse:
@@ -280,7 +311,9 @@ public class Test {
 
 		for (int i = 0; i < NPRUEBAS; i++) {
 			serieA1.add(costAstar[i], timeAstar[i]);
+			serieHPA1.add(costHPAstar[i], timeHPAstar[i]);
 			serieA2.add(costAstar[i], memAstar[i]);
+			serieHPA2.add(costHPAstar[i], memHPAAstar[i]);
 		}
 
 		// Añadimos a una colección
@@ -408,7 +441,16 @@ public class Test {
 
 			sb.append("Mapa empleado: " + map + newline);
 			sb.append("Dimensiones del mapa: " + height + "x" + width + newline);
-			sb.append("Muestras generadas: " + NPRUEBAS + " pares de puntos (punto inicial y punto final)" + newline);
+			/*
+			 * sb.append("Obstáculos: {"); for (Punto p : obstaculos) {
+			 * sb.append(p.toString()); if (obstaculos.indexOf(p) < obstaculos.size() - 1)
+			 * sb.append(", "); else sb.append("}" + newline);
+			 * 
+			 * if (obstaculos.indexOf(p) % 1000 == 0) sb.append(newline); }
+			 */
+
+			sb.append(newline);
+			sb.append("Muestras generadas: " + NPRUEBAS + " pares de puntos." + newline);
 			sb.append("Puntos iniciales: {");
 
 			StringBuilder finals = new StringBuilder();
@@ -446,7 +488,8 @@ public class Test {
 				times_HPA.append(timeHPAstar[i]);
 				costs_HPA.append(costHPAstar[i]);
 				mems_HPA.append(memHPAAstar[i]);
-				q.append(calidadHPAstar[i] + "%");
+				// Calidad
+				q.append((costAstar[i] / costHPAstar[i] * 100) + "%");
 				if (i < NPRUEBAS - 1) {
 					sb.append(", ");
 					finals.append(", ");
@@ -471,9 +514,11 @@ public class Test {
 			}
 
 			sb.append(finals);
+			sb.append(newline);
 			sb.append(times_A);
 			sb.append(costs_A);
 			sb.append(mems_A);
+			sb.append(newline);
 			sb.append(times_HPA);
 			sb.append(costs_HPA);
 			sb.append(mems_HPA);

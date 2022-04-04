@@ -56,8 +56,8 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private final int dimY = 650; // Y -> alto
-	private final int dimX = 600; // X -> ancho
+	private int dimY = 650; // Y -> alto
+	private int dimX = 600; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -134,6 +134,17 @@ public class Mapa {
 	public void setDims(int fils, int cols) {
 		this.dX = cols;
 		this.dY = fils;
+	}
+
+	/**
+	 * Cambia el ancho y el alto del mapa
+	 * 
+	 * @param height
+	 * @param width
+	 */
+	public void setSize(int height, int width) {
+		this.dimX = width;
+		this.dimY = height;
 	}
 
 	/**
@@ -477,12 +488,13 @@ public class Mapa {
 		tamY = dimY / cY;
 
 	}
-	
+
 	/**
 	 * Función para obtener las dimensiones de los botones
+	 * 
 	 * @return
 	 */
-	public Dimension getDimsButton () {
+	public Dimension getDimsButton() {
 		return MatrizBotones[0][0].getPreferredSize();
 	}
 

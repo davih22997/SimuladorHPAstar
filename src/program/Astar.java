@@ -69,9 +69,10 @@ public class Astar {
 
 	// Variables que vamos a usar para la simulación de A*
 	// Datos de la simulación
+	// Cantidad de nodos abiertos
 	protected static int memoria = 0;
+	// Cantidad de iteraciones
 	protected static int iteraciones = 0;
-
 	// Longitud de la solución (de haberla)
 	protected static double coste = 0;
 
@@ -91,7 +92,7 @@ public class Astar {
 	 * 
 	 * @param mapa
 	 */
-	public static void BusquedaAstar(Mapa mapa, int modo) {
+	public static void busquedaAstar(Mapa mapa, int modo) {
 		memoria = 1;
 		iteraciones = 0;
 
@@ -210,6 +211,7 @@ public class Astar {
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty()
 							&& abiertos.peek().p.equals(mapa.pto_final)) {
 						Datos d = abiertos.poll();
+						coste = d.coste;
 						while (!d.p_anterior.p.equals(mapa.pto_inicial)) {
 							d = d.p_anterior;
 							mapa.pintarMapa(Mapa.cRecorrido, d.p.getFila(), d.p.getCol());
@@ -217,7 +219,7 @@ public class Astar {
 
 						timer.stop();
 						Interfaz.btnStart.setEnabled(false);
-						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
+						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + coste);
 					}
 
 					// 2. Si no la encuentra: simplemente lo indica
@@ -281,9 +283,12 @@ public class Astar {
 				Datos d = new Datos(dist, p, actual);
 
 				// Si el punto vecino no está en la cola:
-				if ((!abiertos.contains(d)))
+				if ((!abiertos.contains(d))) {
 					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
 					abiertos.add(d);
+					// Incrementamos la cantidad de nodos expandidos
+					HPAstar.refmemoria++;
+				}
 
 				// O si está en la cola comprobamos si ya tiene menos pasos:
 				else {
@@ -300,6 +305,9 @@ public class Astar {
 						abiertos.add(d);
 					}
 				}
+
+				// Incrementamos las iteraciones
+				HPAstar.refiters++;
 			}
 
 		}
@@ -308,6 +316,8 @@ public class Astar {
 		// 1. Si la encuentra: Muestra el camino y te lo indica.
 		if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
 			Datos d = abiertos.poll();
+			HPAstar.coste = d.coste;
+
 			while (d.p_anterior != null) {
 				// Vamos a pintar todo el recorrido
 				// 1. Cogemos el punto anterior
@@ -330,7 +340,7 @@ public class Astar {
 				}
 			}
 
-			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
+			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + HPAstar.coste);
 		}
 
 		// 2. Si no la encuentra: simplemente lo indica
@@ -341,11 +351,11 @@ public class Astar {
 	}
 
 	/**
-	 * Método para aplicar Astar desde la clase Test (sin Timers)
+	 * Método para aplicar Astar desde la clase Test (sin Timers) y sin dibujar
 	 * 
 	 * @param mapa
 	 */
-	protected static void TestAstar(Mapa mapa, int modo) {
+	protected static void testAstar(Mapa mapa, int modo) {
 		// Se crea la lista de puntos cerrados (ya visitados)
 		ArrayList<Datos> cerrados = new ArrayList<>();
 
@@ -354,7 +364,7 @@ public class Astar {
 
 		// Inicialmente, añadimos el punto inicial
 		abiertos.add(new Datos(0, mapa.pto_inicial));
-		
+
 		memoria = 1;
 
 		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
@@ -409,15 +419,98 @@ public class Astar {
 						abiertos.add(d);
 					}
 				}
-				
+
 			}
 			// Sumamos los nodos abiertos a la memoria usada
 			memoria += cantMem;
 		}
 
-		// Recogemos los datos (suponemos que encuentra la solución)
+		// Recogemos la longitud del camino
 		Datos d = abiertos.peek();
-		coste = d != null ? d.coste : Double.MAX_VALUE;
+		coste = d != null ? d.coste : 0;
+	}
+
+	/**
+	 * Método que será llamado en HPAstar para aplicar A* en Test una vez que
+	 * tenemos definidos los nodos y arcos
+	 * 
+	 * @param mapa
+	 * @param modo
+	 */
+	protected static void testEnHPAstar(Mapa mapa, int modo) {
+		// Se crea la lista de puntos cerrados (ya visitados)
+		ArrayList<Datos> cerrados = new ArrayList<>();
+
+		// Se crea una lista de sucesores ordenada según el coste que tenga
+		PriorityQueue<Datos> abiertos = crearAbiertos(mapa, modo);
+
+		// Inicialmente, añadimos el punto inicial
+		abiertos.add(new Datos(0, mapa.pto_inicial));
+
+		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
+		// encontremos el punto final
+		while (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
+			// El punto con el menor coste
+			Datos actual = abiertos.poll();
+
+			// Lo añadimos a los puntos ya visitados (cerrados)
+			cerrados.add(actual);
+
+			// Cogemos los sucesores del punto
+			ArrayList<Punto> sucesores = new ArrayList<>();
+			sucesores = HPAstar.sucesores.get(actual.p);
+
+			// Descartamos los puntos ya analizados
+			for (Datos d : cerrados)
+				sucesores.remove(d.p);
+
+			// Vamos comprobando los sucesores
+			for (Punto p : sucesores) {
+				// Creamos el arco entre los dos puntos
+				Arco arco = new Arco(actual.p, p);
+				// Calculamos la distancia (coste) con respecto al punto
+				double dist = HPAstar.costes.get(arco);
+
+				// Además, le añadimos el coste acumulado
+				dist += actual.coste;
+
+				// Creamos una estructura tipo datos para el punto
+				Datos d = new Datos(dist, p, actual);
+
+				// Si el punto vecino no está en la cola:
+				if ((!abiertos.contains(d))) {
+					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
+					abiertos.add(d);
+					// Incrementamos la cantidad de nodos expandidos
+					HPAstar.refmemoria++;
+				}
+
+				// O si está en la cola comprobamos si ya tiene menos pasos:
+				else {
+					Iterator<Datos> it = abiertos.iterator();
+					Datos d2 = it.next();
+
+					while (!d2.p.equals(p) && it.hasNext())
+						d2 = it.next();
+
+					// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
+					// la lista
+					if (dist < d2.coste) {
+						abiertos.remove(d2);
+						abiertos.add(d);
+					}
+				}
+
+				// Incrementamos las iteraciones
+				HPAstar.refiters++;
+			}
+
+		}
+
+		// Recogemos la longitud del camino
+		Datos d = abiertos.peek();
+		HPAstar.coste = d != null ? d.coste : 0;
+
 	}
 
 	/**

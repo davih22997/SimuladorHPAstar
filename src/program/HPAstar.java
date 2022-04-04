@@ -67,24 +67,45 @@ public class HPAstar {
 	// La lista que contendrá todos los clusters definidos
 	protected static ArrayList<Cluster> clusters;
 
-	// Constante para definir el umbral para ver cuántas entradas hay entre los
+	// Variable para definir el umbral para ver cuántas entradas hay entre los
 	// clústers
-	// (No se pone final porque puede variar según el tamaño de cluster).
 	private static int umbral;
 
-	// Constantes para las tablas hash:
+	// Variables para las tablas hash:
 	protected static HashMap<Punto, ArrayList<Punto>> sucesores;
 	protected static HashMap<Arco, Double> costes;
 	protected static HashMap<Arco, ArrayList<Punto>> caminos;
 
+	// Variables que vamos a obtener de la simulación de HPA*
+	protected static int preiters; // Iteraciones realizadas en la fase de preprocesamiento
+	protected static int prememoria; // Cantidad de nodos abiertos en la fase de preprocesamiento
+
+	protected static int refiters; // Iteraciones realizadas en la fase de refinado
+	protected static int refmemoria; // Cantidad de nodos abiertos en la fase de refinado
+	protected static double coste; // Longitud de la solución final obtenida
+
+	private static boolean paint; // Variable que te indica si pintar o no
+
 	/**
-	 * Método para definir el tamaño de los clusters dada una constante que
-	 * represente su tamaño y pintarlos
+	 * Método para definir los clusters si no es un test
 	 * 
 	 * @param mapa
 	 * @param tam
 	 */
 	public static void definirClusters(Mapa mapa, int tam) {
+		definirClusters(mapa, tam, false);
+	}
+
+	/**
+	 * Método para definir el tamaño de los clusters dada una constante que
+	 * represente su tamaño y pintarlos. El booleano test a true indica que no se va
+	 * a pintar
+	 * 
+	 * @param mapa
+	 * @param tam
+	 * @param test
+	 */
+	public static void definirClusters(Mapa mapa, int tam, boolean test) {
 
 		// Inicializamos la lista de clusters
 		clusters = new ArrayList<>();
@@ -93,6 +114,16 @@ public class HPAstar {
 		sucesores = new HashMap<>();
 		costes = new HashMap<>();
 		caminos = new HashMap<>();
+
+		// Y las variables
+		preiters = 0;
+		prememoria = 0;
+		refiters = 0;
+		refmemoria = 0;
+		coste = 0;
+
+		// Indicamos si pintamos
+		paint = !test;
 
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
@@ -144,12 +175,14 @@ public class HPAstar {
 
 			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
 				c.addNodo(mapa.pto_inicial, false);
-				oscurecerMapa(mapa.pto_inicial, mapa);
+				if (paint)
+					oscurecerMapa(mapa.pto_inicial, mapa);
 			}
 
 			if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
 				c.addNodo(mapa.pto_final, false);
-				oscurecerMapa(mapa.pto_final, mapa);
+				if (paint)
+					oscurecerMapa(mapa.pto_final, mapa);
 			}
 
 			// CREACIÓN DE ARCOS INTERNOS
@@ -385,7 +418,10 @@ public class HPAstar {
 		}
 
 		// 2. Aplicamos A* para hallar el camino de menor coste
-		Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
+		if (paint)
+			Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
+		else
+			Astar.testEnHPAstar(mapa, CLUSTER_10X10);
 
 	}
 
@@ -410,44 +446,52 @@ public class HPAstar {
 		// derecha
 		for (int f = 0; f < mapa.getFilas(); f++) {
 			for (int c = 0; c < mapa.getCols(); c++) {
-				// 1.
-				if (f % fils == 0) {
-					// además 3.
-					if (c % cols == 0) {
-						mapa.pintarBorde(bctopleft, f, c);
-						// Añadimos el cluster cuando coincide con la casilla inicial
-						clusters.add(new Cluster(fils, cols, f, c));
+				// Si queremos pintar
+				if (paint) {
+					// 1.
+					if (f % fils == 0) {
+						// además 3.
+						if (c % cols == 0) {
+							mapa.pintarBorde(bctopleft, f, c);
+							// Añadimos el cluster cuando coincide con la casilla inicial
+							clusters.add(new Cluster(fils, cols, f, c));
+						}
+						// además 4
+						else if (c % cols == (cols - 1))
+							mapa.pintarBorde(bctopright, f, c);
+						else
+							mapa.pintarBorde(bctop, f, c);
 					}
-					// además 4
-					else if (c % cols == (cols - 1))
-						mapa.pintarBorde(bctopright, f, c);
-					else
-						mapa.pintarBorde(bctop, f, c);
+					// 2.
+					else if (f % fils == (fils - 1)) {
+						// Además 3.
+						if (c % cols == 0)
+							mapa.pintarBorde(bcbottomleft, f, c);
+						// Además 4.
+						else if (c % cols == (cols - 1))
+							mapa.pintarBorde(bcbottomright, f, c);
+						else
+							mapa.pintarBorde(bcbottom, f, c);
+					} else {
+						// 3.
+						if (c % cols == 0)
+							mapa.pintarBorde(bcleft, f, c);
+						// 4.
+						else if (c % cols == (cols - 1))
+							mapa.pintarBorde(bcright, f, c);
+					}
+				} // Si no
+				else {
+					if (f % fils == 0 && c % cols == 0)
+						// Simplemente añadimos al cluster cuando coincide la casilla inicial
+						clusters.add(new Cluster(fils, cols, f, c));
 				}
-				// 2.
-				else if (f % fils == (fils - 1)) {
-					// Además 3.
-					if (c % cols == 0)
-						mapa.pintarBorde(bcbottomleft, f, c);
-					// Además 4.
-					else if (c % cols == (cols - 1))
-						mapa.pintarBorde(bcbottomright, f, c);
-					else
-						mapa.pintarBorde(bcbottom, f, c);
-				} else {
-					// 3.
-					if (c % cols == 0)
-						mapa.pintarBorde(bcleft, f, c);
-					// 4.
-					else if (c % cols == (cols - 1))
-						mapa.pintarBorde(bcright, f, c);
-				}
-
 			}
 		}
 		// Finalmente, se ordena la lista de clusters
 		Collections.sort(clusters);
-		Interfaz.escribir("Se han creado los clústers.\n");
+		if (paint)
+			Interfaz.escribir("Se han creado los clústers.\n");
 	}
 
 	/**
@@ -636,10 +680,11 @@ public class HPAstar {
 				// Creamos el arco externo
 				pl1_1.addArcoExterno(pl2_1);
 
-				// Pintamos en los nodos
-				oscurecerMapa(pl1_1, mapa);
-				oscurecerMapa(pl2_1, mapa);
-
+				if (paint) {
+					// Pintamos en los nodos
+					oscurecerMapa(pl1_1, mapa);
+					oscurecerMapa(pl2_1, mapa);
+				}
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
 				// Al cluster original
@@ -662,11 +707,13 @@ public class HPAstar {
 					pl1_1.addArcoExterno(pl2_1);
 					pl1_2.addArcoExterno(pl2_2);
 
-					// Pintamos en los nodos
-					oscurecerMapa(pl1_1, mapa);
-					oscurecerMapa(pl1_2, mapa);
-					oscurecerMapa(pl2_1, mapa);
-					oscurecerMapa(pl2_2, mapa);
+					if (paint) {
+						// Pintamos en los nodos
+						oscurecerMapa(pl1_1, mapa);
+						oscurecerMapa(pl1_2, mapa);
+						oscurecerMapa(pl2_1, mapa);
+						oscurecerMapa(pl2_2, mapa);
+					}
 
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
 					// vienen ordenados)
@@ -689,9 +736,11 @@ public class HPAstar {
 					// Creamos el arco entre ambos puntos
 					pl1_1.addArcoExterno(pl2_1);
 
-					// Pintamos en los nodos
-					oscurecerMapa(pl1_1, mapa);
-					oscurecerMapa(pl2_1, mapa);
+					if (paint) {
+						// Pintamos en los nodos
+						oscurecerMapa(pl1_1, mapa);
+						oscurecerMapa(pl2_1, mapa);
+					}
 
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya
 					// vienen ordenados)
@@ -778,6 +827,22 @@ public class HPAstar {
 		costes.put(arco, coste);
 		// Añadimos el camino
 		caminos.put(arco, camino);
+	}
+
+	/**
+	 * Realiza el test de HPA* dados el mapa, un umbral y el tamaño de cluster
+	 * 
+	 * @param mapa
+	 * @param umb
+	 * @param tcluster
+	 */
+	protected static void TestHPAstar(Mapa mapa, int umb, int tcluster) {
+		// 1. Definimos los clusters
+		definirClusters(mapa, tcluster, true);
+		// 2. Creamos los arcos (internos y externos)
+		definirEdges(mapa, umb);
+		// 3. Aplicamos A*
+		aplicarAstar(mapa);
 	}
 
 	/**

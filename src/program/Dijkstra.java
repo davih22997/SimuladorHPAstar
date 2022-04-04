@@ -168,6 +168,7 @@ public class Dijkstra {
 
 		// Añadimos el punto inicial
 		Datos par = new Datos(0, 0, p1);
+		HPAstar.prememoria++;
 
 		abiertos.add(par);
 
@@ -187,9 +188,12 @@ public class Dijkstra {
 
 			for (Datos p : vecinos) {
 				// Si el punto no está en la lista de abiertos
-				if ((!abiertos.contains(p)))
+				if ((!abiertos.contains(p))) {
 					// Lo añadimos
 					abiertos.add(p);
+					// Incrementamos la cantidad de nodos abiertos
+					HPAstar.prememoria++;
+				}
 				// Si está en la lista comprobamos que tenga menor coste
 				else {
 					Iterator<Datos> it = abiertos.iterator();
@@ -202,8 +206,11 @@ public class Dijkstra {
 					if (p.coste < par2.coste) {
 						abiertos.remove(par2);
 						abiertos.add(p);
-					} 
+					}
 				}
+
+				// Sumamos una iteración:
+				HPAstar.preiters++;
 			}
 		}
 

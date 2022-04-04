@@ -51,7 +51,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Patrones que se usan
 	// Patrón lista
-	private static final Pattern patlist = Pattern.compile(space + "*[{].*[}]" + space + "*");
+	private static final Pattern patlist = Pattern.compile("(?s)" + space + "*[{](.|\\R)*[}]" + space + "*");
 	// Patrón punto
 	private static final Pattern patpoint = Pattern.compile(
 			space + "*[(]" + space + "*" + number + space + "*," + space + "*" + number + space + "*[)]" + space + "*");
@@ -702,6 +702,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 									dims.setSelectedItem(dimensiones[1]);
 								} else if (dim1 == 30 && dim2 == 20) {
 									dims.setSelectedItem(dimensiones[2]);
+								} else if (dim1 == 50 && dim2 == 50) {
+									dims.setSelectedItem(dimensiones[3]);
+								} else if (dim1 == 100 && dim2 == 100) {
+									dims.setSelectedItem(dimensiones[4]);
 								} else {
 									JOptionPane.showMessageDialog(new JFrame(),
 											"Las dimensiones dadas no se encuentran entre las opciones disponibles.\nNo se creará un mapa nuevo a partir del fichero.");
@@ -817,8 +821,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 							// Obstáculos: {Punto1, Punto2, ... }
 							String linea5 = sc.nextLine().toUpperCase();
+							while (sc.hasNextLine()) {
+								linea5 += newline + sc.nextLine().toUpperCase();
+							}
+
 							try (Scanner scan = new Scanner(linea5)) {
-								scan.useDelimiter(space + "*OBSTÁCULOS" + space + "*:" + space + "*");
+								scan.useDelimiter(space + "*OBSTÁCULOS" + space + "*:" + "(\r?\n|" + space + ")*");
 								// { lista_ptos }
 								String lista = scan.next();
 								// Comprobamos que siga el patrón lista
@@ -829,14 +837,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 											"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
 								} // Si lo sigue, operamos
 								else {
-
 									// Quitamos el inicio de la lista
 									try (Scanner scan2 = new Scanner(lista.substring(1))) {
 										// booleano para comprobar si hay puntos ya definidos
 										boolean rep = false;
 
-										scan2.useDelimiter("([)]" + space + "*," + space + "*)" + "|([)]" + space
-												+ "*[}]" + space + "*)");
+										scan2.useDelimiter("([)]" + space + "*," + "(\\R|" + space + ")*)" + "|([)]"
+												+ "(\\R|" + space + ")*[}]" + space + "*)");
 
 										while (scan2.hasNext()) {
 											String p = scan2.next();
@@ -1117,12 +1124,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Si seleccionamos 4-vecinos
 					if (option.equals(numVecinos[0])) {
 						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan." + newline);
-						Astar.BusquedaAstar(mapa, Astar.VECINOS_4);
+						Astar.busquedaAstar(mapa, Astar.VECINOS_4);
 					}
 					// Si seleccionamos 8-vecinos
 					else if (option.equals(numVecinos[1])) {
 						log.append("Simulación con 8 vecinos. Se aplica la distancia octil." + newline);
-						Astar.BusquedaAstar(mapa, Astar.VECINOS_8);
+						Astar.busquedaAstar(mapa, Astar.VECINOS_8);
 					}
 
 				}
