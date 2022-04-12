@@ -1311,8 +1311,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Incrementamos un "step"
 					step++;
 
+					// Dejamos bloqueado el botón de start
 					// Desbloqueamos el botón de start
-					btnStart2.setEnabled(true);
+					//btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);

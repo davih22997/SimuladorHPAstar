@@ -17,7 +17,7 @@ public class Edge implements Cloneable {
 	protected Punto pfin;
 
 	// El coste entre un punto y otro
-	protected double coste;
+	protected int coste;
 
 	// Camino (sucesión de puntos) que hay entre un punto y otro
 	protected ArrayList<Punto> camino;
@@ -40,7 +40,7 @@ public class Edge implements Cloneable {
 		this.pini = pini;
 		this.pfin = pfin;
 		// El coste de llegar de un punto a otro será 1
-		coste = 1;
+		coste = 100;
 		// El camino será los dos puntos
 		camino.add(pini);
 		camino.add(pfin);
@@ -54,7 +54,7 @@ public class Edge implements Cloneable {
 	 * @param camino
 	 * @param coste
 	 */
-	public void intraEdge(Punto pini, Punto pfin, ArrayList<Punto> camino, double coste) {
+	public void intraEdge(Punto pini, Punto pfin, ArrayList<Punto> camino, int coste) {
 		this.pini = pini;
 		this.pfin = pfin;
 		this.camino = camino;

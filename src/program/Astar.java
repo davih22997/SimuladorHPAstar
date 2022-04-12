@@ -21,9 +21,11 @@ public class Astar {
 	 *
 	 */
 	static class Datos {
-		double coste;
+		int coste;
 		Punto p;
 		Datos p_anterior;
+		// Longitud del camino
+		int longitud;
 
 		/**
 		 * Crea los datos iniciales (sin datos anteriores)
@@ -31,7 +33,7 @@ public class Astar {
 		 * @param coste
 		 * @param p
 		 */
-		public Datos(double coste, Punto p) {
+		public Datos(int coste, Punto p) {
 			this(coste, p, null);
 		}
 
@@ -43,9 +45,17 @@ public class Astar {
 		 * @param p
 		 * @param anterior
 		 */
-		public Datos(double coste, Punto p, Datos anterior) {
+		public Datos(int coste, Punto p, Datos anterior) {
 			this.coste = coste;
 			this.p = p;
+			p_anterior = anterior;
+			longitud = anterior != null ? anterior.longitud + 1 : 1;
+		}
+		
+		public Datos(int coste, Punto p, int longitud, Datos anterior) {
+			this.coste = coste;
+			this.p = p;
+			this.longitud = anterior.longitud + longitud;
 			p_anterior = anterior;
 		}
 
@@ -74,7 +84,7 @@ public class Astar {
 	// Cantidad de iteraciones
 	protected static int iteraciones = 0;
 	// Longitud de la solución (de haberla)
-	protected static double coste = 0;
+	protected static int longitud = 0;
 
 	// Temporizador con el que se irá coloreando el mapa
 	protected static Timer timer;
@@ -154,7 +164,7 @@ public class Astar {
 					for (Punto p : vecinos) {
 
 						// Calculamos la distancia para añadirla al coste
-						double distancia = 1;
+						int distancia = 100;
 						// Si el modo es VECINOS_4, la distancia con sus vecinos va a ser siempre 1; sin
 						// embargo, si es VECINOS_8, la distancia puede ser 1 ó raíz de 2 con respecto
 						// al punto actual
@@ -211,7 +221,7 @@ public class Astar {
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty()
 							&& abiertos.peek().p.equals(mapa.pto_final)) {
 						Datos d = abiertos.poll();
-						coste = d.coste;
+						longitud = d.longitud;
 						while (!d.p_anterior.p.equals(mapa.pto_inicial)) {
 							d = d.p_anterior;
 							mapa.pintarMapa(Mapa.cRecorrido, d.p.getFila(), d.p.getCol());
@@ -219,7 +229,8 @@ public class Astar {
 
 						timer.stop();
 						Interfaz.btnStart.setEnabled(false);
-						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + coste);
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se encontró solución. Su longitud es de " + longitud);
 					}
 
 					// 2. Si no la encuentra: simplemente lo indica
@@ -274,13 +285,16 @@ public class Astar {
 				// Creamos el arco entre los dos puntos
 				Arco arco = new Arco(actual.p, p);
 				// Calculamos la distancia (coste) con respecto al punto
-				double dist = HPAstar.costes.get(arco);
+				int dist = HPAstar.costes.get(arco);
 
 				// Además, le añadimos el coste acumulado
 				dist += actual.coste;
 
+				// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
+				int longi = HPAstar.caminos.get(arco).size() - 1;
+				
 				// Creamos una estructura tipo datos para el punto
-				Datos d = new Datos(dist, p, actual);
+				Datos d = new Datos(dist, p, longi, actual);
 
 				// Si el punto vecino no está en la cola:
 				if ((!abiertos.contains(d))) {
@@ -316,7 +330,7 @@ public class Astar {
 		// 1. Si la encuentra: Muestra el camino y te lo indica.
 		if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
 			Datos d = abiertos.poll();
-			HPAstar.coste = d.coste;
+			HPAstar.longitud = d.longitud;
 
 			while (d.p_anterior != null) {
 				// Vamos a pintar todo el recorrido
@@ -340,7 +354,7 @@ public class Astar {
 				}
 			}
 
-			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + HPAstar.coste);
+			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + HPAstar.longitud);
 		}
 
 		// 2. Si no la encuentra: simplemente lo indica
@@ -388,7 +402,7 @@ public class Astar {
 			// Vamos comprobando los sucesores
 			for (Punto p : sucesores) {
 				// Calculamos la distancia (coste) con respecto al punto
-				double dist = p.distOctil(actual.p);
+				int dist = p.distOctil(actual.p);
 
 				// Además, le añadimos el coste acumulado
 				dist += actual.coste;
@@ -427,7 +441,7 @@ public class Astar {
 
 		// Recogemos la longitud del camino
 		Datos d = abiertos.peek();
-		coste = d != null ? d.coste : 0;
+		longitud = d != null ? d.longitud : 0;
 	}
 
 	/**
@@ -469,13 +483,16 @@ public class Astar {
 				// Creamos el arco entre los dos puntos
 				Arco arco = new Arco(actual.p, p);
 				// Calculamos la distancia (coste) con respecto al punto
-				double dist = HPAstar.costes.get(arco);
+				int dist = HPAstar.costes.get(arco);
 
 				// Además, le añadimos el coste acumulado
 				dist += actual.coste;
-
+				
+				// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
+				int longi = HPAstar.caminos.get(arco).size() - 1;
+				
 				// Creamos una estructura tipo datos para el punto
-				Datos d = new Datos(dist, p, actual);
+				Datos d = new Datos(dist, p, longi, actual);
 
 				// Si el punto vecino no está en la cola:
 				if ((!abiertos.contains(d))) {
@@ -509,7 +526,7 @@ public class Astar {
 
 		// Recogemos la longitud del camino
 		Datos d = abiertos.peek();
-		HPAstar.coste = d != null ? d.coste : 0;
+		HPAstar.longitud = d != null ? d.longitud : 0;
 
 	}
 

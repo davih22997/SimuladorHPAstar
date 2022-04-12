@@ -38,8 +38,8 @@ public class Test {
 	// Datos que recogemos de A*:
 	// Datos de tiempo
 	private double[] timeAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de A*
-	// Datos de longitud de la solución (coste)
-	private double[] costAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de A*
+	// Datos de longitud de la solución
+	private int[] longAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de A*
 	// Datos de nodos expandidos (memoria)
 	private int[] memAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por A*
 
@@ -50,7 +50,7 @@ public class Test {
 	// Datos de tiempo
 	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de HPA*
 	// Datos de longitud de la solución (coste)
-	private double[] costHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de HPA*
+	private int[] longHPAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de HPA*
 	// Datos de nodos expandidos (memoria)
 	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
 	// Datos de la calidad de la solución (porcentaje de éxito):
@@ -115,7 +115,7 @@ public class Test {
 			timeAstar[i] = ((double) fin) / 10E9;
 
 			// Coste: La longitud de la solución
-			costAstar[i] = Astar.coste;
+			longAstar[i] = Astar.longitud;
 			// Nodos expandidos: La memoria usada
 			memAstar[i] = Astar.memoria;
 
@@ -145,8 +145,8 @@ public class Test {
 			// Lo pasamos a segundos
 			timeHPAstar[i] = ((double) fin) / 10E9;
 
-			// Coste: La longitud de la solucion
-			costHPAstar[i] = HPAstar.coste;
+			// La longitud de la solucion
+			longHPAstar[i] = HPAstar.longitud;
 			// Nodos expandidos: La memoria usada
 			memHPAAstar[i] = HPAstar.refmemoria;
 
@@ -310,10 +310,10 @@ public class Test {
 		XYSeries serieHPA2 = new XYSeries("HPA*");
 
 		for (int i = 0; i < NPRUEBAS; i++) {
-			serieA1.add(costAstar[i], timeAstar[i]);
-			serieHPA1.add(costHPAstar[i], timeHPAstar[i]);
-			serieA2.add(costAstar[i], memAstar[i]);
-			serieHPA2.add(costHPAstar[i], memHPAAstar[i]);
+			serieA1.add(longAstar[i], timeAstar[i]);
+			serieHPA1.add(longAstar[i], timeHPAstar[i]);
+			serieA2.add(longAstar[i], memAstar[i]);
+			serieHPA2.add(longAstar[i], memHPAAstar[i]);
 		}
 
 		// Añadimos a una colección
@@ -482,14 +482,13 @@ public class Test {
 				finals.append(finales[i]);
 				// Datos obtenidos por A*
 				times_A.append(timeAstar[i]);
-				costs_A.append(costAstar[i]);
+				costs_A.append(longAstar[i]);
 				mems_A.append(memAstar[i]);
 				// Datos obtenidos por HPA*
 				times_HPA.append(timeHPAstar[i]);
-				costs_HPA.append(costHPAstar[i]);
 				mems_HPA.append(memHPAAstar[i]);
 				// Calidad
-				q.append((costAstar[i] / costHPAstar[i] * 100) + "%");
+				q.append((longAstar[i] / longHPAstar[i] * 100) + "%");
 				if (i < NPRUEBAS - 1) {
 					sb.append(", ");
 					finals.append(", ");

@@ -13,8 +13,8 @@ public class Simulador {
 			public void run() {
 				// TODO Auto-generated method stub
 				try {
-					//new Interfaz();
-					new Test();
+					new Interfaz();
+					//new Test();
 					
 				} catch (Exception e) {
 					e.printStackTrace();

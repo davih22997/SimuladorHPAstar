@@ -23,7 +23,7 @@ public class Dijkstra {
 	 */
 	static class Datos {
 		int iteraciones;
-		double coste;
+		int coste;
 		Punto p;
 		Datos p_anterior;
 
@@ -34,7 +34,7 @@ public class Dijkstra {
 		 * @param coste
 		 * @param p
 		 */
-		public Datos(int iter, double coste, Punto p) {
+		public Datos(int iter, int coste, Punto p) {
 			this(iter, coste, p, null);
 		}
 
@@ -47,7 +47,7 @@ public class Dijkstra {
 		 * @param p
 		 * @param anterior
 		 */
-		public Datos(int iter, double coste, Punto p, Datos anterior) {
+		public Datos(int iter, int coste, Punto p, Datos anterior) {
 			iteraciones = iter;
 			this.p = p;
 			this.coste = coste;
@@ -85,17 +85,17 @@ public class Dijkstra {
 			// Arriba izda
 			getPuntoLista(this.iteraciones + 1, coste + Punto.DIAGONAL, new Punto(arriba, izda), submapa, res);
 			// Arriba
-			getPuntoLista(this.iteraciones + 1, coste + 1, new Punto(arriba, this.p.getCol()), submapa, res);
+			getPuntoLista(this.iteraciones + 1, coste + 100, new Punto(arriba, this.p.getCol()), submapa, res);
 			// Arriba derecha
 			getPuntoLista(this.iteraciones + 1, coste + Punto.DIAGONAL, new Punto(arriba, derecha), submapa, res);
 			// Izda
-			getPuntoLista(this.iteraciones + 1, coste + 1, new Punto(this.p.getFila(), izda), submapa, res);
+			getPuntoLista(this.iteraciones + 1, coste + 100, new Punto(this.p.getFila(), izda), submapa, res);
 			// Derecha
-			getPuntoLista(this.iteraciones + 1, coste + 1, new Punto(this.p.getFila(), derecha), submapa, res);
+			getPuntoLista(this.iteraciones + 1, coste + 100, new Punto(this.p.getFila(), derecha), submapa, res);
 			// Abajo izda
 			getPuntoLista(this.iteraciones + 1, coste + Punto.DIAGONAL, new Punto(abajo, izda), submapa, res);
 			// Abajo
-			getPuntoLista(this.iteraciones + 1, coste + 1, new Punto(abajo, this.p.getCol()), submapa, res);
+			getPuntoLista(this.iteraciones + 1, coste + 100, new Punto(abajo, this.p.getCol()), submapa, res);
 			// Abajo derecha
 			getPuntoLista(this.iteraciones + 1, coste + Punto.DIAGONAL, new Punto(abajo, derecha), submapa, res);
 
@@ -114,7 +114,7 @@ public class Dijkstra {
 		 * @param ptos
 		 * @return
 		 */
-		public void getPuntoLista(int iter, double coste, Punto p, ArrayList<Punto> lista, ArrayList<Datos> ptos) {
+		public void getPuntoLista(int iter, int coste, Punto p, ArrayList<Punto> lista, ArrayList<Datos> ptos) {
 			if (lista.contains(p)) {
 				int index = lista.indexOf(p);
 				p = lista.get(index);
@@ -222,7 +222,7 @@ public class Dijkstra {
 			edge.intraEdge(p1, p2, camino, pto.coste);
 		} // En caso contrario, añade un camino vacío con coste infinito
 		else
-			edge.intraEdge(p1, p2, new ArrayList<>(), Double.MAX_VALUE);
+			edge.intraEdge(p1, p2, new ArrayList<>(), Integer.MAX_VALUE);
 
 		return edge;
 	}

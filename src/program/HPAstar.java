@@ -73,7 +73,7 @@ public class HPAstar {
 
 	// Variables para las tablas hash:
 	protected static HashMap<Punto, ArrayList<Punto>> sucesores;
-	protected static HashMap<Arco, Double> costes;
+	protected static HashMap<Arco, Integer> costes;
 	protected static HashMap<Arco, ArrayList<Punto>> caminos;
 
 	// Variables que vamos a obtener de la simulación de HPA*
@@ -82,7 +82,7 @@ public class HPAstar {
 
 	protected static int refiters; // Iteraciones realizadas en la fase de refinado
 	protected static int refmemoria; // Cantidad de nodos abiertos en la fase de refinado
-	protected static double coste; // Longitud de la solución final obtenida
+	protected static int longitud; // Longitud de la solución final obtenida
 
 	private static boolean paint; // Variable que te indica si pintar o no
 
@@ -120,7 +120,7 @@ public class HPAstar {
 		prememoria = 0;
 		refiters = 0;
 		refmemoria = 0;
-		coste = 0;
+		longitud = 0;
 
 		// Indicamos si pintamos
 		paint = !test;
@@ -820,7 +820,7 @@ public class HPAstar {
 	 * @param coste  Coste para llegar de p1 a p2
 	 * @param camino Camino para llegar de p1 a p2
 	 */
-	private static void rellenarTablas(Punto p1, Punto p2, double coste, ArrayList<Punto> camino) {
+	private static void rellenarTablas(Punto p1, Punto p2, int coste, ArrayList<Punto> camino) {
 		// Creamos un arco entre ambos puntos
 		Arco arco = new Arco(p1, p2);
 		// Añadimos el coste

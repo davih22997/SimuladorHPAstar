@@ -14,7 +14,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	private int f;
 	private int c;
 	// Constante para el coste en diagonal
-	protected static final Double DIAGONAL = Math.sqrt(2);
+	protected static final Integer DIAGONAL = 141;
 
 	// Arcos
 	// Arcos externos (puede haber 2 si coincide con una esquina)
@@ -195,7 +195,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * @return
 	 */
 	public int distManhattan(Punto p) {
-		return Math.abs(this.f - p.f) + Math.abs(this.c - p.c);
+		return (Math.abs(this.f - p.f) + Math.abs(this.c - p.c)) * 100;
 	}
 
 	/**
@@ -204,21 +204,21 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	 * @param p
 	 * @return
 	 */
-	public double distOctil(Punto p) {
-		double res = 0;
+	public int distOctil(Punto p) {
+		int res = 0;
 
 		int df = Math.abs(this.f - p.f);
 		int dc = Math.abs(this.c - p.c);
 
 		// Si hay más filas que columnas
 		if (df > dc)
-			res = DIAGONAL * dc + (df - dc);
+			res = DIAGONAL * dc + 100 * (df - dc);
 		// Si coincide el número de filas y de columnas
 		else if (df == dc)
 			res = DIAGONAL * df;
 		// Si hay menos filas que columnas
 		else
-			res = DIAGONAL * df + (dc - df);
+			res = DIAGONAL * df + 100 * (dc - df);
 
 		return res;
 	}
