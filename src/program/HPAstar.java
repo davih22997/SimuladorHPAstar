@@ -35,7 +35,7 @@ public class HPAstar {
 
 	// Constantes para los bordes
 	// El borde por defecto es:
-	private static final Border defaultborder = UIManager.getBorder("Button.border");
+	protected static final Border defaultborder = UIManager.getBorder("Button.border");
 	// Los que se van a usar:
 	// Borde solo arriba
 	private static final Border btop = BorderFactory.createMatteBorder(1, 0, 0, 0, cBorder);
@@ -84,7 +84,7 @@ public class HPAstar {
 	protected static int refmemoria; // Cantidad de nodos abiertos en la fase de refinado
 	protected static int longitud; // Longitud de la solución final obtenida
 
-	private static boolean paint; // Variable que te indica si pintar o no
+	private static int modo; // Variable que te indica si pintar o no
 
 	/**
 	 * Método para definir los clusters si no es un test
@@ -93,7 +93,7 @@ public class HPAstar {
 	 * @param tam
 	 */
 	public static void definirClusters(Mapa mapa, int tam) {
-		definirClusters(mapa, tam, false);
+		definirClusters(mapa, tam, 0);
 	}
 
 	/**
@@ -105,7 +105,7 @@ public class HPAstar {
 	 * @param tam
 	 * @param test
 	 */
-	public static void definirClusters(Mapa mapa, int tam, boolean test) {
+	public static void definirClusters(Mapa mapa, int tam, int mode) {
 
 		// Inicializamos la lista de clusters
 		clusters = new ArrayList<>();
@@ -123,7 +123,7 @@ public class HPAstar {
 		longitud = 0;
 
 		// Indicamos si pintamos
-		paint = !test;
+		modo = mode;
 
 		switch (tam) {
 		// Si se encuentra entre los tamaños definidos se hacen cosas
@@ -172,16 +172,15 @@ public class HPAstar {
 
 			// 3. Añadimos los puntos inicial y final en caso de no estar y corresponder con
 			// el cluster:
-
 			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
 				c.addNodo(mapa.pto_inicial, false);
-				if (paint)
+				if (modo == 0)
 					oscurecerMapa(mapa.pto_inicial, mapa);
 			}
 
 			if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
 				c.addNodo(mapa.pto_final, false);
-				if (paint)
+				if (modo == 0)
 					oscurecerMapa(mapa.pto_final, mapa);
 			}
 
@@ -418,7 +417,7 @@ public class HPAstar {
 		}
 
 		// 2. Aplicamos A* para hallar el camino de menor coste
-		if (paint)
+		if (modo == 0)
 			Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
 		else
 			Astar.testEnHPAstar(mapa, CLUSTER_10X10);
@@ -447,7 +446,7 @@ public class HPAstar {
 		for (int f = 0; f < mapa.getFilas(); f++) {
 			for (int c = 0; c < mapa.getCols(); c++) {
 				// Si queremos pintar
-				if (paint) {
+				if (modo == 0) {
 					// 1.
 					if (f % fils == 0) {
 						// además 3.
@@ -490,7 +489,7 @@ public class HPAstar {
 		}
 		// Finalmente, se ordena la lista de clusters
 		Collections.sort(clusters);
-		if (paint)
+		if (modo == 0)
 			Interfaz.escribir("Se han creado los clústers.\n");
 	}
 
@@ -680,7 +679,7 @@ public class HPAstar {
 				// Creamos el arco externo
 				pl1_1.addArcoExterno(pl2_1);
 
-				if (paint) {
+				if (modo == 0) {
 					// Pintamos en los nodos
 					oscurecerMapa(pl1_1, mapa);
 					oscurecerMapa(pl2_1, mapa);
@@ -707,7 +706,7 @@ public class HPAstar {
 					pl1_1.addArcoExterno(pl2_1);
 					pl1_2.addArcoExterno(pl2_2);
 
-					if (paint) {
+					if (modo == 0) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl1_2, mapa);
@@ -736,7 +735,7 @@ public class HPAstar {
 					// Creamos el arco entre ambos puntos
 					pl1_1.addArcoExterno(pl2_1);
 
-					if (paint) {
+					if (modo == 0) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl2_1, mapa);
@@ -838,9 +837,22 @@ public class HPAstar {
 	 */
 	protected static void TestHPAstar(Mapa mapa, int umb, int tcluster) {
 		// 1. Definimos los clusters
-		definirClusters(mapa, tcluster, true);
+		definirClusters(mapa, tcluster, 1);
 		// 2. Creamos los arcos (internos y externos)
 		definirEdges(mapa, umb);
+		// 3. Aplicamos A*
+		aplicarAstar(mapa);
+	}
+	
+	protected static void TestPruebaHPAstar(Mapa mapa, int umb, int tcluster) {
+		// 1. Definimos los clusters
+		definirClusters(mapa, tcluster, 2);
+		Test.pressAnyKeyToContinue();
+		// 2. Creamos los arcos (internos y externos)
+		// a. Definimos los Edges
+		definirEdges(mapa, umb);
+		// b. Introducimos los E/S
+		Test.pressAnyKeyToContinue();
 		// 3. Aplicamos A*
 		aplicarAstar(mapa);
 	}
@@ -864,4 +876,6 @@ public class HPAstar {
 		System.out.println(sb.toString() + "\n");
 
 	}
+
+
 }

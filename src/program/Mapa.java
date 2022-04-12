@@ -528,4 +528,30 @@ public class Mapa {
 		MatrizBotones[fila][columna].setBorder(border);
 	}
 
+	/**
+	 * Método para limpiar el mapa (tras hacer A* o HPA*, o tras detener la
+	 * simulación)
+	 */
+	public void limpiarMapa() {
+		// Coloreamos del color original
+		for (int i = 0; i < dY; i++)
+			for (int j = 0; j < dX; j++) {
+				pintarMapa(cDefault, i, j);
+				pintarBorde(HPAstar.defaultborder, i, j);
+			}
+
+		// Pintamos de nuevo el punto inicial
+		if (pto_inicial != null)
+			pintarMapa(cInicial, pto_inicial);
+
+		// Pintamos de nuevo el punto final
+		if (pto_final != null)
+			pintarMapa(cFinal, pto_final);
+
+		// Pintamos los obstáculos
+		for (Punto o : obstaculos)
+			pintarMapa(cObs, o);
+
+	}
+
 }

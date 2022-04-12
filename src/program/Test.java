@@ -26,8 +26,9 @@ public class Test {
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
-	private static final Integer NPRUEBAS = 1;
+	private static final Integer NPRUEBAS = 200;
 	// Datos predefinidos del mapa
+	private static Mapa mapa;
 	private int height; // Altura (num filas)
 	private int width; // Anchura (num columnas)
 	private ArrayList<Punto> obstaculos = new ArrayList<>(); // Lista de obstaculos
@@ -40,8 +41,8 @@ public class Test {
 	private double[] timeAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de A*
 	// Datos de longitud de la solución
 	private int[] longAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de A*
-	// Datos de nodos expandidos (memoria)
-	private int[] memAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por A*
+	// Datos de nodos expandidos (iteraciones)
+	private int[] itAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por A*
 
 	// Datos predefinidos de HPA*
 	private int umbral = 6;
@@ -51,8 +52,8 @@ public class Test {
 	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de HPA*
 	// Datos de longitud de la solución (coste)
 	private int[] longHPAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de HPA*
-	// Datos de nodos expandidos (memoria)
-	private int[] memHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
+	// Datos de nodos expandidos (iteraciones)
+	private int[] itHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
 	// Datos de la calidad de la solución (porcentaje de éxito):
 	// calidad(%) = costAstar/costHPAStar * 100
 
@@ -77,110 +78,130 @@ public class Test {
 	private static final String newline = "\n";
 
 	public Test() {
-		// 1. Tratar el mapa:
-		// Paso 1: Leer el fichero y convertirlo en mapa
-		leerFichero();
+		new Test(0, null, null);
+	}
 
-		// Paso 2: Generar 100 parejas de puntos inicial y final para ejecutar pruebas
-		// (y guardarlo para posteriori)
-		generarParejas();
+	public Test(int modo, Punto ini, Punto fin) {
+		// Modo indica si es para generar datos, o si es para testear Datos incorrectos
+		switch (modo) {
+		case 0: // Modo creación de datos
+			// 1. Tratar el mapa:
+			// Paso 1: Leer el fichero y convertirlo en mapa
+			leerFichero();
 
-		// Paso 3: Crear el mapa
-		Mapa mapa = new Mapa(height, width);
-		mapa.obstaculos = obstaculos;
+			// Paso 2: Generar 100 parejas de puntos inicial y final para ejecutar pruebas
+			// (y guardarlo para posteriori)
+			generarParejas();
 
-		// Paso 4: ¿Mostrar mapa?
-		// Se hablará con el tutor
+			// Paso 3: Crear el mapa
+			mapa = new Mapa(height, width);
+			mapa.obstaculos = obstaculos;
 
-		// 2. Ejecución. Para cada pareja de puntos (y el mismo mapa):
+			// 2. Ejecución. Para cada pareja de puntos (y el mismo mapa):
 
-		// Paso 1: Utilizar A* y medir tiempo
-		// Creamos un bucle
-		for (int i = 0; i < NPRUEBAS; i++) {
-			// Asignamos los puntos de inicio y de fin al mapa
-			mapa.pto_inicial = iniciales[i];
-			mapa.pto_final = finales[i];
+			// Paso 1: Utilizar A* y medir tiempo
+			// Creamos un bucle
+			for (int i = 0; i < NPRUEBAS; i++) {
+				// Asignamos los puntos de inicio y de fin al mapa
+				mapa.pto_inicial = iniciales[i];
+				mapa.pto_final = finales[i];
 
-			// Cogemos el tiempo de inicio
-			long start = System.nanoTime();
+				// Cogemos el tiempo de inicio
+				long start = System.nanoTime();
 
-			// Aplicamos A*
-			Astar.testAstar(mapa, Astar.VECINOS_8);
+				// Aplicamos A*
+				Astar.testAstar(mapa, Astar.VECINOS_8);
 
-			// Guardamos los resultados obtenidos
-			// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
-			// de inicio
-			long fin = System.nanoTime() - start;
-			// Lo pasamos a segundos
-			timeAstar[i] = ((double) fin) / 10E9;
+				// Guardamos los resultados obtenidos
+				// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
+				// de inicio
+				long tfin = System.nanoTime() - start;
+				// Lo pasamos a segundos
+				timeAstar[i] = ((double) tfin) / 10E9;
 
-			// Coste: La longitud de la solución
-			longAstar[i] = Astar.longitud;
-			// Nodos expandidos: La memoria usada
-			memAstar[i] = Astar.memoria;
+				// Coste: La longitud de la solución
+				longAstar[i] = Astar.longitud;
+				// Nodos expandidos: Iteraciones
+				itAstar[i] = Astar.iteraciones;
 
-			// Reseteamos el mapa (de momento, ponemos el mapa a null; si tuviéramos que
-			// representarlo, hacemos reinicio)
-			mapa.pto_inicial = null;
-			mapa.pto_final = null;
+				// Reseteamos el mapa (de momento, ponemos el mapa a null; si tuviéramos que
+				// representarlo, hacemos reinicio)
+				mapa.pto_inicial = null;
+				mapa.pto_final = null;
+			}
+
+			// Paso 2: Utilizar HPA* y medir tiempo
+			// Creamos un bucle
+			for (int i = 0; i < NPRUEBAS; i++) {
+				// Asignamos los puntos de inicio y de fin al mapa
+				mapa.pto_inicial = iniciales[i];
+				mapa.pto_final = finales[i];
+
+				// Cogemos el tiempo de inicio
+				long start = System.nanoTime();
+
+				// Aplicamos HPA*
+				HPAstar.TestHPAstar(mapa, umbral, dCluster);
+
+				// Guardamos los resultados obtenidos
+				// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
+				// de inicio
+				long tfin = System.nanoTime() - start;
+				// Lo pasamos a segundos
+				timeHPAstar[i] = ((double) tfin) / 10E9;
+
+				// La longitud de la solucion
+				longHPAstar[i] = HPAstar.longitud;
+				// Nodos expandidos: La memoria usada
+				itHPAAstar[i] = HPAstar.refiters;
+
+				// Reseteamos el mapa (de momento, ponemos a null; si tuviéramos que
+				// representarlo, haríamos reinicio)
+				mapa.pto_inicial = null;
+				mapa.pto_final = null;
+
+			}
+
+			// 3. Gráficas:
+			// Son 2 gráficas. En ambas debe obtenerse:
+			// -> La longitud de la solución (se puede usar el coste total)
+			// Gráfica 1: Comparativa entre el número de nodos expandidos y la longitud de
+			// la solución
+			// Debe obtenerse:
+			// -> El número de nodos expandidos (memoria)
+			// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
+			// primer nivel)
+
+			// Gráfica 2: Compara los tiempos de CPU
+			// Debe obtenerse:
+			// -> El tiempo de ejecución
+			// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
+			// primer nivel)
+
+			// Gráfica 3: Calidad de la solución
+			// Debe obtenerse:
+			// -> El porcentaje de error
+
+			// 3. Mostrar gráficas -> JFreeChart
+			mostrarGraficas();
+			// 4. Guardar en fichero los resultados
+			guardarFichero();
+			break;
+		case 1: // Modo para testear con datos concretos
+			// 1. Tratar el mapa:
+			// Paso 1: Leer el fichero y convertirlo en mapa
+			leerFichero();
+
+			// Paso 2: Crear el mapa
+			mapa = new Mapa(height, width);
+			mapa.obstaculos = obstaculos;
+			mapa.pto_inicial = ini;
+			mapa.pto_final = fin;
+			
+			HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
+
+			break;
 		}
-
-		// Paso 2: Utilizar HPA* y medir tiempo
-		// Creamos un bucle
-		for (int i = 0; i < NPRUEBAS; i++) {
-			// Asignamos los puntos de inicio y de fin al mapa
-			mapa.pto_inicial = iniciales[i];
-			mapa.pto_final = finales[i];
-
-			// Cogemos el tiempo de inicio
-			long start = System.nanoTime();
-
-			// Aplicamos HPA*
-			HPAstar.TestHPAstar(mapa, umbral, dCluster);
-
-			// Guardamos los resultados obtenidos
-			// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
-			// de inicio
-			long fin = System.nanoTime() - start;
-			// Lo pasamos a segundos
-			timeHPAstar[i] = ((double) fin) / 10E9;
-
-			// La longitud de la solucion
-			longHPAstar[i] = HPAstar.longitud;
-			// Nodos expandidos: La memoria usada
-			memHPAAstar[i] = HPAstar.refmemoria;
-
-			// Reseteamos el mapa (de momento, ponemos a null; si tuviéramos que
-			// representarlo, haríamos reinicio)
-			mapa.pto_inicial = null;
-			mapa.pto_final = null;
-
-		}
-
-		// 3. Gráficas:
-		// Son 2 gráficas. En ambas debe obtenerse:
-		// -> La longitud de la solución (se puede usar el coste total)
-		// Gráfica 1: Comparativa entre el número de nodos expandidos y la longitud de
-		// la solución
-		// Debe obtenerse:
-		// -> El número de nodos expandidos (memoria)
-		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
-		// primer nivel)
-
-		// Gráfica 2: Compara los tiempos de CPU
-		// Debe obtenerse:
-		// -> El tiempo de ejecución
-		// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
-		// primer nivel)
-
-		// Gráfica 3: Calidad de la solución
-		// Debe obtenerse:
-		// -> El porcentaje de error
-
-		// 3. Mostrar gráficas -> JFreeChart
-		mostrarGraficas();
-		// 4. Guardar en fichero los resultados
-		guardarFichero();
 
 	}
 
@@ -312,8 +333,8 @@ public class Test {
 		for (int i = 0; i < NPRUEBAS; i++) {
 			serieA1.add(longAstar[i], timeAstar[i]);
 			serieHPA1.add(longAstar[i], timeHPAstar[i]);
-			serieA2.add(longAstar[i], memAstar[i]);
-			serieHPA2.add(longAstar[i], memHPAAstar[i]);
+			serieA2.add(longAstar[i], itAstar[i]);
+			serieHPA2.add(longAstar[i], itHPAAstar[i]);
 		}
 
 		// Añadimos a una colección
@@ -441,13 +462,6 @@ public class Test {
 
 			sb.append("Mapa empleado: " + map + newline);
 			sb.append("Dimensiones del mapa: " + height + "x" + width + newline);
-			/*
-			 * sb.append("Obstáculos: {"); for (Punto p : obstaculos) {
-			 * sb.append(p.toString()); if (obstaculos.indexOf(p) < obstaculos.size() - 1)
-			 * sb.append(", "); else sb.append("}" + newline);
-			 * 
-			 * if (obstaculos.indexOf(p) % 1000 == 0) sb.append(newline); }
-			 */
 
 			sb.append(newline);
 			sb.append("Muestras generadas: " + NPRUEBAS + " pares de puntos." + newline);
@@ -483,12 +497,12 @@ public class Test {
 				// Datos obtenidos por A*
 				times_A.append(timeAstar[i]);
 				costs_A.append(longAstar[i]);
-				mems_A.append(memAstar[i]);
+				mems_A.append(itAstar[i]);
 				// Datos obtenidos por HPA*
 				times_HPA.append(timeHPAstar[i]);
-				mems_HPA.append(memHPAAstar[i]);
+				mems_HPA.append(itHPAAstar[i]);
 				// Calidad
-				q.append((longAstar[i] / longHPAstar[i] * 100) + "%");
+				q.append(((longHPAstar[i] - longAstar[i]) / longHPAstar[i] * 100) + "%");
 				if (i < NPRUEBAS - 1) {
 					sb.append(", ");
 					finals.append(", ");
@@ -527,6 +541,18 @@ public class Test {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Función para pausar hasta pulsar una tecla
+	 */
+	protected static void pressAnyKeyToContinue() {
+		Scanner teclado = new Scanner(System.in);
+		System.out.println("Press Enter key to continue...");
+		try {
+			teclado.nextLine();
+		} catch (Exception e) {
 		}
 	}
 

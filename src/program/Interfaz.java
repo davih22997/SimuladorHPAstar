@@ -1313,7 +1313,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 					// Dejamos bloqueado el botón de start
 					// Desbloqueamos el botón de start
-					//btnStart2.setEnabled(true);
+					// btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
@@ -1578,30 +1578,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Devuelve el mapa a su estado original una vez parada una simulación
 	 */
 	private void reiniciarMapa() {
-		// Copiamos los datos
-		Punto pini = mapa.pto_inicial;
-		Punto pfin = mapa.pto_final;
-		ArrayList<Punto> lobs = mapa.obstaculos;
-
-		int tipo = mapa.getTipo();
-
-		// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
-		mapa.destruirTablero();
-		mapa.crearTablero();
-
-		// Volvemos a pintar el mapa tal y como estaba tras seleccionar los puntos de
-		// interés
-		mapa.pintarMapa(Mapa.cInicial, pini);
-		mapa.pintarMapa(Mapa.cFinal, pfin);
-
-		for (Punto obs : lobs)
-			mapa.pintarMapa(Mapa.cObs, obs);
-
-		mapa.pto_inicial = pini;
-		mapa.pto_final = pfin;
-		mapa.obstaculos = lobs;
-
-		mapa.setTipo(tipo);
+		// Limpiamos el mapa
+		mapa.limpiarMapa();
 	}
 
 	/**
