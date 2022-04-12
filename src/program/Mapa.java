@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.plaf.DimensionUIResource;
 
 public class Mapa {
 
@@ -42,6 +43,7 @@ public class Mapa {
 	public static final int TIPO_FINAL = 2;
 	public static final int TIPO_OBSTACULO = 3;
 	public static final int TIPO_VERTABLA = 4;
+	public static final int TIPO_TEST = 5;
 
 	// Variable para controlar el tipo del mapa al pulsar un botón
 	private int tipo;
@@ -145,6 +147,11 @@ public class Mapa {
 	public void setSize(int height, int width) {
 		this.dimX = width;
 		this.dimY = height;
+		tipo = TIPO_TEST;
+
+		initComponents();
+		destruirTablero();
+		crearTablero();
 	}
 
 	/**
@@ -193,7 +200,7 @@ public class Mapa {
 			GridBagConstraints gbc = new GridBagConstraints();
 
 			// Se obtiene las dimensiones de cada botón
-			getDimButtons(dY, dX);
+			getDimButtons(dX, dY);
 
 			// Se declaran los contadores a utilizar
 			// int contX, contY;
@@ -205,19 +212,15 @@ public class Mapa {
 					// Se le asignan sus dimensiones (ancho, alto)
 					// bNew.setSize(tamX, tamY);
 
-					// Si son iguales, el tamaño será el alto (ya que es más alto el mapa)
-					if (dY == dX)
-						bNew.setPreferredSize(new Dimension(tamY, tamY));
-					// Si hay más filas que columnas (más alto que largo), se coge el tamaño de
-					// columna (ancho)
-					else if (dX < dY)
+					// Debe ser un cuadrado:
+					if (tamX == tamY)
+						bNew.setPreferredSize(new Dimension(tamY, tamX));
+					else if (tamX < tamY)
 						bNew.setPreferredSize(new Dimension(tamX, tamX));
-
-					// Si hay más filas que columnas, se coge el tamaño de fila (largo)
 					else
 						bNew.setPreferredSize(new Dimension(tamY, tamY));
 
-					// se asigna un texto con la posición del botón en la matriz al botón, al
+					// Se asigna un texto con la posición del botón en la matriz al botón, al
 					// tooltip del botón
 					bNew.setToolTipText(Integer.toString(contY) + ", " + Integer.toString(contX));
 					// Se agrega a la matriz el botón
@@ -408,6 +411,9 @@ public class Mapa {
 			// Vemos la tabla de los arcos externos
 			HPAstar.verTabla(i);
 
+			break;
+		case TIPO_TEST:
+			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			break;
 		default:
 			break;

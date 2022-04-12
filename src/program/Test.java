@@ -1,6 +1,8 @@
 package program;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileWriter;
@@ -9,6 +11,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Random;
 import java.util.Scanner;
+
+import javax.swing.JFrame;
+import javax.swing.JPanel;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartUtils;
@@ -23,12 +28,16 @@ import org.jfree.data.xy.XYSeriesCollection;
 
 public class Test {
 
+	// Variables estáticas para definir el modo de operación
+	private static final int MODO_GRAFICAS = 0; // Modo de creación de gráficas
+	private static final int MODO_ERROR = 1; // Modo para probar puntos que dan error
+
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
 	private static final Integer NPRUEBAS = 200;
 	// Datos predefinidos del mapa
-	private static Mapa mapa;
+	private Mapa mapa;
 	private int height; // Altura (num filas)
 	private int width; // Anchura (num columnas)
 	private ArrayList<Punto> obstaculos = new ArrayList<>(); // Lista de obstaculos
@@ -64,8 +73,8 @@ public class Test {
 	private static final Color COLOR_RECUADROS = Color.BLACK; // Color para las líneas guía
 
 	// Dimensiones de las graficas
-	private static final int ANCHO = 1500;
-	private static final int ALTO = 750;
+	private static final int ANCHO = 1200;
+	private static final int ALTO = 1000;
 
 	// Nombres de los archivos generados
 	// Imágenes:
@@ -78,13 +87,13 @@ public class Test {
 	private static final String newline = "\n";
 
 	public Test() {
-		new Test(0, null, null);
+		new Test(MODO_GRAFICAS, null, null);
 	}
 
 	public Test(int modo, Punto ini, Punto fin) {
 		// Modo indica si es para generar datos, o si es para testear Datos incorrectos
 		switch (modo) {
-		case 0: // Modo creación de datos
+		case MODO_GRAFICAS: // Modo creación de datos
 			// 1. Tratar el mapa:
 			// Paso 1: Leer el fichero y convertirlo en mapa
 			leerFichero();
@@ -110,7 +119,7 @@ public class Test {
 				long start = System.nanoTime();
 
 				// Aplicamos A*
-				Astar.testAstar(mapa, Astar.VECINOS_8);
+				Astar.testAstar(mapa, Astar.VECINOS_8, false);
 
 				// Guardamos los resultados obtenidos
 				// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
@@ -187,18 +196,47 @@ public class Test {
 			// 4. Guardar en fichero los resultados
 			guardarFichero();
 			break;
-		case 1: // Modo para testear con datos concretos
+		case MODO_ERROR: // Modo para testear con datos concretos
 			// 1. Tratar el mapa:
 			// Paso 1: Leer el fichero y convertirlo en mapa
 			leerFichero();
 
-			// Paso 2: Crear el mapa
+			// Paso 2: Crear y mostrar el mapa
+			// Frame
+			JFrame frame = new JFrame();
+			frame.setTitle("Prueba");
+			frame.setResizable(false);
+			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+			JPanel panel = new JPanel();
+			panel.setLayout(new BorderLayout());
+			frame.setContentPane(panel);
+			panel.setPreferredSize(new Dimension(ANCHO + 50, ALTO + 50));
+
 			mapa = new Mapa(height, width);
+			mapa.setSize(ALTO, ANCHO);
+
+			// Asigno los puntos de interés:
 			mapa.obstaculos = obstaculos;
-			mapa.pto_inicial = ini;
 			mapa.pto_final = fin;
-			
-			HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
+			mapa.pto_inicial = ini;
+
+			// Y los pinto en el mapa
+			for (Punto o : obstaculos)
+				mapa.pintarMapa(Mapa.cObs, o);
+
+			mapa.pintarMapa(Mapa.cInicial, ini);
+			mapa.pintarMapa(Mapa.cFinal, fin);
+
+			panel.add(mapa.tablero, BorderLayout.NORTH);
+
+			// Se muestra
+			frame.add(mapa.tablero);
+
+			frame.pack();
+			frame.setVisible(true);
+			Astar.testAstar(mapa, Astar.VECINOS_8, true);
+			// HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
 
 			break;
 		}

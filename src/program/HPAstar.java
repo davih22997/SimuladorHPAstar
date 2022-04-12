@@ -72,6 +72,7 @@ public class HPAstar {
 	private static int umbral;
 
 	// Variables para las tablas hash:
+	protected static HashMap<Cluster, ArrayList<Punto>> nodos_cluster;
 	protected static HashMap<Punto, ArrayList<Punto>> sucesores;
 	protected static HashMap<Arco, Integer> costes;
 	protected static HashMap<Arco, ArrayList<Punto>> caminos;
@@ -163,6 +164,8 @@ public class HPAstar {
 		// Vamos recorriendo los clusters generados siguiendo el orden (de izda a
 		// derecha y al llegar al final se baja una fila):
 		for (Cluster c : clusters) {
+			nodos_cluster.put(c, new ArrayList<>());
+
 			// CREACIÓN DE ARCOS EXTERNOS
 			// 1. Creamos los edge inferiores
 			bottomEdge(c, clusters, mapa);
@@ -174,13 +177,13 @@ public class HPAstar {
 			// el cluster:
 			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
 				c.addNodo(mapa.pto_inicial, false);
-				if (modo == 0)
+				if (modo != 1)
 					oscurecerMapa(mapa.pto_inicial, mapa);
 			}
 
 			if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
 				c.addNodo(mapa.pto_final, false);
-				if (modo == 0)
+				if (modo != 1)
 					oscurecerMapa(mapa.pto_final, mapa);
 			}
 
@@ -204,7 +207,7 @@ public class HPAstar {
 	public static void verTabla(int index) {
 		Cluster c = clusters.get(index);
 
-		ArrayList<Punto> nodos = c.getNodos();
+		ArrayList<Punto> nodos = nodos_cluster.get(c);
 		int tam = nodos.size();
 
 		// Creamos el panel que va a contener todos los objetos
@@ -688,8 +691,10 @@ public class HPAstar {
 				// puntos ya vienen ordenados)
 				// Al cluster original
 				cls[0].addNodo(pl1_1, false);
+				addNodo(cls[0], pl1_1, false);
 				// Al cluster adyacente
 				cls[1].addNodo(pl2_1, false);
+				addNodo(cls[1], pl2_1, false);
 
 			}
 			// En caso de que haya más puntos consecutivos, comprobamos cuántos edges se van
@@ -706,7 +711,7 @@ public class HPAstar {
 					pl1_1.addArcoExterno(pl2_1);
 					pl1_2.addArcoExterno(pl2_2);
 
-					if (modo == 0) {
+					if (modo != 1) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl1_2, mapa);
@@ -719,9 +724,13 @@ public class HPAstar {
 					// Al cluster original
 					cls[0].addNodo(pl1_1, false);
 					cls[0].addNodo(pl1_2, false);
+					addNodo(cls[0], pl1_1, false);
+					addNodo(cls[0], pl1_2, false);
 					// Al cluster adyacente
 					cls[1].addNodo(pl2_1, false);
 					cls[1].addNodo(pl2_2, false);
+					addNodo(cls[1], pl2_1, false);
+					addNodo(cls[1], pl2_2, false);
 
 				}
 				// En caso contrario, se crea uno en medio
@@ -745,8 +754,10 @@ public class HPAstar {
 					// vienen ordenados)
 					// Al cluster original
 					cls[0].addNodo(pl1_1, false);
+					addNodo(cls[0], pl1_1, false);
 					// Al cluster adyacente
 					cls[1].addNodo(pl2_1, false);
+					addNodo(cls[1], pl2_1, false);
 				}
 			}
 			index += n;
@@ -785,9 +796,10 @@ public class HPAstar {
 		submapa.removeAll(mapa.obstaculos);
 
 		// Se van creando arcos entre cada par de nodos del cluster
-		ArrayList<Punto> nodos = c.getNodos();
+		// ArrayList<Punto> nodos = c.getNodos();
+		ArrayList<Punto> nodos = nodos_cluster.get(c);
 		// Copiamos la lista
-		ArrayList<Punto> nodos2 = (ArrayList<Punto>) c.getNodos().clone();
+		ArrayList<Punto> nodos2 = (ArrayList<Punto>) nodos.clone();
 
 		for (int i = 0; i < nodos.size() - 1; i++) {
 			// Cogemos el nodo del punto i
@@ -843,7 +855,7 @@ public class HPAstar {
 		// 3. Aplicamos A*
 		aplicarAstar(mapa);
 	}
-	
+
 	protected static void TestPruebaHPAstar(Mapa mapa, int umb, int tcluster) {
 		// 1. Definimos los clusters
 		definirClusters(mapa, tcluster, 2);
@@ -877,5 +889,29 @@ public class HPAstar {
 
 	}
 
+	private static void addNodo(Cluster c, Punto p, boolean ordenar) {
+
+		ArrayList<Punto> nodos = nodos_cluster.get(c);
+
+		// Comprobamos que el punto pertenece al cluster y que no está guardado
+		// en la lista de nodos para meterlo en la lista
+		if (c.inCluster(p) && !nodos.contains(p)) {
+			nodos.add(p);
+		}
+
+		// Si está en la lista de nodos, añadimos arcos externos
+		else if (nodos.contains(p)) {
+			// Cogemos el índice del punto
+			int index = nodos.indexOf(p);
+			// Metemos los edges al punto que está entre los nodos
+			for (Punto edge : p.getArcosExternos())
+				nodos.get(index).addArcoExterno(edge);
+
+		}
+
+		// Ordenamos la lista de nodos si así lo indicamos
+		if (ordenar)
+			Collections.sort(nodos);
+	}
 
 }

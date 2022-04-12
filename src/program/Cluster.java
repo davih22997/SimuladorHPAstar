@@ -416,8 +416,9 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 	public void addNodo(Punto p, boolean ordenar) {
 		// Comprobamos que el punto pertenece al cluster y que no está guardado
 		// en la lista de nodos para meterlo en la lista
-		if (inCluster(p) && !nodos.contains(p))
+		if (inCluster(p) && !nodos.contains(p)) {
 			nodos.add(p);
+		}
 
 		// Si está en la lista de nodos, añadimos arcos externos
 		else if (nodos.contains(p)) {
@@ -432,25 +433,6 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 		// Ordenamos la lista de nodos si así lo indicamos
 		if (ordenar)
 			Collections.sort(nodos);
-	}
-
-	/**
-	 * Método para añadir varios nodos a la vez a la lista de nodos
-	 * 
-	 * @param l
-	 * @param ordenar
-	 */
-	public void addNodos(ArrayList<Punto> l, boolean ordenar) {
-		// Para cada punto, comprobamos que pertenece al cluster y que no está guardado
-		// en la lista de nodos para meterlo en la lista
-		for (Punto p : l)
-			if (inCluster(p) && !nodos.contains(p))
-				nodos.add(p);
-
-		// Ordenamos la lista de nodos si así lo indicamos
-		if (ordenar)
-			Collections.sort(nodos);
-
 	}
 
 	/**
