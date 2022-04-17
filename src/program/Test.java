@@ -202,40 +202,12 @@ public class Test {
 			leerFichero();
 
 			// Paso 2: Crear y mostrar el mapa
-			// Frame
-			JFrame frame = new JFrame();
-			frame.setTitle("Prueba");
-			frame.setResizable(false);
-			frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			crearMostrarMapa(ini, fin);
 
-			JPanel panel = new JPanel();
-			panel.setLayout(new BorderLayout());
-			frame.setContentPane(panel);
-			panel.setPreferredSize(new Dimension(ANCHO + 50, ALTO + 50));
-
-			mapa = new Mapa(height, width);
-			mapa.setSize(ALTO, ANCHO);
-
-			// Asigno los puntos de interés:
-			mapa.obstaculos = obstaculos;
-			mapa.pto_final = fin;
-			mapa.pto_inicial = ini;
-
-			// Y los pinto en el mapa
-			for (Punto o : obstaculos)
-				mapa.pintarMapa(Mapa.cObs, o);
-
-			mapa.pintarMapa(Mapa.cInicial, ini);
-			mapa.pintarMapa(Mapa.cFinal, fin);
-
-			panel.add(mapa.tablero, BorderLayout.NORTH);
-
-			// Se muestra
-			frame.add(mapa.tablero);
-
-			frame.pack();
-			frame.setVisible(true);
-			Astar.testAstar(mapa, Astar.VECINOS_8, true);
+			// Paso 3: Aplicar algoritmo
+			// A*
+			// Astar.testAstar(mapa, Astar.VECINOS_8, true);
+			// HPA*
 			// HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
 
 			break;
@@ -592,6 +564,48 @@ public class Test {
 			teclado.nextLine();
 		} catch (Exception e) {
 		}
+	}
+
+	/**
+	 * Crea y muestra el mapa para hacer el test
+	 * 
+	 * @param ini
+	 * @param fin
+	 */
+	private void crearMostrarMapa(Punto ini, Punto fin) {
+		// Frame
+		JFrame frame = new JFrame();
+		frame.setTitle("Prueba");
+		frame.setResizable(false);
+		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+		JPanel panel = new JPanel();
+		panel.setLayout(new BorderLayout());
+		frame.setContentPane(panel);
+		panel.setPreferredSize(new Dimension(ANCHO + 50, ALTO + 50));
+
+		mapa = new Mapa(height, width);
+		mapa.setSize(ALTO, ANCHO);
+
+		// Asigno los puntos de interés:
+		mapa.obstaculos = obstaculos;
+		mapa.pto_final = fin;
+		mapa.pto_inicial = ini;
+
+		// Y los pinto en el mapa
+		for (Punto o : obstaculos)
+			mapa.pintarMapa(Mapa.cObs, o);
+
+		mapa.pintarMapa(Mapa.cInicial, ini);
+		mapa.pintarMapa(Mapa.cFinal, fin);
+
+		panel.add(mapa.tablero, BorderLayout.NORTH);
+
+		// Se muestra
+		frame.add(mapa.tablero);
+
+		frame.pack();
+		frame.setVisible(true);
 	}
 
 }

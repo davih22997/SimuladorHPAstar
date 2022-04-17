@@ -6,6 +6,7 @@ import java.awt.Font;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Set;
 
 import javax.swing.BorderFactory;
 import javax.swing.Box;
@@ -72,10 +73,13 @@ public class HPAstar {
 	private static int umbral;
 
 	// Variables para las tablas hash:
-	protected static HashMap<Cluster, ArrayList<Punto>> nodos_cluster;
-	protected static HashMap<Punto, ArrayList<Punto>> sucesores;
-	protected static HashMap<Arco, Integer> costes;
-	protected static HashMap<Arco, ArrayList<Punto>> caminos;
+	protected static HashMap<Cluster, ArrayList<Punto>> nodos_cluster; // Nodos que hay en un clusters
+	protected static HashMap<Punto, ArrayList<Punto>> sucesores; // Lista de sucesores de un punto
+	protected static HashMap<Arco, Integer> costes; // Costes de cada arco
+	protected static HashMap<Arco, ArrayList<Punto>> caminos; // Caminos de cada arco
+
+	protected static HashMap<Punto, Cluster> ptos_interes; // Puntos de interés (ptos inicial y final, en caso de que no
+															// estén entre los nodos)
 
 	// Variables que vamos a obtener de la simulación de HPA*
 	protected static int preiters; // Iteraciones realizadas en la fase de preprocesamiento
@@ -115,6 +119,8 @@ public class HPAstar {
 		sucesores = new HashMap<>();
 		costes = new HashMap<>();
 		caminos = new HashMap<>();
+		nodos_cluster = new HashMap<>();
+		ptos_interes = new HashMap<>();
 
 		// Y las variables
 		preiters = 0;
@@ -164,8 +170,6 @@ public class HPAstar {
 		// Vamos recorriendo los clusters generados siguiendo el orden (de izda a
 		// derecha y al llegar al final se baja una fila):
 		for (Cluster c : clusters) {
-			nodos_cluster.put(c, new ArrayList<>());
-
 			// CREACIÓN DE ARCOS EXTERNOS
 			// 1. Creamos los edge inferiores
 			bottomEdge(c, clusters, mapa);
@@ -175,25 +179,71 @@ public class HPAstar {
 
 			// 3. Añadimos los puntos inicial y final en caso de no estar y corresponder con
 			// el cluster:
-			if (c.inCluster(mapa.pto_inicial) && !c.getNodos().contains(mapa.pto_inicial)) {
-				c.addNodo(mapa.pto_inicial, false);
-				if (modo != 1)
-					oscurecerMapa(mapa.pto_inicial, mapa);
-			}
-
-			if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
-				c.addNodo(mapa.pto_final, false);
-				if (modo != 1)
-					oscurecerMapa(mapa.pto_final, mapa);
-			}
+			/*
+			 * if (c.inCluster(mapa.pto_inicial) &&
+			 * !c.getNodos().contains(mapa.pto_inicial)) {
+			 * ptos_interes.put(mapa.pto_inicial, c); c.addNodo(mapa.pto_inicial, false); if
+			 * (modo != 1) oscurecerMapa(mapa.pto_inicial, mapa); }
+			 * 
+			 * if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
+			 * c.addNodo(mapa.pto_final, false); if (modo != 1)
+			 * oscurecerMapa(mapa.pto_final, mapa); }
+			 */
 
 			// CREACIÓN DE ARCOS INTERNOS
 			// 4. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
 			// (edges)
-			Collections.sort(c.getNodos());
+			Collections.sort(HPAstar.nodos_cluster.get(c));
 
 			// 5. Creamos los arcos internos
 			intraEdges(c, mapa);
+		}
+
+	}
+
+	/**
+	 * Método para meter los puntos inicial y final (E/S) en los clusters
+	 * 
+	 * @param mapa
+	 */
+	public static void meterES(Mapa mapa) {
+		meterPuntosInteres(mapa);
+		ESEdges(mapa);
+	}
+
+	/**
+	 * Método para meter los puntos de interés (puntos inicial y final) para luego
+	 * considerarlos
+	 * 
+	 * @param mapa
+	 */
+	private static void meterPuntosInteres(Mapa mapa) {
+		boolean p1 = false;
+		boolean p2 = false;
+		for (int i = 0; i < clusters.size() && (!p1 || !p2); i++) {
+			Cluster c = clusters.get(i);
+			if (c.inCluster(mapa.pto_inicial)) {
+				p1 = true;
+				if (!nodos_cluster.get(c).contains(mapa.pto_inicial)) {
+					// Lo metemos en la lista de puntos de interés y en la lista de nodos
+					Punto p = mapa.pto_inicial.clone();
+					ptos_interes.put(p, c);
+					addNodo(c, p, true);
+					if (modo != 1)
+						oscurecerMapa(mapa.pto_inicial, mapa);
+				}
+			}
+			if (c.inCluster(mapa.pto_final)) {
+				p2 = true;
+				if (!nodos_cluster.get(c).contains(mapa.pto_final)) {
+					Punto p = mapa.pto_final.clone();
+					// Lo metemos en la lista de puntos de interés y en la lista de nodos
+					ptos_interes.put(p, c);
+					addNodo(c, p, true);
+					if (modo != 1)
+						oscurecerMapa(mapa.pto_final, mapa);
+				}
+			}
 		}
 
 	}
@@ -273,7 +323,7 @@ public class HPAstar {
 			int idx = i + 2;
 			for (Edge edge : edges) {
 				if (!visitados.contains(edge.pfin)) {
-					if (edge.coste != Double.MAX_VALUE)
+					if (edge.coste != Integer.MAX_VALUE)
 						data[i][idx++] = edge.coste;
 					else
 						data[i][idx++] = "Infinito";
@@ -370,57 +420,9 @@ public class HPAstar {
 	 * @param mapa
 	 */
 	public static void aplicarAstar(Mapa mapa) {
-		// Creamos las hashTables:
-		sucesores = new HashMap<>();
-		costes = new HashMap<>();
-		caminos = new HashMap<>();
 
-		// Vamos cogiendo cluster por cluster
-		for (Cluster c : clusters) {
-			// Vamos cogiendo los nodos
-			for (Punto p : c.getNodos()) {
-				// Creamos la lista de sucesores del punto p
-				ArrayList<Punto> sucs = new ArrayList<>();
-				// Añadimos los arcos externos
-				for (Punto p2 : p.getArcosExternos()) {
-					// Añadimos el punto a la lista de sucesores
-					sucs.add(p2);
-
-					// Creamos el camino
-					ArrayList<Punto> camino = new ArrayList<>();
-					camino.add(p);
-					camino.add(p2);
-
-					// Vamos a rellenar las tablas:
-					// 1. Añadimos el punto del arco externo a los sucesores de p
-					// 2. Creamos un arco entre ambos puntos
-					// 3. Añadimos el coste (1 en este caso).
-					// 4. Añadimos el camino
-					rellenarTablas(p, p2, 1, camino);
-				}
-
-				// Añadimos los arcos internos
-				for (Edge edge : p.getArcosInternos()) {
-					// Comprobamos que el camino sea mayor que 0 (si hay unión entre ambos puntos)
-					if (edge.camino.size() > 0) {
-						Punto p2 = edge.pfin;
-						// 1. Añadimos el punto del arco interno a los sucesores de p
-						sucs.add(p2);
-						// Vamos a rellenar las tablas:
-						// 2. Creamos un arco entre ambos puntos
-						// 3. A ese arco le añadimos el coste
-						// 4. A ese arco le añadimos el camino
-						rellenarTablas(p, p2, edge.coste, edge.camino);
-					}
-				}
-
-				// Finalmente, añadimos la lista de sucesores a la tabla
-				sucesores.put(p, sucs);
-			}
-		}
-
-		// 2. Aplicamos A* para hallar el camino de menor coste
-		if (modo == 0)
+		// Aplicamos A* para hallar el camino de menor coste
+		if (modo != 1)
 			Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
 		else
 			Astar.testEnHPAstar(mapa, CLUSTER_10X10);
@@ -449,14 +451,16 @@ public class HPAstar {
 		for (int f = 0; f < mapa.getFilas(); f++) {
 			for (int c = 0; c < mapa.getCols(); c++) {
 				// Si queremos pintar
-				if (modo == 0) {
+				if (modo != 1) {
 					// 1.
 					if (f % fils == 0) {
 						// además 3.
 						if (c % cols == 0) {
 							mapa.pintarBorde(bctopleft, f, c);
 							// Añadimos el cluster cuando coincide con la casilla inicial
-							clusters.add(new Cluster(fils, cols, f, c));
+							Cluster clust = new Cluster(fils, cols, f, c);
+							clusters.add(clust);
+							nodos_cluster.put(clust, new ArrayList<>());
 						}
 						// además 4
 						else if (c % cols == (cols - 1))
@@ -484,9 +488,12 @@ public class HPAstar {
 					}
 				} // Si no
 				else {
-					if (f % fils == 0 && c % cols == 0)
+					if (f % fils == 0 && c % cols == 0) {
 						// Simplemente añadimos al cluster cuando coincide la casilla inicial
-						clusters.add(new Cluster(fils, cols, f, c));
+						Cluster clust = new Cluster(fils, cols, f, c);
+						clusters.add(clust);
+						nodos_cluster.put(clust, new ArrayList<>());
+					}
 				}
 			}
 		}
@@ -681,8 +688,13 @@ public class HPAstar {
 			if (n == 1) {
 				// Creamos el arco externo
 				pl1_1.addArcoExterno(pl2_1);
+				// Añadimos a la tabla
+				ArrayList<Punto> c = new ArrayList<>();
+				c.add(pl1_1);
+				c.add(pl2_1);
+				meterDatosHash(pl1_1, pl2_1, 100, c);
 
-				if (modo == 0) {
+				if (modo != 1) {
 					// Pintamos en los nodos
 					oscurecerMapa(pl1_1, mapa);
 					oscurecerMapa(pl2_1, mapa);
@@ -690,12 +702,13 @@ public class HPAstar {
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
 				// Al cluster original
-				cls[0].addNodo(pl1_1, false);
+				// cls[0].addNodo(pl1_1, false);
 				addNodo(cls[0], pl1_1, false);
 				// Al cluster adyacente
-				cls[1].addNodo(pl2_1, false);
+				// cls[1].addNodo(pl2_1, false);
 				addNodo(cls[1], pl2_1, false);
 
+				// System.out.println(new Arco(pl1_1, pl2_1));
 			}
 			// En caso de que haya más puntos consecutivos, comprobamos cuántos edges se van
 			// a crear comparando con el umbral
@@ -709,7 +722,17 @@ public class HPAstar {
 
 					// Creamos los arcos externos
 					pl1_1.addArcoExterno(pl2_1);
+					// Añadimos a la tabla
+					ArrayList<Punto> c1 = new ArrayList<>();
+					c1.add(pl1_1);
+					c1.add(pl2_1);
+					meterDatosHash(pl1_1, pl2_1, 100, c1);
+
 					pl1_2.addArcoExterno(pl2_2);
+					ArrayList<Punto> c2 = new ArrayList<>();
+					c2.add(pl1_2);
+					c2.add(pl2_2);
+					meterDatosHash(pl1_2, pl2_2, 100, c2);
 
 					if (modo != 1) {
 						// Pintamos en los nodos
@@ -722,15 +745,19 @@ public class HPAstar {
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
 					// vienen ordenados)
 					// Al cluster original
-					cls[0].addNodo(pl1_1, false);
-					cls[0].addNodo(pl1_2, false);
+					// cls[0].addNodo(pl1_1, false);
+					// cls[0].addNodo(pl1_2, false);
 					addNodo(cls[0], pl1_1, false);
 					addNodo(cls[0], pl1_2, false);
+
 					// Al cluster adyacente
-					cls[1].addNodo(pl2_1, false);
-					cls[1].addNodo(pl2_2, false);
+					// cls[1].addNodo(pl2_1, false);
+					// cls[1].addNodo(pl2_2, false);
 					addNodo(cls[1], pl2_1, false);
 					addNodo(cls[1], pl2_2, false);
+
+					// System.out.println(new Arco(pl1_1, pl2_1));
+					// System.out.println(new Arco(pl1_2, pl2_2));
 
 				}
 				// En caso contrario, se crea uno en medio
@@ -744,6 +771,11 @@ public class HPAstar {
 					// Creamos el arco entre ambos puntos
 					pl1_1.addArcoExterno(pl2_1);
 
+					ArrayList<Punto> c1 = new ArrayList<>();
+					c1.add(pl1_1);
+					c1.add(pl2_1);
+					meterDatosHash(pl1_1, pl2_1, 100, c1);
+
 					if (modo == 0) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
@@ -753,11 +785,13 @@ public class HPAstar {
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya
 					// vienen ordenados)
 					// Al cluster original
-					cls[0].addNodo(pl1_1, false);
+					// cls[0].addNodo(pl1_1, false);
 					addNodo(cls[0], pl1_1, false);
 					// Al cluster adyacente
-					cls[1].addNodo(pl2_1, false);
+					// cls[1].addNodo(pl2_1, false);
 					addNodo(cls[1], pl2_1, false);
+
+					// System.out.println(new Arco(pl1_1, pl2_1));
 				}
 			}
 			index += n;
@@ -817,27 +851,52 @@ public class HPAstar {
 				p1.addArcoInterno(edge);
 				// Le añadimos el edge simétrico
 				p2.addArcoInterno(symm);
-			}
 
+				// Añadimos los datos a las HashTables
+				meterDatosHash(p1, p2, edge.coste, edge.camino, symm.camino);
+			}
+			meterSucesores(c, p1);
 		}
+
+		meterSucesores(c, nodos.get(nodos.size() - 1));
 
 	}
 
 	/**
-	 * Método para ir rellenando los hashmaps
+	 * Método para introducir los puntos de interés
 	 * 
-	 * @param p1     Punto inicial
-	 * @param p2     Punto final
-	 * @param coste  Coste para llegar de p1 a p2
-	 * @param camino Camino para llegar de p1 a p2
+	 * @param mapa
 	 */
-	private static void rellenarTablas(Punto p1, Punto p2, int coste, ArrayList<Punto> camino) {
-		// Creamos un arco entre ambos puntos
-		Arco arco = new Arco(p1, p2);
-		// Añadimos el coste
-		costes.put(arco, coste);
-		// Añadimos el camino
-		caminos.put(arco, camino);
+	private static void ESEdges(Mapa mapa) {
+		// Cogemos los puntos de interés (pueden ser 0, 1 ó 2, según ya estuvieran entre
+		// los nodos de los clusters o no)
+		Set<Punto> ptos = ptos_interes.keySet();
+		for (Punto p : ptos) {
+			Cluster c = ptos_interes.get(p);
+
+			// Creamos el submapa que contiene todos los puntos
+			ArrayList<Punto> submapa = c.getSubMapa();
+			// Le quitamos los obstaculos
+			submapa.removeAll(mapa.obstaculos);
+
+			// Vamos cogiendo cada nodo
+			for (Punto nodo : nodos_cluster.get(c)) {
+				if (!nodo.equals(p)) {
+					Edge edge = Dijkstra.intraedge(p, nodo, submapa);
+					Edge symm = edge.symm();
+
+					p.addArcoInterno(edge);
+					Collections.sort(p.getArcosInternos());
+					nodo.addArcoInterno(symm);
+					Collections.sort(nodo.getArcosInternos());
+
+					// Añadimos los datos a las HashTables
+					meterDatosHash(p, nodo, edge.coste, edge.camino, symm.camino);
+				}
+				meterSucesores(c, nodo);
+			}
+			meterSucesores(c, p);
+		}
 	}
 
 	/**
@@ -889,6 +948,13 @@ public class HPAstar {
 
 	}
 
+	/**
+	 * Método para añadir el nodo a la lista de nodos
+	 * 
+	 * @param c
+	 * @param p
+	 * @param ordenar
+	 */
 	private static void addNodo(Cluster c, Punto p, boolean ordenar) {
 
 		ArrayList<Punto> nodos = nodos_cluster.get(c);
@@ -912,6 +978,61 @@ public class HPAstar {
 		// Ordenamos la lista de nodos si así lo indicamos
 		if (ordenar)
 			Collections.sort(nodos);
+	}
+
+	/**
+	 * Método para rellenar datos en las tablas sucesores, costes y caminos
+	 * 
+	 * @param p1
+	 * @param p2
+	 * @param coste
+	 * @param c1
+	 * @param c2
+	 */
+	private static void meterDatosHash(Punto p1, Punto p2, int coste, ArrayList<Punto> c1, ArrayList<Punto> c2) {
+		if(coste != Integer.MAX_VALUE) {
+			// 1. Creamos los arcos
+			Arco a1 = new Arco(p1, p2);
+			Arco a2 = new Arco(p2, p1);
+			
+			// 2. Metemos los costes
+			costes.put(a1, coste);
+			costes.put(a2, coste);
+			
+			// 3. Metemos los caminos
+			caminos.put(a1, c1);
+			caminos.put(a2, c2);			
+		}
+	}
+
+	private static void meterDatosHash(Punto p1, Punto p2, int coste, ArrayList<Punto> c1) {
+		ArrayList<Punto> c2 = (ArrayList<Punto>) c1.clone();
+		Collections.reverse(c2);
+		meterDatosHash(p1, p2, coste, c1, c2);
+	}
+
+	/**
+	 * Se introducen los sucesores
+	 * 
+	 * @param c
+	 * @param p
+	 */
+	private static void meterSucesores(Cluster c, Punto p) {
+		ArrayList<Punto> nodos = new ArrayList<>();
+
+		for (Punto nodo : nodos_cluster.get(c)) {
+			Arco a = new Arco(p, nodo);
+			if (costes.containsKey(a))
+				nodos.add(nodo);
+		}
+
+		for (Punto pt : p.getArcosExternos())
+			nodos.add(pt);
+
+		Collections.sort(nodos);
+
+		sucesores.put(p, nodos);
+
 	}
 
 }

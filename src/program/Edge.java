@@ -1,6 +1,7 @@
 package program;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -10,7 +11,7 @@ import java.util.Objects;
  * @author david
  *
  */
-public class Edge implements Cloneable {
+public class Edge implements Cloneable, Comparable<Edge>, Comparator<Edge> {
 
 	// Los puntos que se unen entre sí
 	protected Punto pini;
@@ -72,7 +73,7 @@ public class Edge implements Cloneable {
 		e.pini = pfin;
 		e.coste = coste;
 
-		for(int i = camino.size() - 1 ; i >= 0; i--) {
+		for (int i = camino.size() - 1; i >= 0; i--) {
 			e.camino.add(camino.get(i));
 		}
 
@@ -151,6 +152,28 @@ public class Edge implements Cloneable {
 
 		return res;
 	}
-	
+
+	@Override
+	public int compareTo(Edge e) {
+		return this.pfin.compareTo(e.pfin);
+	}
+
+	@Override
+	public int compare(Edge e1, Edge e2) {
+		// Los puntos van ordenados en primer lugar teniendo en cuenta su fila, y
+		// después su columna
+		int val = 0;
+		Punto p1 = e1.pfin;
+		Punto p2 = e2.pfin;
+
+		if (p1.getFila() == p2.getFila())
+			val = p1.getCol() - p2.getCol();
+		else if (p1.getFila() > p2.getFila())
+			val = 1;
+		else
+			val = -1;
+
+		return val;
+	}
 
 }

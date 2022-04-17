@@ -1269,6 +1269,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					btnStart2.setEnabled(false);
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
+					// También metemos los puntos E/S (inicio/fin)
+					HPAstar.meterES(mapa);
 
 					log.append("Creación de nodos y arcos realizada." + newline);
 					// Incrementamos un "step"

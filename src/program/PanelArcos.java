@@ -12,6 +12,7 @@ import java.awt.Rectangle;
 import java.awt.geom.QuadCurve2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
@@ -118,7 +119,7 @@ public class PanelArcos extends JPanel {
 			ArrayList<Punto> visitados = new ArrayList<>();
 
 			// Y ahora, recorremos la lista
-			for (Punto p : c.getNodos()) {
+			for (Punto p : HPAstar.nodos_cluster.get(c)) {
 				// 1. Pintamos los nodos en negro
 				pintarNodo(p, g);
 
