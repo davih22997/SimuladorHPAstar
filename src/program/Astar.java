@@ -373,6 +373,7 @@ public class Astar {
 		// Inicialmente, añadimos el punto inicial
 		abiertos.add(new Datos(0, mapa.pto_inicial));
 
+		iteraciones = 0;
 		memoria = 1;
 
 		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
@@ -393,6 +394,7 @@ public class Astar {
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = actual.p.vecinos_8(mapa.getFilas(), mapa.getCols());
 
+			sucesores.removeAll(mapa.obstaculos);
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
 				sucesores.remove(d.p);
@@ -441,6 +443,7 @@ public class Astar {
 			}
 			// Sumamos los nodos abiertos a la memoria usada
 			memoria += cantMem;
+			iteraciones++;
 		}
 
 		// Recogemos la longitud del camino
@@ -488,6 +491,7 @@ public class Astar {
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
 			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
+			System.out.println(sucesores);
 
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
@@ -533,10 +537,10 @@ public class Astar {
 					}
 				}
 
-				// Incrementamos las iteraciones
-				HPAstar.refiters++;
 			}
 
+			// Incrementamos las iteraciones
+			HPAstar.refiters++;
 		}
 
 		// Recogemos la longitud del camino

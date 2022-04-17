@@ -209,6 +209,9 @@ public class HPAstar {
 	public static void meterES(Mapa mapa) {
 		meterPuntosInteres(mapa);
 		ESEdges(mapa);
+		refiters = 0;
+		refmemoria = 0;
+		longitud = 0;
 	}
 
 	/**
@@ -430,6 +433,54 @@ public class HPAstar {
 	}
 
 	/**
+	 * Borramos los ptos inicial y final
+	 * 
+	 * @param mapa
+	 */
+	public static void borrarES(Mapa mapa) {
+		// 1. Punto inicial
+		removePunto(mapa.pto_inicial);
+
+		// 2. Punto final
+		removePunto(mapa.pto_final);
+	}
+
+	/**
+	 * Método para borrar un punto de interés dado
+	 * 
+	 * @param p
+	 */
+	private static void removePunto(Punto p) {
+		if (ptos_interes.containsKey(p)) {
+			Cluster c = ptos_interes.get(p);
+			for (Punto nodo : sucesores.get(p)) {
+				Arco a1 = new Arco(p, nodo);
+				Arco a2 = new Arco(nodo, p);
+				Edge e = new Edge();
+
+				e.camino = caminos.get(a2);
+				e.coste = costes.get(a2);
+				nodo.getArcosInternos().remove(e);
+
+				costes.remove(a1);
+				costes.remove(a2);
+
+				caminos.remove(a1);
+				caminos.remove(a2);
+
+				ArrayList<Punto> sucs = sucesores.get(nodo);
+				sucs.remove(p);
+				sucesores.put(nodo, sucs);
+			}
+
+			sucesores.remove(p);
+			ArrayList<Punto> nods = nodos_cluster.get(c);
+			nods.remove(p);
+			nodos_cluster.put(c, nods);
+		}
+	}
+
+	/**
 	 * Método para crear y pintar los clusters del mapa, dadas sus dimensiones Se
 	 * van incluyendo los clusters a la lista de clusters.
 	 * 
@@ -451,7 +502,7 @@ public class HPAstar {
 		for (int f = 0; f < mapa.getFilas(); f++) {
 			for (int c = 0; c < mapa.getCols(); c++) {
 				// Si queremos pintar
-				if (modo != 1) {
+				if (modo == 0) {
 					// 1.
 					if (f % fils == 0) {
 						// además 3.
@@ -486,14 +537,12 @@ public class HPAstar {
 						else if (c % cols == (cols - 1))
 							mapa.pintarBorde(bcright, f, c);
 					}
-				} // Si no
-				else {
-					if (f % fils == 0 && c % cols == 0) {
-						// Simplemente añadimos al cluster cuando coincide la casilla inicial
-						Cluster clust = new Cluster(fils, cols, f, c);
-						clusters.add(clust);
-						nodos_cluster.put(clust, new ArrayList<>());
-					}
+				} // Si no queremos pintar
+				else if (f % fils == 0 && c % cols == 0) {
+					// Simplemente añadimos al cluster cuando coincide la casilla inicial
+					Cluster clust = new Cluster(fils, cols, f, c);
+					clusters.add(clust);
+					nodos_cluster.put(clust, new ArrayList<>());
 				}
 			}
 		}
@@ -707,8 +756,6 @@ public class HPAstar {
 				// Al cluster adyacente
 				// cls[1].addNodo(pl2_1, false);
 				addNodo(cls[1], pl2_1, false);
-
-				// System.out.println(new Arco(pl1_1, pl2_1));
 			}
 			// En caso de que haya más puntos consecutivos, comprobamos cuántos edges se van
 			// a crear comparando con el umbral
@@ -755,10 +802,6 @@ public class HPAstar {
 					// cls[1].addNodo(pl2_2, false);
 					addNodo(cls[1], pl2_1, false);
 					addNodo(cls[1], pl2_2, false);
-
-					// System.out.println(new Arco(pl1_1, pl2_1));
-					// System.out.println(new Arco(pl1_2, pl2_2));
-
 				}
 				// En caso contrario, se crea uno en medio
 				else {
@@ -776,7 +819,7 @@ public class HPAstar {
 					c1.add(pl2_1);
 					meterDatosHash(pl1_1, pl2_1, 100, c1);
 
-					if (modo == 0) {
+					if (modo != 1) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl2_1, mapa);
@@ -790,8 +833,6 @@ public class HPAstar {
 					// Al cluster adyacente
 					// cls[1].addNodo(pl2_1, false);
 					addNodo(cls[1], pl2_1, false);
-
-					// System.out.println(new Arco(pl1_1, pl2_1));
 				}
 			}
 			index += n;
@@ -858,7 +899,8 @@ public class HPAstar {
 			meterSucesores(c, p1);
 		}
 
-		meterSucesores(c, nodos.get(nodos.size() - 1));
+		if (nodos.size() > 0)
+			meterSucesores(c, nodos.get(nodos.size() - 1));
 
 	}
 
@@ -911,19 +953,28 @@ public class HPAstar {
 		definirClusters(mapa, tcluster, 1);
 		// 2. Creamos los arcos (internos y externos)
 		definirEdges(mapa, umb);
-		// 3. Aplicamos A*
+	}
+
+	protected static void TestHPAstar2(Mapa mapa) {
+		// 3. Metemos los E/S
+		meterES(mapa);
+		// 4. Aplicamos A*
 		aplicarAstar(mapa);
 	}
 
-	protected static void TestPruebaHPAstar(Mapa mapa, int umb, int tcluster) {
+	protected static void TestPruebaHPAstar1(Mapa mapa, int umb, int tcluster) {
 		// 1. Definimos los clusters
 		definirClusters(mapa, tcluster, 2);
-		Test.pressAnyKeyToContinue();
 		// 2. Creamos los arcos (internos y externos)
 		// a. Definimos los Edges
 		definirEdges(mapa, umb);
+
+	}
+
+	protected static void TestPruebaHPAstar2(Mapa mapa) {
+		// 2. Creamos los arcos (internos)
 		// b. Introducimos los E/S
-		Test.pressAnyKeyToContinue();
+		meterES(mapa);
 		// 3. Aplicamos A*
 		aplicarAstar(mapa);
 	}
@@ -990,18 +1041,18 @@ public class HPAstar {
 	 * @param c2
 	 */
 	private static void meterDatosHash(Punto p1, Punto p2, int coste, ArrayList<Punto> c1, ArrayList<Punto> c2) {
-		if(coste != Integer.MAX_VALUE) {
+		if (coste != Integer.MAX_VALUE) {
 			// 1. Creamos los arcos
 			Arco a1 = new Arco(p1, p2);
 			Arco a2 = new Arco(p2, p1);
-			
+
 			// 2. Metemos los costes
 			costes.put(a1, coste);
 			costes.put(a2, coste);
-			
+
 			// 3. Metemos los caminos
 			caminos.put(a1, c1);
-			caminos.put(a2, c2);			
+			caminos.put(a2, c2);
 		}
 	}
 

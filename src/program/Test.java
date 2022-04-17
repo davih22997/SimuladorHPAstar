@@ -35,7 +35,7 @@ public class Test {
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
-	private static final Integer NPRUEBAS = 200;
+	private static final Integer NPRUEBAS = 10;
 	// Datos predefinidos del mapa
 	private Mapa mapa;
 	private int height; // Altura (num filas)
@@ -65,6 +65,8 @@ public class Test {
 	private int[] itHPAAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de memoria usada por HPA*
 	// Datos de la calidad de la solución (porcentaje de éxito):
 	// calidad(%) = costAstar/costHPAStar * 100
+	// Dato sobre el tiempo
+	private double pretime; // Tiempo de preprocesamiento
 
 	// Colores para las graficas
 	private static final Color COLOR_A = Color.RED; // Color para A*
@@ -133,13 +135,17 @@ public class Test {
 				// Nodos expandidos: Iteraciones
 				itAstar[i] = Astar.iteraciones;
 
-				// Reseteamos el mapa (de momento, ponemos el mapa a null; si tuviéramos que
-				// representarlo, hacemos reinicio)
+				// Reseteamos el mapa
 				mapa.pto_inicial = null;
 				mapa.pto_final = null;
 			}
 
 			// Paso 2: Utilizar HPA* y medir tiempo
+			long tst = System.nanoTime();
+			HPAstar.TestHPAstar(mapa, umbral, dCluster);
+			long tf = System.nanoTime() - tst;
+			pretime = ((double) tf) / 10E9;
+
 			// Creamos un bucle
 			for (int i = 0; i < NPRUEBAS; i++) {
 				// Asignamos los puntos de inicio y de fin al mapa
@@ -150,7 +156,7 @@ public class Test {
 				long start = System.nanoTime();
 
 				// Aplicamos HPA*
-				HPAstar.TestHPAstar(mapa, umbral, dCluster);
+				HPAstar.TestHPAstar2(mapa);
 
 				// Guardamos los resultados obtenidos
 				// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
@@ -164,11 +170,11 @@ public class Test {
 				// Nodos expandidos: La memoria usada
 				itHPAAstar[i] = HPAstar.refiters;
 
-				// Reseteamos el mapa (de momento, ponemos a null; si tuviéramos que
-				// representarlo, haríamos reinicio)
+				// Borramos puntos de interés
+				HPAstar.borrarES(mapa);
+				// Reseteamos el mapa
 				mapa.pto_inicial = null;
 				mapa.pto_final = null;
-
 			}
 
 			// 3. Gráficas:
@@ -206,10 +212,13 @@ public class Test {
 
 			// Paso 3: Aplicar algoritmo
 			// A*
-			// Astar.testAstar(mapa, Astar.VECINOS_8, true);
-			// HPA*
-			// HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
+			//Astar.testAstar(mapa, Astar.VECINOS_8, true);
 
+			// HPA*
+			
+			HPAstar.TestPruebaHPAstar1(mapa, umbral, dCluster);
+			HPAstar.TestPruebaHPAstar2(mapa);
+			
 			break;
 		}
 
@@ -498,7 +507,7 @@ public class Test {
 			StringBuilder mems_HPA = new StringBuilder();
 			mems_HPA.append("Nodos expandidos: {");
 			StringBuilder q = new StringBuilder();
-			q.append("Porcentaje de acierto con respecto al camino óptimo: {");
+			q.append("Porcentaje de error con respecto al camino óptimo: {");
 
 			for (int i = 0; i < NPRUEBAS; i++) {
 				// Datos generados
@@ -511,8 +520,21 @@ public class Test {
 				// Datos obtenidos por HPA*
 				times_HPA.append(timeHPAstar[i]);
 				mems_HPA.append(itHPAAstar[i]);
+				costs_HPA.append(longHPAstar[i]);
 				// Calidad
-				q.append(((longHPAstar[i] - longAstar[i]) / longHPAstar[i] * 100) + "%");
+				if (longHPAstar[i] != 0 && longAstar[i] != 0)
+					q.append((Math
+							.round(((double) longHPAstar[i] - (double) longAstar[i]) / (double) longHPAstar[i] * 100))
+							+ "%");
+				else {
+					if (longHPAstar[i] == longAstar[i])
+						q.append("Sin solución");
+					else if (longAstar[i] == 0)
+						q.append("No tiene solución para A*");
+					else if (longHPAstar[i] == 0)
+						q.append("No tiene solución para HPA*");
+				}
+
 				if (i < NPRUEBAS - 1) {
 					sb.append(", ");
 					finals.append(", ");
