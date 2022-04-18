@@ -35,7 +35,7 @@ public class Test {
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
-	private static final Integer NPRUEBAS = 10;
+	private static final Integer NPRUEBAS = 100;
 	// Datos predefinidos del mapa
 	private Mapa mapa;
 	private int height; // Altura (num filas)
@@ -84,9 +84,14 @@ public class Test {
 	private static final String imagen2 = "Expanded_Nodes.png";
 	// Ficheros con las muestras y sus resultados
 	private static final String fichero = "results.txt";
+	private static final String results = "datos.txt";
 
 	// Constante para imprimir una nueva línea
 	private static final String newline = "\n";
+	// Constante para un espacio
+	private static final String space = " ";
+	// Constante NaN
+	private static final String nan = "NaN";
 
 	public Test() {
 		new Test(MODO_GRAFICAS, null, null);
@@ -198,9 +203,12 @@ public class Test {
 			// -> El porcentaje de error
 
 			// 3. Mostrar gráficas -> JFreeChart
-			mostrarGraficas();
+			// mostrarGraficas();
 			// 4. Guardar en fichero los resultados
-			guardarFichero();
+			// guardarFichero();
+
+			// Guardamos el fichero con formato para MatLab
+			guardarResultados();
 			break;
 		case MODO_ERROR: // Modo para testear con datos concretos
 			// 1. Tratar el mapa:
@@ -212,13 +220,13 @@ public class Test {
 
 			// Paso 3: Aplicar algoritmo
 			// A*
-			//Astar.testAstar(mapa, Astar.VECINOS_8, true);
+			// Astar.testAstar(mapa, Astar.VECINOS_8, true);
 
 			// HPA*
-			
+
 			HPAstar.TestPruebaHPAstar1(mapa, umbral, dCluster);
 			HPAstar.TestPruebaHPAstar2(mapa);
-			
+
 			break;
 		}
 
@@ -522,11 +530,12 @@ public class Test {
 				mems_HPA.append(itHPAAstar[i]);
 				costs_HPA.append(longHPAstar[i]);
 				// Calidad
-				if (longHPAstar[i] != 0 && longAstar[i] != 0)
-					q.append((Math
-							.round(((double) longHPAstar[i] - (double) longAstar[i]) / (double) longHPAstar[i] * 100))
-							+ "%");
-				else {
+				if (longHPAstar[i] != 0 && longAstar[i] != 0) {
+					double d = (double) longHPAstar[i] - (double) longAstar[i];
+					d /= (double) longHPAstar[i];
+					d = Math.floor(d * 100) / 100;
+					q.append(d + "%");
+				} else {
 					if (longHPAstar[i] == longAstar[i])
 						q.append("Sin solución");
 					else if (longAstar[i] == 0)
@@ -572,6 +581,89 @@ public class Test {
 			fw.write(sb.toString());
 
 		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Función para guardar los resultados en el archivo "datos.txt", el cual será
+	 * pasado a MatLab para la creación de las gráficas
+	 */
+	private void guardarResultados() {
+		File file = new File(results);
+
+		try (FileWriter fw = new FileWriter(file)) {
+			StringBuilder sb = new StringBuilder();
+
+			int ndatos = 0;
+
+			// 1er dato: Longitud de la solución óptima:
+			sb.append("Longitudes");
+			sb.append(space);
+			ndatos++;
+			// 2º dato: Tiempo de A*:
+			sb.append("Tiempo_A*");
+			sb.append(space);
+			ndatos++;
+			// 3er dato: Tiempo de HPA*:
+			sb.append("Tiempo_HPA*");
+			sb.append(space);
+			ndatos++;
+			// 4º dato: Las iteraciones (o nº de nodos) de A*:
+			sb.append("Nodos_A*");
+			sb.append(space);
+			ndatos++;
+			// 5º dato: Las iteraciones (o nº de nodos) de HPA*:
+			sb.append("Nodos_HPA*");
+			sb.append(space);
+			ndatos++;
+			// 6º dato: El porcentaje de error
+			sb.append("%error");
+			sb.append(newline);
+			ndatos++;
+
+			for (int i = 0; i < NPRUEBAS; i++) {
+
+				boolean nulo = longAstar[i] == 0;
+
+				if (!nulo) {
+					sb.append(longAstar[i]);
+					sb.append(space);
+					sb.append(timeAstar[i]);
+					sb.append(space);
+					sb.append(timeHPAstar[i]);
+					sb.append(space);
+					sb.append(itAstar[i]);
+					sb.append(space);
+					sb.append(itHPAAstar[i]);
+					sb.append(space);
+					if (longHPAstar[i] == 0)
+						sb.append(nan);
+					else {
+						double d = (double) longHPAstar[i] - (double) longAstar[i];
+						d /= (double) longAstar[i];
+						d = Math.floor(d * 100) / 100;
+						sb.append(d);
+					}
+				} else {
+					for (int j = 0; j < ndatos; j++) {
+						sb.append(nan);
+						if (j < (ndatos - 1))
+							sb.append(space);
+					}
+				}
+
+				if (i < (NPRUEBAS - 1)) {
+					sb.append(space);
+					sb.append(newline);
+				}
+
+			}
+
+			fw.write(sb.toString());
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}

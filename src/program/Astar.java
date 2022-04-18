@@ -491,7 +491,6 @@ public class Astar {
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
 			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
-			System.out.println(sucesores);
 
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
