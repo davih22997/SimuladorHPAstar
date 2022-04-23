@@ -165,8 +165,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Copia de seguridad del mapa para HPA*
 	// private JButton[][] copiaMapa;
 
-	// Parte de datos para la simulación A*
+	// Parte de datos para la simulación A* (incluye a HPA*)
 	protected static JLabel datosAstar;
+	
 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
@@ -1306,6 +1307,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				case 3:
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
+					// Activamos el datosAstar
+					datosAstar.setVisible(true);
 					// Aplicamos A*
 					HPAstar.aplicarAstar(mapa);
 
@@ -1343,6 +1346,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			chbVerTabla.setEnabled(false);
 			// Y provocamos que no esté seleccionado por defecto
 			chbVerTabla.setSelected(false);
+			// Ocultamos y borramos el contenido de datosAstar
+			datosAstar.setVisible(false);
+			datosAstar.setText("");
+			
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1449,6 +1456,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					vB2umbral.setVisible(false);
 					// Reiniciamos el valor de la velocidad
 					restartVelocity();
+					// Reiniciamos el contenido de los datos
+					datosAstar.setText("");
 					// Dejamos por defecto seleccionado 4-Vecinos
 					vecCB.setSelectedIndex(0);
 					// Hacemos visible los elementos propios de A*
@@ -1461,6 +1470,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					panelCAstar.setVisible(false);
 					// Reiniciamos las variables de HPA*
 					step = 0;
+					// Reiniciamos el contenido de los datos
+					datosAstar.setText("");
 					// Dejamos por defecto seleccionada la opción para escoger las dimensiones de
 					// clusters
 					cbTCluster.setSelectedIndex(0);

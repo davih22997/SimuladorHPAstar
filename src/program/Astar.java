@@ -103,9 +103,11 @@ public class Astar {
 	 * @param mapa
 	 */
 	public static void busquedaAstar(Mapa mapa, int modo) {
+		// Inicializamos la memoria y las iteraciones
 		memoria = 1;
 		iteraciones = 0;
 
+		// Lo mostramos
 		Interfaz.datosAstar
 				.setText(new String("Memoria usada: ") + Astar.memoria + "    " + "Iteraciones: " + Astar.iteraciones);
 
@@ -252,6 +254,14 @@ public class Astar {
 	 * definidos los nodos y arcos
 	 */
 	public static void busquedaEnHPAstar(Mapa mapa, int modo) {
+		// Inicializamos memoria e iteraciones
+		HPAstar.refmemoria = 1;
+		HPAstar.refiters = 0;
+
+		// Lo mostramos
+		Interfaz.datosAstar.setText(
+				new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
+
 		// Se crea la lista de puntos cerrados (ya visitados)
 		ArrayList<Datos> cerrados = new ArrayList<>();
 
@@ -296,6 +306,10 @@ public class Astar {
 
 				// Si el punto vecino no está en la cola:
 				if ((!abiertos.contains(d))) {
+					// Pintamos el mapa
+					if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
+						mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
+					}
 					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
 					abiertos.add(d);
 					// Incrementamos la cantidad de nodos expandidos
@@ -319,6 +333,10 @@ public class Astar {
 			}
 			// Incrementamos las iteraciones
 			HPAstar.refiters++;
+
+			// Y vamos mostrando esos datos
+			Interfaz.datosAstar.setText(
+					new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
 		}
 
 		// Imprimimos el resultado
