@@ -50,8 +50,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final String number = "(([1-9][0-9]+)|[0-9])";
 
 	// Patrones que se usan
-	// Patrón lista
-	private static final Pattern patlist = Pattern.compile("(?s)" + space + "*[{](.|\\R)*[}]" + space + "*");
+	// Patrón lista -> En desuso porque si la lista es larga provoca un error de
+	// stackoverflow
+	// private static final Pattern patlist = Pattern.compile("(?s)" + space +
+	// "*[{](.|\\R)*[}](" + space + "|\\R)*");
 	// Patrón punto
 	private static final Pattern patpoint = Pattern.compile(
 			space + "*[(]" + space + "*" + number + space + "*," + space + "*" + number + space + "*[)]" + space + "*");
@@ -167,7 +169,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Parte de datos para la simulación A* (incluye a HPA*)
 	protected static JLabel datosAstar;
-	
 
 	// Parte para la simulación de HPA*
 	// Te cuenta cuántas veces has pulsado el botón de simulación
@@ -831,63 +832,88 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 								// { lista_ptos }
 								String lista = scan.next();
 								// Comprobamos que siga el patrón lista
-								Matcher matlist = patlist.matcher(lista);
-								// Si no sigue el patrón, creamos una lista vacía.
-								if (!matlist.matches()) {
+								// Matcher matlist = patlist2.matcher(lista);
+								// -> Vemos que los patrones fallan si la lista es demasiado larga, por lo que
+								// vamos a hacerlo de otra forma
+								// 1. Comprobamos si el primer carácter es "{"
+								int i = 0;
+								while (i < lista.length() && lista.charAt(i) != '{'
+										&& (lista.charAt(i) == ' ' || lista.charAt(i) == '\t' || lista.charAt(i) == '\n'
+												|| lista.charAt(i) == '\r'))
+									i++;
+								// Si no encontramos el carácter '{'
+								if (i == lista.length() || lista.charAt(i) != '{')
 									JOptionPane.showMessageDialog(new JFrame(),
 											"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
-								} // Si lo sigue, operamos
 								else {
-									// Quitamos el inicio de la lista
-									try (Scanner scan2 = new Scanner(lista.substring(1))) {
-										// booleano para comprobar si hay puntos ya definidos
-										boolean rep = false;
+									// Si no sigue el patrón, creamos una lista vacía.
+									lista = lista.substring(i);
+									i = lista.length() - 1;
+									while (i > 0 && lista.charAt(i) != '}'
+											&& (lista.charAt(i) == ' ' || lista.charAt(i) == '\t'
+													|| lista.charAt(i) == '\n' || lista.charAt(i) == '\r'))
+										i--;
 
-										scan2.useDelimiter("([)]" + space + "*," + "(\\R|" + space + ")*)" + "|([)]"
-												+ "(\\R|" + space + ")*[}]" + space + "*)");
-
-										while (scan2.hasNext()) {
-											String p = scan2.next();
-											Matcher matpoint = patpoint.matcher(p + ")");
-											if (!matpoint.matches()) {
-												throw new Exception();
-											} else {
-												Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
-												if (obs.equals(pto_inicial) || obs.equals(pto_final)
-														|| obstaculos.contains(obs)) {
-													rep = true;
-												} else
-													obstaculos.add(obs);
-											}
-										}
-
-										for (Punto o : obstaculos) {
-											mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
-											// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
-											mapa.obstaculos.add(o);
-										}
-
-										if (rep) {
-											JOptionPane.showMessageDialog(new JFrame(),
-													"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
-										}
-
-										if (obstaculos.size() == 1)
-											log.append("Se ha añadido 1 obstáculo." + newline);
-										else
-											log.append("Se ha añadido un total de " + obstaculos.size() + " obstáculos."
-													+ newline);
-									} catch (Exception exp) {
+									// Si no encontramos el carácter
+									if (i == 0 || lista.charAt(i) != '}')
 										JOptionPane.showMessageDialog(new JFrame(),
-												"Valores no válidos para puntos. No se añadirán obstáculos.");
+												"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
+
+									// Si lo sigue, operamos
+									else {
+										// Cogemos la lista sin los corchetes
+										lista = lista.substring(0, i + 1);
+										try (Scanner scan2 = new Scanner(lista.substring(1))) {
+											// booleano para comprobar si hay puntos ya definidos
+											boolean rep = false;
+
+											scan2.useDelimiter("([)]" + space + "*," + "(\\R|" + space + ")*)" + "|([)]"
+													+ "(\\R|" + space + ")*[}]" + space + "*)");
+
+											while (scan2.hasNext()) {
+												String p = scan2.next();
+												Matcher matpoint = patpoint.matcher(p + ")");
+												if (!matpoint.matches()) {
+													throw new Exception();
+												} else {
+													Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
+													if (obs.equals(pto_inicial) || obs.equals(pto_final)
+															|| obstaculos.contains(obs)) {
+														rep = true;
+													} else
+														obstaculos.add(obs);
+												}
+											}
+
+											for (Punto o : obstaculos) {
+												mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
+												// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
+												mapa.obstaculos.add(o);
+											}
+
+											if (rep) {
+												JOptionPane.showMessageDialog(new JFrame(),
+														"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
+											}
+
+											if (obstaculos.size() == 1)
+												log.append("Se ha añadido 1 obstáculo." + newline);
+											else
+												log.append("Se ha añadido un total de " + obstaculos.size()
+														+ " obstáculos." + newline);
+										} catch (Exception exp) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Valores no válidos para puntos. No se añadirán obstáculos.");
+										}
 									}
+
+									// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
+									// nuevamente, te la ordena)
+									Collections.sort(mapa.obstaculos);
+
+									log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
+
 								}
-
-								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
-								// nuevamente, te la ordena)
-								Collections.sort(mapa.obstaculos);
-
-								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
 
 							}
 
@@ -1349,7 +1375,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			// Ocultamos y borramos el contenido de datosAstar
 			datosAstar.setVisible(false);
 			datosAstar.setText("");
-			
+
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 

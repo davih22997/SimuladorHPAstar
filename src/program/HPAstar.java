@@ -755,10 +755,13 @@ public class HPAstar {
 				c.add(pl2_1);
 				meterDatosHash(pl1_1, pl2_1, 100, c);
 
-				if (modo != 1) {
+				if (modo == 0) {
 					// Pintamos en los nodos
 					oscurecerMapa(pl1_1, mapa);
 					oscurecerMapa(pl2_1, mapa);
+				} else if (modo == 2) {
+					mapa.pintarMapa(Color.YELLOW, pl1_1);
+					mapa.pintarMapa(Color.YELLOW, pl2_1);
 				}
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
@@ -793,12 +796,17 @@ public class HPAstar {
 					c2.add(pl2_2);
 					meterDatosHash(pl1_2, pl2_2, 100, c2);
 
-					if (modo != 1) {
+					if (modo == 0) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl1_2, mapa);
 						oscurecerMapa(pl2_1, mapa);
 						oscurecerMapa(pl2_2, mapa);
+					} else if (modo == 2) {
+						mapa.pintarMapa(Color.YELLOW, pl1_1);
+						mapa.pintarMapa(Color.YELLOW, pl1_2);
+						mapa.pintarMapa(Color.YELLOW, pl2_1);
+						mapa.pintarMapa(Color.YELLOW, pl2_2);
 					}
 
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
@@ -831,10 +839,13 @@ public class HPAstar {
 					c1.add(pl2_1);
 					meterDatosHash(pl1_1, pl2_1, 100, c1);
 
-					if (modo != 1) {
+					if (modo == 0) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl2_1, mapa);
+					} else if (modo == 2) {
+						mapa.pintarMapa(Color.YELLOW, pl1_1);
+						mapa.pintarMapa(Color.YELLOW, pl2_1);
 					}
 
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya

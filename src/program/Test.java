@@ -236,6 +236,9 @@ public class Test {
 			// HPA*
 			HPAstar.TestPruebaHPAstar1(mapa, umbral, dCluster);
 			HPAstar.TestPruebaHPAstar2(mapa);
+			
+			System.out.println(HPAstar.sucesores.get(new Punto(200, 109)));
+			System.out.println(HPAstar.sucesores.get(new Punto(200, 110)));
 
 			break;
 		}
