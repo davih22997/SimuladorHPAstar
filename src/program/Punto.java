@@ -322,7 +322,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	@Override
 	public String toString() {
-		return "(" + f + ", " + c + ")";
+		return "(" + f + "," + c + ")";
 	}
 
 	@Override
@@ -371,6 +371,18 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 			val = -1;
 
 		return val;
+	}
+	
+	public Edge getEdge (Punto p) {
+		Edge e = null;
+		
+		for (Edge eg : intraedges) 
+			if (eg.pfin.equals(p)) {
+				e = eg;
+				break;
+			}
+		
+		return e;
 	}
 
 }

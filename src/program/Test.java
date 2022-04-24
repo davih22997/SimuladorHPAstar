@@ -30,12 +30,13 @@ public class Test {
 
 	// Variables estáticas para definir el modo de operación
 	private static final int MODO_GRAFICAS = 0; // Modo de creación de gráficas
-	private static final int MODO_ERROR = 1; // Modo para probar puntos que dan error
+	protected static final int MODO_ERROR_Astar = 1; // Modo para probar puntos que dan error en A*
+	protected static final int MODO_ERROR_HPAstar = 2; // Modo para probar puntos que dan error en HPA*
 
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
 	// Cogemos el número de pruebas que hacemos
-	private static final Integer NPRUEBAS = 100;
+	private static final Integer NPRUEBAS = 200;
 	// Datos predefinidos del mapa
 	private Mapa mapa;
 	private int height; // Altura (num filas)
@@ -210,7 +211,7 @@ public class Test {
 			// Guardamos el fichero con formato para MatLab
 			guardarResultados();
 			break;
-		case MODO_ERROR: // Modo para testear con datos concretos
+		case MODO_ERROR_Astar: // Modo para testear con datos concretos
 			// 1. Tratar el mapa:
 			// Paso 1: Leer el fichero y convertirlo en mapa
 			leerFichero();
@@ -220,10 +221,19 @@ public class Test {
 
 			// Paso 3: Aplicar algoritmo
 			// A*
-			// Astar.testAstar(mapa, Astar.VECINOS_8, true);
+			Astar.testAstar(mapa, Astar.VECINOS_8, true);
 
+			break;
+		case MODO_ERROR_HPAstar:
+			// 1. Tratar el mapa:
+			// Paso 1: Leer el fichero y convertirlo en mapa
+			leerFichero();
+
+			// Paso 2: Crear y mostrar el mapa
+			crearMostrarMapa(ini, fin);
+
+			// Paso 3: Aplicar algoritmo
 			// HPA*
-
 			HPAstar.TestPruebaHPAstar1(mapa, umbral, dCluster);
 			HPAstar.TestPruebaHPAstar2(mapa);
 
@@ -532,8 +542,8 @@ public class Test {
 				// Calidad
 				if (longHPAstar[i] != 0 && longAstar[i] != 0) {
 					double d = (double) longHPAstar[i] - (double) longAstar[i];
-					d /= (double) longHPAstar[i];
-					d = Math.floor(d * 100) / 100;
+					d /= (double) longAstar[i];
+					d = Math.floor(d * 10000) / 100;
 					q.append(d + "%");
 				} else {
 					if (longHPAstar[i] == longAstar[i])
@@ -597,27 +607,37 @@ public class Test {
 
 			int ndatos = 0;
 
-			// 1er dato: Longitud de la solución óptima:
-			sb.append("Longitudes");
+			// 1. Punto inicial
+			sb.append("Pinicial");
+			sb.append(space);
+			// 2. Punto final
+			sb.append("Pfinal");
+			sb.append(space);
+			// 3. Longitud de la solución óptima:
+			sb.append("Longitud_A*");
 			sb.append(space);
 			ndatos++;
-			// 2º dato: Tiempo de A*:
+			// 4. Longitud de HPA*
+			sb.append("Longitud_HPA*");
+			sb.append(space);
+			ndatos++;
+			// 5. Tiempo de A*:
 			sb.append("Tiempo_A*");
 			sb.append(space);
 			ndatos++;
-			// 3er dato: Tiempo de HPA*:
+			// 6. Tiempo de HPA*:
 			sb.append("Tiempo_HPA*");
 			sb.append(space);
 			ndatos++;
-			// 4º dato: Las iteraciones (o nº de nodos) de A*:
+			// 7. Las iteraciones (o nº de nodos) de A*:
 			sb.append("Nodos_A*");
 			sb.append(space);
 			ndatos++;
-			// 5º dato: Las iteraciones (o nº de nodos) de HPA*:
+			// 8. Las iteraciones (o nº de nodos) de HPA*:
 			sb.append("Nodos_HPA*");
 			sb.append(space);
 			ndatos++;
-			// 6º dato: El porcentaje de error
+			// 9. El porcentaje de error
 			sb.append("%error");
 			sb.append(newline);
 			ndatos++;
@@ -626,9 +646,20 @@ public class Test {
 
 				boolean nulo = longAstar[i] == 0;
 
+				sb.append(iniciales[i]);
+				sb.append(space);
+				sb.append(finales[i]);
+				sb.append(space);
 				if (!nulo) {
 					sb.append(longAstar[i]);
 					sb.append(space);
+					if (longHPAstar[i] == 0) {
+						sb.append(nan);
+						sb.append(space);
+					} else {
+						sb.append(longHPAstar[i]);
+						sb.append(space);
+					}
 					sb.append(timeAstar[i]);
 					sb.append(space);
 					sb.append(timeHPAstar[i]);
@@ -642,7 +673,7 @@ public class Test {
 					else {
 						double d = (double) longHPAstar[i] - (double) longAstar[i];
 						d /= (double) longAstar[i];
-						d = Math.floor(d * 100) / 100;
+						d = Math.floor(d * 10000) / 100;
 						sb.append(d);
 					}
 				} else {

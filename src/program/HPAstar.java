@@ -85,6 +85,9 @@ public class HPAstar {
 	protected static int preiters; // Iteraciones realizadas en la fase de preprocesamiento
 	protected static int prememoria; // Cantidad de nodos abiertos en la fase de preprocesamiento
 
+	protected static int esiters; // Iteraciones realizadas al introducir los puntos inicial/final
+	protected static int esmemoria; // Cantidad de nodos abiertos al introducir los puntos inicial/final
+
 	protected static int refiters; // Iteraciones realizadas en la fase de refinado
 	protected static int refmemoria; // Cantidad de nodos abiertos en la fase de refinado
 	protected static int longitud; // Longitud de la solución final obtenida
@@ -193,7 +196,9 @@ public class HPAstar {
 			// CREACIÓN DE ARCOS INTERNOS
 			// 4. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
 			// (edges)
-			Collections.sort(HPAstar.nodos_cluster.get(c));
+			ArrayList<Punto> nodos = nodos_cluster.get(c);
+			Collections.sort(nodos);
+			nodos_cluster.put(c, nodos);
 
 			// 5. Creamos los arcos internos
 			intraEdges(c, mapa);
@@ -207,6 +212,8 @@ public class HPAstar {
 	 * @param mapa
 	 */
 	public static void meterES(Mapa mapa) {
+		esiters = 0;
+		esmemoria = 0;
 		meterPuntosInteres(mapa);
 		ESEdges(mapa);
 		refiters = 0;
@@ -225,24 +232,32 @@ public class HPAstar {
 		boolean p2 = false;
 		for (int i = 0; i < clusters.size() && (!p1 || !p2); i++) {
 			Cluster c = clusters.get(i);
-			if (c.inCluster(mapa.pto_inicial)) {
+			if (!p1 && c.inCluster(mapa.pto_inicial)) {
 				p1 = true;
 				if (!nodos_cluster.get(c).contains(mapa.pto_inicial)) {
 					// Lo metemos en la lista de puntos de interés y en la lista de nodos
 					Punto p = mapa.pto_inicial.clone();
 					ptos_interes.put(p, c);
-					addNodo(c, p, true);
+					ArrayList<Punto> nodos = nodos_cluster.get(c);
+					nodos.add(p);
+					Collections.sort(nodos);
+					nodos_cluster.put(c, nodos);
+
 					if (modo != 1)
 						oscurecerMapa(mapa.pto_inicial, mapa);
 				}
 			}
-			if (c.inCluster(mapa.pto_final)) {
+			if (!p2 && c.inCluster(mapa.pto_final)) {
 				p2 = true;
 				if (!nodos_cluster.get(c).contains(mapa.pto_final)) {
 					Punto p = mapa.pto_final.clone();
 					// Lo metemos en la lista de puntos de interés y en la lista de nodos
 					ptos_interes.put(p, c);
-					addNodo(c, p, true);
+					ArrayList<Punto> nodos = nodos_cluster.get(c);
+					nodos.add(p);
+					Collections.sort(nodos);
+					nodos_cluster.put(c, nodos);
+
 					if (modo != 1)
 						oscurecerMapa(mapa.pto_final, mapa);
 				}
@@ -428,7 +443,7 @@ public class HPAstar {
 		if (modo != 1)
 			Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
 		else
-			Astar.testEnHPAstar(mapa, CLUSTER_10X10);
+			Astar.testEnHPAstar(mapa, Astar.VECINOS_8);
 
 	}
 
@@ -456,11 +471,7 @@ public class HPAstar {
 			for (Punto nodo : sucesores.get(p)) {
 				Arco a1 = new Arco(p, nodo);
 				Arco a2 = new Arco(nodo, p);
-				Edge e = new Edge();
-
-				e.camino = caminos.get(a2);
-				e.coste = costes.get(a2);
-				nodo.getArcosInternos().remove(e);
+				nodo.getArcosInternos().remove(nodo.getEdge(p));
 
 				costes.remove(a1);
 				costes.remove(a2);
@@ -477,6 +488,7 @@ public class HPAstar {
 			ArrayList<Punto> nods = nodos_cluster.get(c);
 			nods.remove(p);
 			nodos_cluster.put(c, nods);
+			ptos_interes.remove(p);
 		}
 	}
 

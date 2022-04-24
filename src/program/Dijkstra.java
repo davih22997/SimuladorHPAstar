@@ -125,6 +125,18 @@ public class Dijkstra {
 	}
 
 	/**
+	 * Crea el intraedge para puntos que no son el punto inicial y el final
+	 * 
+	 * @param p1
+	 * @param p2
+	 * @param submapa
+	 * @return
+	 */
+	public static Edge intraedge(Punto p1, Punto p2, ArrayList<Punto> submapa) {
+		return intraedge(p1, p2, submapa, false);
+	}
+
+	/**
 	 * Crea el intraedge (arco interno) entre dos puntos, dado el submapa
 	 * 
 	 * 
@@ -133,7 +145,7 @@ public class Dijkstra {
 	 * @param submapa
 	 * @return
 	 */
-	public static Edge intraedge(Punto p1, Punto p2, ArrayList<Punto> submapa) {
+	public static Edge intraedge(Punto p1, Punto p2, ArrayList<Punto> submapa, boolean es) {
 
 		// Creamos la lista de puntos ya analizados
 		ArrayList<Datos> cerrados = new ArrayList<>();
@@ -168,7 +180,10 @@ public class Dijkstra {
 
 		// Añadimos el punto inicial
 		Datos par = new Datos(0, 0, p1);
-		HPAstar.prememoria++;
+		if (es)
+			HPAstar.esmemoria++;
+		else
+			HPAstar.prememoria++;
 
 		abiertos.add(par);
 
@@ -192,7 +207,10 @@ public class Dijkstra {
 					// Lo añadimos
 					abiertos.add(p);
 					// Incrementamos la cantidad de nodos abiertos
-					HPAstar.prememoria++;
+					if (es)
+						HPAstar.esmemoria++;
+					else
+						HPAstar.prememoria++;
 				}
 				// Si está en la lista comprobamos que tenga menor coste
 				else {
@@ -210,7 +228,10 @@ public class Dijkstra {
 				}
 
 				// Sumamos una iteración:
-				HPAstar.preiters++;
+				if (es)
+					HPAstar.esiters++;
+				else
+					HPAstar.preiters++;
 			}
 		}
 
