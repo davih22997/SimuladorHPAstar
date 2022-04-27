@@ -254,14 +254,15 @@ public class Astar {
 	 * definidos los nodos y arcos
 	 */
 	public static void busquedaEnHPAstar(Mapa mapa, int modo) {
+
 		// Inicializamos memoria e iteraciones
 		HPAstar.refmemoria = 1;
 		HPAstar.refiters = 0;
 
 		// Lo mostramos
 		if (modo == 0)
-		Interfaz.datosAstar.setText(
-				new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
+			Interfaz.datosAstar.setText(
+					new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
 
 		// Se crea la lista de puntos cerrados (ya visitados)
 		ArrayList<Datos> cerrados = new ArrayList<>();
@@ -293,6 +294,7 @@ public class Astar {
 			for (Punto p : sucesores) {
 				// Creamos el arco entre los dos puntos
 				Arco arco = new Arco(actual.p, p);
+
 				// Calculamos la distancia (coste) con respecto al punto
 				int dist = HPAstar.costes.get(arco);
 
@@ -337,8 +339,8 @@ public class Astar {
 
 			// Y vamos mostrando esos datos
 			if (modo == 0)
-			Interfaz.datosAstar.setText(
-					new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
+				Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
+						+ "Iteraciones: " + HPAstar.refiters);
 		}
 
 		// Imprimimos el resultado
@@ -579,7 +581,7 @@ public class Astar {
 		PriorityQueue<Datos> abiertos = new PriorityQueue<>(new Comparator<Datos>() {
 			@Override
 			public int compare(Datos d1, Datos d2) {
-				// Primero, se tiene en cuenta e lque menos coste tiene
+				// Primero, se tiene en cuenta el que menos coste tiene
 				int c1 = d1.coste;
 				int c2 = d2.coste;
 

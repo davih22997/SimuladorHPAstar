@@ -16,7 +16,7 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 	// Punto de inicio del cluster (esquina superior izda)
 	private Punto inicio;
 
-	//private ArrayList<Punto> nodos;
+	// private ArrayList<Punto> nodos;
 
 	/**
 	 * Método para crear un clúster dado un punto inicial (esquina superior izda)
@@ -32,7 +32,7 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 		// Y el punto de origen del cluster
 		this.inicio = p_inicial;
 
-		//nodos = new ArrayList<>();
+		// nodos = new ArrayList<>();
 	}
 
 	/**
@@ -414,28 +414,20 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 	 * @param ordenar
 	 */
 	/*
-	public void addNodo(Punto p, boolean ordenar) {
-		// Comprobamos que el punto pertenece al cluster y que no está guardado
-		// en la lista de nodos para meterlo en la lista
-		if (inCluster(p) && !nodos.contains(p)) {
-			nodos.add(p);
-		}
-
-		// Si está en la lista de nodos, añadimos arcos externos
-		else if (nodos.contains(p)) {
-			// Cogemos el índice del punto
-			int index = nodos.indexOf(p);
-			// Metemos los edges al punto que está entre los nodos
-			for (Punto edge : p.getArcosExternos())
-				nodos.get(index).addArcoExterno(edge);
-
-		}
-
-		// Ordenamos la lista de nodos si así lo indicamos
-		if (ordenar)
-			Collections.sort(nodos);
-	}
-	*/
+	 * public void addNodo(Punto p, boolean ordenar) { // Comprobamos que el punto
+	 * pertenece al cluster y que no está guardado // en la lista de nodos para
+	 * meterlo en la lista if (inCluster(p) && !nodos.contains(p)) { nodos.add(p); }
+	 * 
+	 * // Si está en la lista de nodos, añadimos arcos externos else if
+	 * (nodos.contains(p)) { // Cogemos el índice del punto int index =
+	 * nodos.indexOf(p); // Metemos los edges al punto que está entre los nodos for
+	 * (Punto edge : p.getArcosExternos()) nodos.get(index).addArcoExterno(edge);
+	 * 
+	 * }
+	 * 
+	 * // Ordenamos la lista de nodos si así lo indicamos if (ordenar)
+	 * Collections.sort(nodos); }
+	 */
 
 	/**
 	 * Método para crear la lista de puntos total que contiene el cluster
@@ -443,7 +435,7 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 	 * @param m
 	 * @return
 	 */
-	public ArrayList<Punto> getSubMapa() {
+	public ArrayList<Punto> getSubMapa(Mapa mapa) {
 
 		// Creamos la lista que va a contener los puntos
 		ArrayList<Punto> sm = new ArrayList<>();
@@ -456,12 +448,16 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 				int col = inicio.getCol() + c;
 
 				Punto p = new Punto(fil, col);
-				ArrayList<Punto> nodos = HPAstar.nodos_cluster.get(this);
-				// Si ese punto está contenido en la lista de nodos, añadimos el punto del nodo
-				if (nodos.contains(p))
-					p = nodos.get(nodos.indexOf(p));
 
-				sm.add(p);
+				// Si no lo contiene la lista de obstáculos
+				if (!mapa.obstaculos.contains(p)) {
+					ArrayList<Punto> nodos = HPAstar.nodos_cluster.get(this);
+					// Si ese punto está contenido en la lista de nodos, añadimos el punto del nodo
+					if (nodos.contains(p))
+						p = nodos.get(nodos.indexOf(p));
+
+					sm.add(p);
+				}
 			}
 
 		return sm;
@@ -473,10 +469,8 @@ public class Cluster implements Cloneable, Comparator<Cluster>, Comparable<Clust
 	 * @return
 	 */
 	/*
-	public ArrayList<Punto> getNodos() {
-		return nodos;
-	}
-	*/
+	 * public ArrayList<Punto> getNodos() { return nodos; }
+	 */
 
 	/**
 	 * Método para averiguar si el cluster está dentro del mapa

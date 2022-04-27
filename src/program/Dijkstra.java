@@ -143,6 +143,7 @@ public class Dijkstra {
 	 * @param p1
 	 * @param p2
 	 * @param submapa
+	 * @param es      Indica si se trata de un punto añadido por ser inicial o final
 	 * @return
 	 */
 	public static Edge intraedge(Punto p1, Punto p2, ArrayList<Punto> submapa, boolean es) {
@@ -239,8 +240,9 @@ public class Dijkstra {
 		// Si encuentra el punto objetivo, añadimos los datos de todo lo recorrido
 		if (!abiertos.isEmpty() && abiertos.peek().p.equals(p2)) {
 			Datos pto = abiertos.poll();
+			int coste = pto.coste;
 			ArrayList<Punto> camino = crearCamino(pto);
-			edge.intraEdge(p1, p2, camino, pto.coste);
+			edge.intraEdge(p1, p2, camino, coste);
 		} // En caso contrario, añade un camino vacío con coste infinito
 		else
 			edge.intraEdge(p1, p2, new ArrayList<>(), Integer.MAX_VALUE);

@@ -597,6 +597,29 @@ public class HPAstar {
 		return cont;
 	}
 
+	private static ArrayList<Integer> contarPtosConsecutivos2(ArrayList<Punto> ptos) {
+		ArrayList<Integer> ints = new ArrayList<>();
+
+		int i = 0;
+
+		int cont = 1;
+		while (i < ptos.size()) {
+			if (i < ptos.size() - 1)
+				if (ptos.get(i).adyacente(ptos.get(i + 1)))
+					cont++;
+				else {
+					ints.add(cont);
+					cont = 1;
+				}
+			else
+				ints.add(cont);
+
+			i++;
+		}
+
+		return ints;
+	}
+
 	/**
 	 * Método que realiza la creación de edges por la derecha de un cluster
 	 * 
@@ -666,62 +689,28 @@ public class HPAstar {
 	 * @param mapa
 	 */
 	private static void workEdges(ArrayList<Punto> l1, ArrayList<Punto> l2, Cluster[] cls, Mapa mapa) {
-		// Cogemos la lista de obstáculos del mapa
-		ArrayList<Punto> obs1 = (ArrayList<Punto>) mapa.obstaculos.clone();
-		// Y nos quedamos solo con los puntos coincidentes
-		obs1.retainAll(l1);
 
-		// Creamos un ArrayList con los índices de los obstáculos en el primer límite
-		ArrayList<Integer> i1 = new ArrayList<>();
-		// Si hay elementos
-		if (!obs1.isEmpty()) {
-			// Se van añadiendo índices
-			for (Punto obs : obs1)
-				i1.add(l1.indexOf(obs));
+		// Vamos eliminando los puntos que se encuentran entre los obstáculos
+		// (recorremos la lista a la inversa para poder borrar sin que afecte al orden)
+		for (int i = l1.size() - 1; i >= 0; i--) {
+			if (mapa.obstaculos.contains(l1.get(i))) {
+				l1.remove(i);
+				l2.remove(i);
+			}
 		}
 
-		// Los ordenamos en orden descendiente (ya que si eliminas el primer elemento,
-		// el segundo pasa a ser el primero, pero no a la inversa):
-		Collections.sort(i1, Collections.reverseOrder());
-
-		// Borramos de los límites los obstáculos, ya que no vamos a poder hacer caminos
-		// sobre ellos. También lo hacemos en los segundos límites
-		for (Integer ind : i1) {
-			l1.remove(ind.intValue());
-			l2.remove(ind.intValue());
+		// Aquí hacemos lo mismo, pero teniendo en cuenta el segundo límite
+		for (int i = l2.size() - 1; i >= 0; i--) {
+			if (mapa.obstaculos.contains(l2.get(i))) {
+				l2.remove(i);
+				l1.remove(i);
+			}
 		}
 
-		// Volvemos a coger la lista de obstáculos del mapa
-		ArrayList<Punto> obs2 = (ArrayList<Punto>) mapa.obstaculos.clone();
-		// Y nos quedamos con los coincidentes
-		obs2.retainAll(l2);
-
-		// Creamos un ArrayList con los índices de los obstáculos en el límite
-		ArrayList<Integer> i2 = new ArrayList<>();
-		// Si hay elementos
-		if (!obs2.isEmpty()) {
-			// Se van añadiendo índices
-			for (Punto obs : obs2)
-				i2.add(l2.indexOf(obs));
-		}
-
-		// Ordenamos la lista de índices en orden descendiente
-		Collections.sort(i2, Collections.reverseOrder());
-
-		// Borramos de ambos límites los obstáculos, ya que no vamos a poder hacer
-		// caminos sobre ellos.
-		for (Integer ind : i2) {
-			l2.remove(ind.intValue());
-			l1.remove(ind.intValue());
-		}
-
-		// Si no están vacíos los límites (comprobamos uno de ellos ya que ambos se
-		// vacian de igual manera):
 		if (!l1.isEmpty()) {
-			// Pintamos el mapa
 			pintarEdges(l1, l2, cls, mapa);
-
 		}
+
 	}
 
 	/**
@@ -826,7 +815,7 @@ public class HPAstar {
 				// En caso contrario, se crea uno en medio
 				else {
 					// Establecemos el "punto de mira" en el pto intermedio
-					index2 = (int) Math.round(index2 / 2.0);
+					index2 = (index + index2) / 2;
 					// Cogemos esos puntos intermedios
 					pl1_1 = l1.get(index2);
 					pl2_1 = l2.get(index2);
@@ -856,6 +845,7 @@ public class HPAstar {
 					// Al cluster adyacente
 					// cls[1].addNodo(pl2_1, false);
 					addNodo(cls[1], pl2_1, false);
+
 				}
 			}
 			index += n;
@@ -888,10 +878,8 @@ public class HPAstar {
 	 * @param mapa
 	 */
 	private static void intraEdges(Cluster c, Mapa mapa) {
-		// Creamos el submapa que contiene todos los puntos
-		ArrayList<Punto> submapa = c.getSubMapa();
-		// Le quitamos los obstaculos
-		submapa.removeAll(mapa.obstaculos);
+		// Creamos el submapa que contiene todos los puntos libres (sin obstáculos)
+		ArrayList<Punto> submapa = c.getSubMapa(mapa);
 
 		// Se van creando arcos entre cada par de nodos del cluster
 		// ArrayList<Punto> nodos = c.getNodos();
@@ -919,11 +907,12 @@ public class HPAstar {
 				// Añadimos los datos a las HashTables
 				meterDatosHash(p1, p2, edge.coste, edge.camino, symm.camino);
 			}
-			meterSucesores(c, p1);
+			// meterSucesores(c, p1);
 		}
 
-		if (nodos.size() > 0)
-			meterSucesores(c, nodos.get(nodos.size() - 1));
+		/*
+		 * if (nodos.size() > 0) meterSucesores(c, nodos.get(nodos.size() - 1));
+		 */
 
 	}
 
@@ -940,9 +929,7 @@ public class HPAstar {
 			Cluster c = ptos_interes.get(p);
 
 			// Creamos el submapa que contiene todos los puntos
-			ArrayList<Punto> submapa = c.getSubMapa();
-			// Le quitamos los obstaculos
-			submapa.removeAll(mapa.obstaculos);
+			ArrayList<Punto> submapa = c.getSubMapa(mapa);
 
 			// Vamos cogiendo cada nodo
 			for (Punto nodo : nodos_cluster.get(c)) {
@@ -958,9 +945,9 @@ public class HPAstar {
 					// Añadimos los datos a las HashTables
 					meterDatosHash(p, nodo, edge.coste, edge.camino, symm.camino);
 				}
-				meterSucesores(c, nodo);
+				// meterSucesores(c, nodo);
 			}
-			meterSucesores(c, p);
+			// meterSucesores(c, p);
 		}
 	}
 
@@ -1052,6 +1039,8 @@ public class HPAstar {
 		// Ordenamos la lista de nodos si así lo indicamos
 		if (ordenar)
 			Collections.sort(nodos);
+
+		nodos_cluster.put(c, nodos);
 	}
 
 	/**
@@ -1076,6 +1065,10 @@ public class HPAstar {
 			// 3. Metemos los caminos
 			caminos.put(a1, c1);
 			caminos.put(a2, c2);
+
+			// 4. Metemos en la lista de sucesores
+			meterSucesor(p1, p2);
+			meterSucesor(p2, p1);
 		}
 	}
 
@@ -1107,6 +1100,26 @@ public class HPAstar {
 
 		sucesores.put(p, nodos);
 
+	}
+
+	/**
+	 * Mete como sucesor de un Punto p1 dado otro Punto p2
+	 * 
+	 * @param p1
+	 * @param p2
+	 */
+	private static void meterSucesor(Punto p1, Punto p2) {
+		ArrayList<Punto> nodos = new ArrayList<>();
+		if (sucesores.containsKey(p1)) {
+			nodos = sucesores.get(p1);
+			if (!nodos.contains(p2))
+				nodos.add(p2);
+		} else
+			nodos.add(p2);
+
+		Collections.sort(nodos);
+
+		sucesores.put(p1, nodos);
 	}
 
 }
