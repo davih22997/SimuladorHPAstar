@@ -92,7 +92,7 @@ public class HPAstar {
 	protected static int refmemoria; // Cantidad de nodos abiertos en la fase de refinado
 	protected static int longitud; // Longitud de la solución final obtenida
 
-	private static int modo; // Variable que te indica si pintar o no
+	protected static int modo; // Variable que te indica si pintar o no
 
 	/**
 	 * Método para definir los clusters si no es un test

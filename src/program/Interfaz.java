@@ -1279,7 +1279,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						step++;
 						// 2. Desbloqueamos el botón de start
 						btnStart2.setEnabled(true);
-
 					}
 				}
 
@@ -1294,6 +1293,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
+					
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
 					// También metemos los puntos E/S (inicio/fin)

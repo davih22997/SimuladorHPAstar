@@ -260,7 +260,7 @@ public class Astar {
 		HPAstar.refiters = 0;
 
 		// Lo mostramos
-		if (modo == 0)
+		if (HPAstar.modo == 0)
 			Interfaz.datosAstar.setText(
 					new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
 
@@ -338,7 +338,7 @@ public class Astar {
 			HPAstar.refiters++;
 
 			// Y vamos mostrando esos datos
-			if (modo == 0)
+			if (HPAstar.modo == 0)
 				Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
 						+ "Iteraciones: " + HPAstar.refiters);
 		}

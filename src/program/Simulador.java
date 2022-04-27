@@ -14,16 +14,7 @@ public class Simulador {
 				// TODO Auto-generated method stub
 				try {
 					new Interfaz();
-					// System.out.println("Se va a realizar A*");
-					// new Test(Test.MODO_ERROR_Astar, new Punto(98,233), new Punto(173,84));
-					// new Test(Test.MODO_ERROR_Astar, new Punto(128,100), new Punto(133,74));
-					// new Test(Test.MODO_ERROR_Astar, new Punto(122, 106), new Punto(133, 74));
-					// System.out.println("Se va a realizar HPA*");
-					// new Test(Test.MODO_ERROR_HPAstar, new Punto(206, 110), new Punto(173, 84));
-					// new Test(Test.MODO_ERROR_HPAstar, new Punto(128, 100), new Punto(133, 74));
-					// new Test(Test.MODO_ERROR_HPAstar, new Punto(133,80), new Punto(128, 100));
-					// new Test(Test.MODO_ERROR_HPAstar, new Punto(133, 80), new Punto(128, 100));
-					//new Test();
+					// new Test();
 
 				} catch (Exception e) {
 					e.printStackTrace();
