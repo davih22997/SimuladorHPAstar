@@ -1,7 +1,6 @@
 package program;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Dimension;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -14,17 +13,6 @@ import java.util.Scanner;
 
 import javax.swing.JFrame;
 import javax.swing.JPanel;
-
-import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtils;
-import org.jfree.chart.JFreeChart;
-import org.jfree.chart.axis.NumberAxis;
-import org.jfree.chart.axis.NumberTickUnit;
-import org.jfree.chart.plot.PlotOrientation;
-import org.jfree.chart.plot.XYPlot;
-import org.jfree.chart.renderer.xy.XYLineAndShapeRenderer;
-import org.jfree.data.xy.XYSeries;
-import org.jfree.data.xy.XYSeriesCollection;
 
 public class Test {
 
@@ -71,22 +59,12 @@ public class Test {
 	// Dato sobre el tiempo
 	private double pretime; // Tiempo de preprocesamiento
 
-	// Colores para las graficas
-	private static final Color COLOR_A = Color.RED; // Color para A*
-	private static final Color COLOR_HPA = Color.ORANGE; // Color para HPA*
-	private static final Color COLOR_FONDO = Color.WHITE; // Color de fondo
-	private static final Color COLOR_RECUADROS = Color.BLACK; // Color para las líneas guía
-
 	// Dimensiones de las graficas
 	private static final int ANCHO = 1200;
 	private static final int ALTO = 1000;
 
 	// Nombres de los archivos generados
-	// Imágenes:
-	private static final String imagen1 = "CPU_Time.png";
-	private static final String imagen2 = "Expanded_Nodes.png";
 	// Ficheros con las muestras y sus resultados
-	private static final String fichero = "results.txt";
 	private static final String results = "datos.txt";
 
 	// Constante para imprimir una nueva línea
@@ -366,249 +344,6 @@ public class Test {
 	private boolean contienePunto(Punto[] array, Punto point) {
 		// Vemos si algún punto del array coincide con el punto dado
 		return Arrays.stream(array).anyMatch(i -> i != null && i.equals(point));
-	}
-
-	/**
-	 * Método para mostrar las gráficas (usa librerías externas JFreeChart y
-	 * JCommon)
-	 */
-	private void mostrarGraficas() {
-		// Gráficas del tiempo:
-		// A*
-		XYSeries serieA1 = new XYSeries("A*");
-		// HPA*
-		XYSeries serieHPA1 = new XYSeries("HPA*");
-
-		// Gráficas de los nodos abiertos
-		XYSeries serieA2 = new XYSeries("A*");
-		XYSeries serieHPA2 = new XYSeries("HPA*");
-
-		for (int i = 0; i < NPRUEBAS; i++) {
-			serieA1.add(longAstar[i], timeAstar[i]);
-			serieHPA1.add(longAstar[i], timeHPAstar[i]);
-			serieA2.add(longAstar[i], itAstar[i]);
-			serieHPA2.add(longAstar[i], itHPAAstar[i]);
-		}
-
-		// Añadimos a una colección
-		// Tiempo:
-		XYSeriesCollection collection1 = new XYSeriesCollection();
-		collection1.addSeries(serieA1);
-		collection1.addSeries(serieHPA1);
-
-		// Nodos abiertos:
-		XYSeriesCollection collection2 = new XYSeriesCollection();
-		collection2.addSeries(serieA2);
-		collection2.addSeries(serieHPA2);
-
-		// Guardamos las gráficas en un archivo.png
-		try {
-			// Gráfica del tiempo de ejecución
-			JFreeChart grafica1 = crearGrafica(collection1, "Tiempo de CPU", "Longitud de la solución",
-					"Tiempo total de CPU (segundos)");
-			// La exportamos a un PNG
-			ChartUtils.saveChartAsPNG(new File(imagen1), grafica1, ANCHO, ALTO);
-
-			// Gráfica de los nodos abiertos
-			JFreeChart grafica2 = crearGrafica(collection2, "Total de nodos expandidos", "Longitud de la solución",
-					"Número de nodos");
-			// La exportamos a un PNG
-			ChartUtils.saveChartAsPNG(new File(imagen2), grafica2, ANCHO, ALTO);
-
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-
-	}
-
-	/**
-	 * Método para crear la gráfica
-	 * 
-	 * @param dataset
-	 * @param titulo
-	 * @param ejeX
-	 * @param ejeY
-	 * @return
-	 */
-	private JFreeChart crearGrafica(XYSeriesCollection dataset, String titulo, String ejeX, String ejeY) {
-
-		// Creamos la gráfica de líneas
-		final JFreeChart chart = ChartFactory.createXYLineChart(titulo, ejeX, ejeY, dataset, PlotOrientation.VERTICAL,
-				true, // uso de leyenda
-				false, // uso de tooltips
-				false // uso de urls
-		);
-		// Establecemos el color de fondo
-		chart.setBackgroundPaint(COLOR_FONDO);
-
-		// Configuramos el contenido
-		XYPlot plot = (XYPlot) chart.getPlot();
-		configurarPlot(plot);
-
-		// Configuramos el eje X
-		NumberAxis domainAxis = (NumberAxis) plot.getDomainAxis();
-		configurarDomainAxis(domainAxis);
-
-		// final NumberAxis rangeAxis = (NumberAxis)plot.getRangeAxis();
-		// configurarRangeAxis(rangeAxis);
-
-		// Configuramos la manera de imprimir las líneas
-		XYLineAndShapeRenderer renderer = (XYLineAndShapeRenderer) plot.getRenderer();
-		configurarRendered(renderer);
-
-		return chart;
-	}
-
-	/**
-	 * Configuración del contenido del gráfico (se le da un color a las líneas guía)
-	 * 
-	 * @param plot
-	 */
-	private void configurarPlot(XYPlot plot) {
-		plot.setDomainGridlinePaint(COLOR_RECUADROS);
-		plot.setRangeGridlinePaint(COLOR_RECUADROS);
-	}
-
-	/**
-	 * Configuración del eje X de la gráfica (se muestran números enteros de 100 en
-	 * 100)
-	 * 
-	 * @param domainAxis
-	 */
-	private void configurarDomainAxis(NumberAxis domainAxis) {
-		domainAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-		domainAxis.setTickUnit(new NumberTickUnit(100));
-	}
-
-	/**
-	 * Configuración del eje Y de la gráfica (no se usa)
-	 * 
-	 * @param rangeAxis
-	 */
-	private void configurarRangeAxis(NumberAxis rangeAxis) {
-		rangeAxis.setStandardTickUnits(NumberAxis.createIntegerTickUnits());
-		rangeAxis.setTickUnit(new NumberTickUnit(0.1));
-		rangeAxis.setRange(0, 0.9);
-	}
-
-	/**
-	 * Método de configuración de las líneas de las series. Se añaden los círculos
-	 * en los puntos y se asignan los colores para cada serie
-	 * 
-	 * @param renderer
-	 */
-	private void configurarRendered(XYLineAndShapeRenderer renderer) {
-		renderer.setSeriesShapesVisible(0, true);
-		renderer.setSeriesShapesVisible(1, true);
-		renderer.setSeriesPaint(0, COLOR_A);
-		renderer.setSeriesPaint(1, COLOR_HPA);
-	}
-
-	/**
-	 * Método para guardar los resultados en un fichero
-	 */
-	private void guardarFichero() {
-		File file = new File(fichero);
-
-		try (FileWriter fw = new FileWriter(file)) {
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("Mapa empleado: " + map + newline);
-			sb.append("Dimensiones del mapa: " + height + "x" + width + newline);
-
-			sb.append(newline);
-			sb.append("Muestras generadas: " + NPRUEBAS + " pares de puntos." + newline);
-			sb.append("Puntos iniciales: {");
-
-			StringBuilder finals = new StringBuilder();
-			finals.append("Puntos finales: {");
-
-			// Datos para A*
-			StringBuilder times_A = new StringBuilder();
-			times_A.append("Valores obtenidos para A*:" + newline);
-			times_A.append("Tiempo de ejecución: {");
-			StringBuilder costs_A = new StringBuilder();
-			costs_A.append("Longitud de la solución: {");
-			StringBuilder mems_A = new StringBuilder();
-			mems_A.append("Nodos expandidos: {");
-
-			// Datos para HPA*
-			StringBuilder times_HPA = new StringBuilder();
-			times_HPA.append("Valores obtenidos para HPA*:" + newline);
-			times_HPA.append("Tiempo de ejecución: {");
-			StringBuilder costs_HPA = new StringBuilder();
-			costs_HPA.append("Longitud de la solución: {");
-			StringBuilder mems_HPA = new StringBuilder();
-			mems_HPA.append("Nodos expandidos: {");
-			StringBuilder q = new StringBuilder();
-			q.append("Porcentaje de error con respecto al camino óptimo: {");
-
-			for (int i = 0; i < NPRUEBAS; i++) {
-				// Datos generados
-				sb.append(iniciales[i]);
-				finals.append(finales[i]);
-				// Datos obtenidos por A*
-				times_A.append(timeAstar[i]);
-				costs_A.append(longAstar[i]);
-				mems_A.append(itAstar[i]);
-				// Datos obtenidos por HPA*
-				times_HPA.append(timeHPAstar[i]);
-				mems_HPA.append(itHPAAstar[i]);
-				costs_HPA.append(longHPAstar[i]);
-				// Calidad
-				if (longHPAstar[i] != 0 && longAstar[i] != 0) {
-					double d = (double) longHPAstar[i] - (double) longAstar[i];
-					d /= (double) longAstar[i];
-					d = Math.floor(d * 10000) / 100;
-					q.append(d + "%");
-				} else {
-					if (longHPAstar[i] == longAstar[i])
-						q.append("Sin solución");
-					else if (longAstar[i] == 0)
-						q.append("No tiene solución para A*");
-					else if (longHPAstar[i] == 0)
-						q.append("No tiene solución para HPA*");
-				}
-
-				if (i < NPRUEBAS - 1) {
-					sb.append(", ");
-					finals.append(", ");
-					times_A.append(", ");
-					costs_A.append(", ");
-					mems_A.append(", ");
-					times_HPA.append(", ");
-					costs_HPA.append(", ");
-					mems_HPA.append(", ");
-					q.append(", ");
-				} else {
-					sb.append("}" + newline);
-					finals.append("}" + newline);
-					times_A.append("}" + newline);
-					costs_A.append("}" + newline);
-					mems_A.append("}" + newline);
-					times_HPA.append("}" + newline);
-					costs_HPA.append("}" + newline);
-					mems_HPA.append("}" + newline);
-					q.append("}" + newline);
-				}
-			}
-
-			sb.append(finals);
-			sb.append(newline);
-			sb.append(times_A);
-			sb.append(costs_A);
-			sb.append(mems_A);
-			sb.append(newline);
-			sb.append(times_HPA);
-			sb.append(costs_HPA);
-			sb.append(mems_HPA);
-			sb.append(q);
-
-			fw.write(sb.toString());
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	/**

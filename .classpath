@@ -6,7 +6,5 @@
 			<attribute name="module" value="true"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry kind="lib" path="C:/Users/david/OneDrive/Escritorio/UMA/TFG/Librerias/jcommon-1.0.23/jcommon-1.0.23.jar" sourcepath="C:/Users/david/OneDrive/Escritorio/UMA/TFG/Librerias/jcommon-1.0.23/src"/>
-	<classpathentry kind="lib" path="C:/Users/david/OneDrive/Escritorio/UMA/TFG/Librerias/jfreechart-1.5.3.jar" sourcepath="C:/Users/david/OneDrive/Escritorio/UMA/TFG/Librerias/jfreechart-1.5.3/src"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
