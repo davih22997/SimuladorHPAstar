@@ -413,7 +413,16 @@ public class Mapa {
 
 			break;
 		case TIPO_TEST:
+			
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
+			// Cogemos la lista de clusters de HPAstar
+			ArrayList<Cluster> clusts = HPAstar.clusters;
+			// Creamos la variable con el índice del cluster del botón
+			int i2 = 0;
+			for (i2 = 0; i2 < clusts.size() && !clusts.get(i2).inCluster(aux); i2++)
+				continue;
+			// Vemos la tabla de los arcos externos
+			HPAstar.verTabla(i2);
 			break;
 		default:
 			break;

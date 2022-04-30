@@ -30,8 +30,8 @@ public class Test {
 
 	// Variables estáticas para definir el modo de operación
 	private static final int MODO_GRAFICAS = 0; // Modo de creación de gráficas
-	protected static final int MODO_ERROR_Astar = 1; // Modo para probar puntos que dan error en A*
-	protected static final int MODO_ERROR_HPAstar = 2; // Modo para probar puntos que dan error en HPA*
+	private static final int MODO_ERROR_Astar = 1; // Modo para probar puntos que dan error en A*
+	private static final int MODO_ERROR_HPAstar = 2; // Modo para probar puntos que dan error en HPA*
 
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
@@ -59,7 +59,9 @@ public class Test {
 	private int dCluster = HPAstar.CLUSTER_10X10;
 	// Datos que recogemos de HPA*:
 	// Datos de tiempo
-	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de ejecución de HPA*
+	private double[] timeESHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de introducción de
+															// los puntos inicial y final en HPA*
+	private double[] timeHPAstar = new double[NPRUEBAS]; // Array de NPRUEBAS muestras de tiempo de refinamiento de HPA*
 	// Datos de longitud de la solución (coste)
 	private int[] longHPAstar = new int[NPRUEBAS]; // Array de NPRUEBAS muestras de coste de HPA*
 	// Datos de nodos expandidos (iteraciones)
@@ -161,7 +163,7 @@ public class Test {
 				// Cogemos el tiempo de inicio
 				long start = System.nanoTime();
 
-				// Aplicamos HPA*
+				// Introducimos los puntos inicial y final en HPA*
 				HPAstar.TestHPAstar2(mapa);
 
 				// Guardamos los resultados obtenidos
@@ -169,6 +171,18 @@ public class Test {
 				// de inicio
 				long tfin = System.nanoTime() - start;
 				// Lo pasamos a segundos
+				timeESHPAstar[i] = ((double) tfin) / 10E9;
+
+				// Cogemos el tiempo de inicio
+				start = System.nanoTime();
+
+				// Aplicamos la parte A* en HPA*
+				HPAstar.TestHPAstar3(mapa);
+
+				// Guardamos los resultados obtenidos
+				// Tiempo: Para medir el tiempo, cogemos el tiempo actual y restamos el tiempo
+				// de inicio
+				tfin = System.nanoTime() - start;
 				timeHPAstar[i] = ((double) tfin) / 10E9;
 
 				// La longitud de la solucion
@@ -232,10 +246,12 @@ public class Test {
 			// Paso 2: Crear y mostrar el mapa
 			crearMostrarMapa(ini, fin);
 
+			// Cambiamos el tipo del mapa
+			mapa.setTipo(Mapa.TIPO_TEST);
+
 			// Paso 3: Aplicar algoritmo
 			// HPA*
-			HPAstar.TestPruebaHPAstar1(mapa, umbral, dCluster);
-			HPAstar.TestPruebaHPAstar2(mapa);
+			HPAstar.TestPruebaHPAstar(mapa, umbral, dCluster);
 
 			break;
 		}
@@ -625,23 +641,32 @@ public class Test {
 			sb.append("Tiempo_A*");
 			sb.append(space);
 			ndatos++;
-			// 6. Tiempo de HPA*:
-			sb.append("Tiempo_HPA*");
+			// 6. Tiempo de preprocesamiento en HPA*
+			sb.append("Tiempo_preprocesamiento_HPA*");
 			sb.append(space);
 			ndatos++;
-			// 7. Las iteraciones (o nº de nodos) de A*:
+			// 7. Tiempo de introducción de puntos inicial y final en HPA*
+			sb.append("Tiempo_ES_HPA*");
+			sb.append(space);
+			ndatos++;
+			// 8. Tiempo de refinamiento HPA*:
+			sb.append("Tiempo_refinamiento_HPA*");
+			sb.append(space);
+			ndatos++;
+			// 9. Las iteraciones (o nº de nodos) de A*:
 			sb.append("Nodos_A*");
 			sb.append(space);
 			ndatos++;
-			// 8. Las iteraciones (o nº de nodos) de HPA*:
+			// 10. Las iteraciones (o nº de nodos) de HPA*:
 			sb.append("Nodos_HPA*");
 			sb.append(space);
 			ndatos++;
-			// 9. El porcentaje de error
+			// 11. El porcentaje de error
 			sb.append("%error");
 			sb.append(newline);
 			ndatos++;
 
+			// Introducimos los datos
 			for (int i = 0; i < NPRUEBAS; i++) {
 
 				boolean nulo = longAstar[i] == 0;
@@ -662,6 +687,10 @@ public class Test {
 					}
 					sb.append(timeAstar[i]);
 					sb.append(space);
+					sb.append(pretime);
+					sb.append(space);
+					sb.append(timeESHPAstar[i]);
+					sb.append(space);
 					sb.append(timeHPAstar[i]);
 					sb.append(space);
 					sb.append(itAstar[i]);
@@ -677,11 +706,15 @@ public class Test {
 						sb.append(d);
 					}
 				} else {
+					if (longHPAstar[i] != 0)
+						System.out.println("Algo falla en A*. Puntos: " + iniciales[i] + ", " + finales[i]);
+
 					for (int j = 0; j < ndatos; j++) {
 						sb.append(nan);
 						if (j < (ndatos - 1))
 							sb.append(space);
 					}
+
 				}
 
 				if (i < (NPRUEBAS - 1)) {
@@ -696,18 +729,6 @@ public class Test {
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-	}
-
-	/**
-	 * Función para pausar hasta pulsar una tecla
-	 */
-	protected static void pressAnyKeyToContinue() {
-		Scanner teclado = new Scanner(System.in);
-		System.out.println("Press Enter key to continue...");
-		try {
-			teclado.nextLine();
-		} catch (Exception e) {
 		}
 	}
 

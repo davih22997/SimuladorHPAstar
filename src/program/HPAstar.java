@@ -390,11 +390,13 @@ public class HPAstar {
 		frame.setVisible(true);
 
 		// Lo añadimos a la lista de frames a eliminar de la interfaz
-		Interfaz.addFrame(frame);
+		if (modo == 0) {
+			Interfaz.addFrame(frame);
 
-		// Se escribe la acción en el logger
-		Interfaz.escribir("Mostrados los arcos y nodos internos del cluster " + index + ".\n");
-		Interfaz.escribir("(0 es el primer cluster; " + (clusters.size() - 1) + " es el último.\n");
+			// Se escribe la acción en el logger
+			Interfaz.escribir("Mostrados los arcos y nodos internos del cluster " + index + ".\n");
+			Interfaz.escribir("(0 es el primer cluster; " + (clusters.size() - 1) + " es el último.\n");
+		}
 	}
 
 	/**
@@ -952,7 +954,7 @@ public class HPAstar {
 	}
 
 	/**
-	 * Realiza el test de HPA* dados el mapa, un umbral y el tamaño de cluster
+	 * Realiza la parte de preprocesamiento de HPA* para el Test
 	 * 
 	 * @param mapa
 	 * @param umb
@@ -965,28 +967,45 @@ public class HPAstar {
 		definirEdges(mapa, umb);
 	}
 
+	/**
+	 * Realiza la parte de introducción de puntos inicial y final de HPA* para el
+	 * Test
+	 * 
+	 * @param mapa
+	 */
 	protected static void TestHPAstar2(Mapa mapa) {
 		// 3. Metemos los E/S
 		meterES(mapa);
+	}
+
+	/**
+	 * Realiza la parte de refinamiento de HPA* para el Test
+	 * 
+	 * @param mapa
+	 */
+	protected static void TestHPAstar3(Mapa mapa) {
 		// 4. Aplicamos A*
 		aplicarAstar(mapa);
 	}
 
-	protected static void TestPruebaHPAstar1(Mapa mapa, int umb, int tcluster) {
+	/**
+	 * Parte para probar puntos concretos en el Test de HPA*
+	 * 
+	 * @param mapa
+	 * @param umb
+	 * @param tcluster
+	 */
+	protected static void TestPruebaHPAstar(Mapa mapa, int umb, int tcluster) {
 		// 1. Definimos los clusters
 		definirClusters(mapa, tcluster, 2);
 		// 2. Creamos los arcos (internos y externos)
 		// a. Definimos los Edges
 		definirEdges(mapa, umb);
-
-	}
-
-	protected static void TestPruebaHPAstar2(Mapa mapa) {
-		// 2. Creamos los arcos (internos)
 		// b. Introducimos los E/S
 		meterES(mapa);
 		// 3. Aplicamos A*
 		aplicarAstar(mapa);
+
 	}
 
 	/**
