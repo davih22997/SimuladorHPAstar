@@ -50,8 +50,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final String number = "(([1-9][0-9]+)|[0-9])";
 
 	// Patrones que se usan
-	// Patrón lista
-	private static final Pattern patlist = Pattern.compile(space + "*[{].*[}]" + space + "*");
+	// Patrón lista -> En desuso porque si la lista es larga provoca un error de
+	// stackoverflow
+	// private static final Pattern patlist = Pattern.compile("(?s)" + space +
+	// "*[{](.|\\R)*[}](" + space + "|\\R)*");
 	// Patrón punto
 	private static final Pattern patpoint = Pattern.compile(
 			space + "*[(]" + space + "*" + number + space + "*," + space + "*" + number + space + "*[)]" + space + "*");
@@ -165,7 +167,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Copia de seguridad del mapa para HPA*
 	// private JButton[][] copiaMapa;
 
-	// Parte de datos para la simulación A*
+	// Parte de datos para la simulación A* (incluye a HPA*)
 	protected static JLabel datosAstar;
 
 	// Parte para la simulación de HPA*
@@ -702,6 +704,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 									dims.setSelectedItem(dimensiones[1]);
 								} else if (dim1 == 30 && dim2 == 20) {
 									dims.setSelectedItem(dimensiones[2]);
+								} else if (dim1 == 50 && dim2 == 50) {
+									dims.setSelectedItem(dimensiones[3]);
+								} else if (dim1 == 100 && dim2 == 100) {
+									dims.setSelectedItem(dimensiones[4]);
 								} else {
 									JOptionPane.showMessageDialog(new JFrame(),
 											"Las dimensiones dadas no se encuentran entre las opciones disponibles.\nNo se creará un mapa nuevo a partir del fichero.");
@@ -817,69 +823,97 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 							// Obstáculos: {Punto1, Punto2, ... }
 							String linea5 = sc.nextLine().toUpperCase();
+							while (sc.hasNextLine()) {
+								linea5 += newline + sc.nextLine().toUpperCase();
+							}
+
 							try (Scanner scan = new Scanner(linea5)) {
-								scan.useDelimiter(space + "*OBSTÁCULOS" + space + "*:" + space + "*");
+								scan.useDelimiter(space + "*OBSTÁCULOS" + space + "*:" + "(\r?\n|" + space + ")*");
 								// { lista_ptos }
 								String lista = scan.next();
 								// Comprobamos que siga el patrón lista
-								Matcher matlist = patlist.matcher(lista);
-								// Si no sigue el patrón, creamos una lista vacía.
-								if (!matlist.matches()) {
+								// Matcher matlist = patlist2.matcher(lista);
+								// -> Vemos que los patrones fallan si la lista es demasiado larga, por lo que
+								// vamos a hacerlo de otra forma
+								// 1. Comprobamos si el primer carácter es "{"
+								int i = 0;
+								while (i < lista.length() && lista.charAt(i) != '{'
+										&& (lista.charAt(i) == ' ' || lista.charAt(i) == '\t' || lista.charAt(i) == '\n'
+												|| lista.charAt(i) == '\r'))
+									i++;
+								// Si no encontramos el carácter '{'
+								if (i == lista.length() || lista.charAt(i) != '{')
 									JOptionPane.showMessageDialog(new JFrame(),
 											"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
-								} // Si lo sigue, operamos
 								else {
+									// Si no sigue el patrón, creamos una lista vacía.
+									lista = lista.substring(i);
+									i = lista.length() - 1;
+									while (i > 0 && lista.charAt(i) != '}'
+											&& (lista.charAt(i) == ' ' || lista.charAt(i) == '\t'
+													|| lista.charAt(i) == '\n' || lista.charAt(i) == '\r'))
+										i--;
 
-									// Quitamos el inicio de la lista
-									try (Scanner scan2 = new Scanner(lista.substring(1))) {
-										// booleano para comprobar si hay puntos ya definidos
-										boolean rep = false;
-
-										scan2.useDelimiter("([)]" + space + "*," + space + "*)" + "|([)]" + space
-												+ "*[}]" + space + "*)");
-
-										while (scan2.hasNext()) {
-											String p = scan2.next();
-											Matcher matpoint = patpoint.matcher(p + ")");
-											if (!matpoint.matches()) {
-												throw new Exception();
-											} else {
-												Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
-												if (obs.equals(pto_inicial) || obs.equals(pto_final)
-														|| obstaculos.contains(obs)) {
-													rep = true;
-												} else
-													obstaculos.add(obs);
-											}
-										}
-
-										for (Punto o : obstaculos) {
-											mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
-											// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
-											mapa.obstaculos.add(o);
-										}
-
-										if (rep) {
-											JOptionPane.showMessageDialog(new JFrame(),
-													"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
-										}
-
-										if (obstaculos.size() == 1)
-											log.append("Se ha añadido 1 obstáculo." + newline);
-										else
-											log.append("Se ha añadido un total de " + obstaculos.size() + " obstáculos."
-													+ newline);
-									} catch (Exception exp) {
+									// Si no encontramos el carácter
+									if (i == 0 || lista.charAt(i) != '}')
 										JOptionPane.showMessageDialog(new JFrame(),
-												"Valores no válidos para puntos. No se añadirán obstáculos.");
+												"La lista de obstáculos debe ser dada como lista. Se generará una lista vacía.");
+
+									// Si lo sigue, operamos
+									else {
+										// Cogemos la lista sin los corchetes
+										lista = lista.substring(0, i + 1);
+										try (Scanner scan2 = new Scanner(lista.substring(1))) {
+											// booleano para comprobar si hay puntos ya definidos
+											boolean rep = false;
+
+											scan2.useDelimiter("([)]" + space + "*," + "(\\R|" + space + ")*)" + "|([)]"
+													+ "(\\R|" + space + ")*[}]" + space + "*)");
+
+											while (scan2.hasNext()) {
+												String p = scan2.next();
+												Matcher matpoint = patpoint.matcher(p + ")");
+												if (!matpoint.matches()) {
+													throw new Exception();
+												} else {
+													Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
+													if (obs.equals(pto_inicial) || obs.equals(pto_final)
+															|| obstaculos.contains(obs)) {
+														rep = true;
+													} else
+														obstaculos.add(obs);
+												}
+											}
+
+											for (Punto o : obstaculos) {
+												mapa.pintarMapa(Mapa.cObs, o.getFila(), o.getCol());
+												// mapa.MatrizBotones[o.getFila()][o.getCol()].setBackground(Mapa.cObs);
+												mapa.obstaculos.add(o);
+											}
+
+											if (rep) {
+												JOptionPane.showMessageDialog(new JFrame(),
+														"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
+											}
+
+											if (obstaculos.size() == 1)
+												log.append("Se ha añadido 1 obstáculo." + newline);
+											else
+												log.append("Se ha añadido un total de " + obstaculos.size()
+														+ " obstáculos." + newline);
+										} catch (Exception exp) {
+											JOptionPane.showMessageDialog(new JFrame(),
+													"Valores no válidos para puntos. No se añadirán obstáculos.");
+										}
 									}
+
+									// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
+									// nuevamente, te la ordena)
+									Collections.sort(mapa.obstaculos);
+
+									log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
+
 								}
-
-								// Ordenamos la lista de obstaculos (si viene desordenada y le das a guardar
-								// nuevamente, te la ordena)
-								Collections.sort(mapa.obstaculos);
-
-								log.append("Cargados los datos relativos a la lista de obstáculos." + newline);
 
 							}
 
@@ -1117,12 +1151,12 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Si seleccionamos 4-vecinos
 					if (option.equals(numVecinos[0])) {
 						log.append("Simulación con 4 vecinos. Se aplica la distancia Manhattan." + newline);
-						Astar.BusquedaAstar(mapa, Astar.VECINOS_4);
+						Astar.busquedaAstar(mapa, Astar.VECINOS_4);
 					}
 					// Si seleccionamos 8-vecinos
 					else if (option.equals(numVecinos[1])) {
 						log.append("Simulación con 8 vecinos. Se aplica la distancia octil." + newline);
-						Astar.BusquedaAstar(mapa, Astar.VECINOS_8);
+						Astar.busquedaAstar(mapa, Astar.VECINOS_8);
 					}
 
 				}
@@ -1245,7 +1279,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						step++;
 						// 2. Desbloqueamos el botón de start
 						btnStart2.setEnabled(true);
-
 					}
 				}
 
@@ -1260,8 +1293,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
+					
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
+					// También metemos los puntos E/S (inicio/fin)
+					HPAstar.meterES(mapa);
 
 					log.append("Creación de nodos y arcos realizada." + newline);
 					// Incrementamos un "step"
@@ -1297,6 +1333,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				case 3:
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
+					// Activamos el datosAstar
+					datosAstar.setVisible(true);
 					// Aplicamos A*
 					HPAstar.aplicarAstar(mapa);
 
@@ -1304,8 +1342,9 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					// Incrementamos un "step"
 					step++;
 
+					// Dejamos bloqueado el botón de start
 					// Desbloqueamos el botón de start
-					btnStart2.setEnabled(true);
+					// btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
@@ -1333,6 +1372,10 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 			chbVerTabla.setEnabled(false);
 			// Y provocamos que no esté seleccionado por defecto
 			chbVerTabla.setSelected(false);
+			// Ocultamos y borramos el contenido de datosAstar
+			datosAstar.setVisible(false);
+			datosAstar.setText("");
+
 			// Activamos el botón de start
 			btnStart2.setEnabled(true);
 
@@ -1439,6 +1482,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					vB2umbral.setVisible(false);
 					// Reiniciamos el valor de la velocidad
 					restartVelocity();
+					// Reiniciamos el contenido de los datos
+					datosAstar.setText("");
 					// Dejamos por defecto seleccionado 4-Vecinos
 					vecCB.setSelectedIndex(0);
 					// Hacemos visible los elementos propios de A*
@@ -1451,6 +1496,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					panelCAstar.setVisible(false);
 					// Reiniciamos las variables de HPA*
 					step = 0;
+					// Reiniciamos el contenido de los datos
+					datosAstar.setText("");
 					// Dejamos por defecto seleccionada la opción para escoger las dimensiones de
 					// clusters
 					cbTCluster.setSelectedIndex(0);
@@ -1570,30 +1617,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	 * Devuelve el mapa a su estado original una vez parada una simulación
 	 */
 	private void reiniciarMapa() {
-		// Copiamos los datos
-		Punto pini = mapa.pto_inicial;
-		Punto pfin = mapa.pto_final;
-		ArrayList<Punto> lobs = mapa.obstaculos;
-
-		int tipo = mapa.getTipo();
-
-		// Y generamos un mapa nuevo, con los mismos datos pero sin la simulación hecha
-		mapa.destruirTablero();
-		mapa.crearTablero();
-
-		// Volvemos a pintar el mapa tal y como estaba tras seleccionar los puntos de
-		// interés
-		mapa.pintarMapa(Mapa.cInicial, pini);
-		mapa.pintarMapa(Mapa.cFinal, pfin);
-
-		for (Punto obs : lobs)
-			mapa.pintarMapa(Mapa.cObs, obs);
-
-		mapa.pto_inicial = pini;
-		mapa.pto_final = pfin;
-		mapa.obstaculos = lobs;
-
-		mapa.setTipo(tipo);
+		// Limpiamos el mapa
+		mapa.limpiarMapa();
 	}
 
 	/**

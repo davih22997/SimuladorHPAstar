@@ -19,6 +19,7 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
+import javax.swing.plaf.DimensionUIResource;
 
 public class Mapa {
 
@@ -42,6 +43,7 @@ public class Mapa {
 	public static final int TIPO_FINAL = 2;
 	public static final int TIPO_OBSTACULO = 3;
 	public static final int TIPO_VERTABLA = 4;
+	public static final int TIPO_TEST = 5;
 
 	// Variable para controlar el tipo del mapa al pulsar un botón
 	private int tipo;
@@ -56,8 +58,8 @@ public class Mapa {
 	private int tamX = 0; // X -> ancho
 
 	// Dimensiones en píxeles del mapa
-	private final int dimY = 650; // Y -> alto
-	private final int dimX = 600; // X -> ancho
+	private int dimY = 650; // Y -> alto
+	private int dimX = 600; // X -> ancho
 
 	// Elementos del mapa
 	protected JPanel tablero;
@@ -137,6 +139,22 @@ public class Mapa {
 	}
 
 	/**
+	 * Cambia el ancho y el alto del mapa
+	 * 
+	 * @param height
+	 * @param width
+	 */
+	public void setSize(int height, int width) {
+		this.dimX = width;
+		this.dimY = height;
+		tipo = TIPO_TEST;
+
+		initComponents();
+		destruirTablero();
+		crearTablero();
+	}
+
+	/**
 	 * Inicializa el tablero
 	 */
 	private void initComponents() {
@@ -182,7 +200,7 @@ public class Mapa {
 			GridBagConstraints gbc = new GridBagConstraints();
 
 			// Se obtiene las dimensiones de cada botón
-			getDimButtons(dY, dX);
+			getDimButtons(dX, dY);
 
 			// Se declaran los contadores a utilizar
 			// int contX, contY;
@@ -194,19 +212,15 @@ public class Mapa {
 					// Se le asignan sus dimensiones (ancho, alto)
 					// bNew.setSize(tamX, tamY);
 
-					// Si son iguales, el tamaño será el alto (ya que es más alto el mapa)
-					if (dY == dX)
-						bNew.setPreferredSize(new Dimension(tamY, tamY));
-					// Si hay más filas que columnas (más alto que largo), se coge el tamaño de
-					// columna (ancho)
-					else if (dX < dY)
+					// Debe ser un cuadrado:
+					if (tamX == tamY)
+						bNew.setPreferredSize(new Dimension(tamY, tamX));
+					else if (tamX < tamY)
 						bNew.setPreferredSize(new Dimension(tamX, tamX));
-
-					// Si hay más filas que columnas, se coge el tamaño de fila (largo)
 					else
 						bNew.setPreferredSize(new Dimension(tamY, tamY));
 
-					// se asigna un texto con la posición del botón en la matriz al botón, al
+					// Se asigna un texto con la posición del botón en la matriz al botón, al
 					// tooltip del botón
 					bNew.setToolTipText(Integer.toString(contY) + ", " + Integer.toString(contX));
 					// Se agrega a la matriz el botón
@@ -398,6 +412,18 @@ public class Mapa {
 			HPAstar.verTabla(i);
 
 			break;
+		case TIPO_TEST:
+			
+			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
+			// Cogemos la lista de clusters de HPAstar
+			ArrayList<Cluster> clusts = HPAstar.clusters;
+			// Creamos la variable con el índice del cluster del botón
+			int i2 = 0;
+			for (i2 = 0; i2 < clusts.size() && !clusts.get(i2).inCluster(aux); i2++)
+				continue;
+			// Vemos la tabla de los arcos externos
+			HPAstar.verTabla(i2);
+			break;
 		default:
 			break;
 
@@ -477,12 +503,13 @@ public class Mapa {
 		tamY = dimY / cY;
 
 	}
-	
+
 	/**
 	 * Función para obtener las dimensiones de los botones
+	 * 
 	 * @return
 	 */
-	public Dimension getDimsButton () {
+	public Dimension getDimsButton() {
 		return MatrizBotones[0][0].getPreferredSize();
 	}
 
@@ -514,6 +541,32 @@ public class Mapa {
 	 */
 	public void pintarBorde(Border border, int fila, int columna) {
 		MatrizBotones[fila][columna].setBorder(border);
+	}
+
+	/**
+	 * Método para limpiar el mapa (tras hacer A* o HPA*, o tras detener la
+	 * simulación)
+	 */
+	public void limpiarMapa() {
+		// Coloreamos del color original
+		for (int i = 0; i < dY; i++)
+			for (int j = 0; j < dX; j++) {
+				pintarMapa(cDefault, i, j);
+				pintarBorde(HPAstar.defaultborder, i, j);
+			}
+
+		// Pintamos de nuevo el punto inicial
+		if (pto_inicial != null)
+			pintarMapa(cInicial, pto_inicial);
+
+		// Pintamos de nuevo el punto final
+		if (pto_final != null)
+			pintarMapa(cFinal, pto_final);
+
+		// Pintamos los obstáculos
+		for (Punto o : obstaculos)
+			pintarMapa(cObs, o);
+
 	}
 
 }

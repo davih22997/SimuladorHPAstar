@@ -6,6 +6,7 @@ import java.util.Objects;
 public class Arco {
 	protected Punto p1;
 	protected Punto p2;
+	boolean externo;
 
 	public Arco(Punto p1, Punto p2) {
 		this.p1 = p1;
@@ -20,7 +21,7 @@ public class Arco {
 	@Override
 	public boolean equals(Object o) {
 		// Se comparan los dos puntos
-		return o instanceof Arco ? Objects.equals(p1, ((Arco) o).p1) && Objects.equals(p2, ((Arco) o).p2) : false;
+		return o instanceof Arco ? (Objects.equals(p1, ((Arco) o).p1) && Objects.equals(p2, ((Arco) o).p2)) : false;
 	}
 
 	@Override

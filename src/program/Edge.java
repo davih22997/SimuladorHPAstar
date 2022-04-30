@@ -1,7 +1,7 @@
 package program;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Objects;
 
@@ -11,14 +11,14 @@ import java.util.Objects;
  * @author david
  *
  */
-public class Edge implements Cloneable {
+public class Edge implements Cloneable, Comparable<Edge>, Comparator<Edge> {
 
 	// Los puntos que se unen entre sí
 	protected Punto pini;
 	protected Punto pfin;
 
 	// El coste entre un punto y otro
-	protected double coste;
+	protected int coste;
 
 	// Camino (sucesión de puntos) que hay entre un punto y otro
 	protected ArrayList<Punto> camino;
@@ -41,7 +41,7 @@ public class Edge implements Cloneable {
 		this.pini = pini;
 		this.pfin = pfin;
 		// El coste de llegar de un punto a otro será 1
-		coste = 1;
+		coste = 100;
 		// El camino será los dos puntos
 		camino.add(pini);
 		camino.add(pfin);
@@ -55,7 +55,7 @@ public class Edge implements Cloneable {
 	 * @param camino
 	 * @param coste
 	 */
-	public void intraEdge(Punto pini, Punto pfin, ArrayList<Punto> camino, double coste) {
+	public void intraEdge(Punto pini, Punto pfin, ArrayList<Punto> camino, int coste) {
 		this.pini = pini;
 		this.pfin = pfin;
 		this.camino = camino;
@@ -73,7 +73,7 @@ public class Edge implements Cloneable {
 		e.pini = pfin;
 		e.coste = coste;
 
-		for(int i = camino.size() - 1 ; i >= 0; i--) {
+		for (int i = camino.size() - 1; i >= 0; i--) {
 			e.camino.add(camino.get(i));
 		}
 
@@ -152,6 +152,28 @@ public class Edge implements Cloneable {
 
 		return res;
 	}
-	
+
+	@Override
+	public int compareTo(Edge e) {
+		return this.pfin.compareTo(e.pfin);
+	}
+
+	@Override
+	public int compare(Edge e1, Edge e2) {
+		// Los puntos van ordenados en primer lugar teniendo en cuenta su fila, y
+		// después su columna
+		int val = 0;
+		Punto p1 = e1.pfin;
+		Punto p2 = e2.pfin;
+
+		if (p1.getFila() == p2.getFila())
+			val = p1.getCol() - p2.getCol();
+		else if (p1.getFila() > p2.getFila())
+			val = 1;
+		else
+			val = -1;
+
+		return val;
+	}
 
 }

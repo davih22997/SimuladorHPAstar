@@ -21,9 +21,11 @@ public class Astar {
 	 *
 	 */
 	static class Datos {
-		double coste;
+		int coste;
 		Punto p;
 		Datos p_anterior;
+		// Longitud del camino
+		int longitud;
 
 		/**
 		 * Crea los datos iniciales (sin datos anteriores)
@@ -31,7 +33,7 @@ public class Astar {
 		 * @param coste
 		 * @param p
 		 */
-		public Datos(double coste, Punto p) {
+		public Datos(int coste, Punto p) {
 			this(coste, p, null);
 		}
 
@@ -43,9 +45,17 @@ public class Astar {
 		 * @param p
 		 * @param anterior
 		 */
-		public Datos(double coste, Punto p, Datos anterior) {
+		public Datos(int coste, Punto p, Datos anterior) {
 			this.coste = coste;
 			this.p = p;
+			p_anterior = anterior;
+			longitud = anterior != null ? anterior.longitud + 1 : 1;
+		}
+
+		public Datos(int coste, Punto p, int longitud, Datos anterior) {
+			this.coste = coste;
+			this.p = p;
+			this.longitud = anterior.longitud + longitud;
 			p_anterior = anterior;
 		}
 
@@ -69,8 +79,12 @@ public class Astar {
 
 	// Variables que vamos a usar para la simulación de A*
 	// Datos de la simulación
+	// Cantidad de nodos abiertos
 	protected static int memoria = 0;
+	// Cantidad de iteraciones
 	protected static int iteraciones = 0;
+	// Longitud de la solución (de haberla)
+	protected static int longitud = 0;
 
 	// Temporizador con el que se irá coloreando el mapa
 	protected static Timer timer;
@@ -88,10 +102,12 @@ public class Astar {
 	 * 
 	 * @param mapa
 	 */
-	public static void BusquedaAstar(Mapa mapa, int modo) {
+	public static void busquedaAstar(Mapa mapa, int modo) {
+		// Inicializamos la memoria y las iteraciones
 		memoria = 1;
 		iteraciones = 0;
 
+		// Lo mostramos
 		Interfaz.datosAstar
 				.setText(new String("Memoria usada: ") + Astar.memoria + "    " + "Iteraciones: " + Astar.iteraciones);
 
@@ -148,9 +164,8 @@ public class Astar {
 					// Comprobamos cada vecino del punto actual (sin contar obstaculos)
 					int cantMem = 0;
 					for (Punto p : vecinos) {
-
 						// Calculamos la distancia para añadirla al coste
-						double distancia = 1;
+						int distancia = 100;
 						// Si el modo es VECINOS_4, la distancia con sus vecinos va a ser siempre 1; sin
 						// embargo, si es VECINOS_8, la distancia puede ser 1 ó raíz de 2 con respecto
 						// al punto actual
@@ -190,7 +205,6 @@ public class Astar {
 								abiertos.add(d);
 							}
 						}
-
 					}
 
 					// Sumamos una iteración y la cantidad de memoria usada
@@ -207,6 +221,7 @@ public class Astar {
 					if (Interfaz.btnStop.isEnabled() && !abiertos.isEmpty()
 							&& abiertos.peek().p.equals(mapa.pto_final)) {
 						Datos d = abiertos.poll();
+						longitud = d.longitud;
 						while (!d.p_anterior.p.equals(mapa.pto_inicial)) {
 							d = d.p_anterior;
 							mapa.pintarMapa(Mapa.cRecorrido, d.p.getFila(), d.p.getCol());
@@ -214,7 +229,8 @@ public class Astar {
 
 						timer.stop();
 						Interfaz.btnStart.setEnabled(false);
-						JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se encontró solución. Su longitud es de " + longitud);
 					}
 
 					// 2. Si no la encuentra: simplemente lo indica
@@ -238,6 +254,16 @@ public class Astar {
 	 * definidos los nodos y arcos
 	 */
 	public static void busquedaEnHPAstar(Mapa mapa, int modo) {
+
+		// Inicializamos memoria e iteraciones
+		HPAstar.refmemoria = 1;
+		HPAstar.refiters = 0;
+
+		// Lo mostramos
+		if (HPAstar.modo == 0)
+			Interfaz.datosAstar.setText(
+					new String("Memoria usada: ") + HPAstar.refmemoria + "    " + "Iteraciones: " + HPAstar.refiters);
+
 		// Se crea la lista de puntos cerrados (ya visitados)
 		ArrayList<Datos> cerrados = new ArrayList<>();
 
@@ -258,7 +284,7 @@ public class Astar {
 
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
-			sucesores = HPAstar.sucesores.get(actual.p);
+			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
 
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
@@ -268,20 +294,30 @@ public class Astar {
 			for (Punto p : sucesores) {
 				// Creamos el arco entre los dos puntos
 				Arco arco = new Arco(actual.p, p);
+
 				// Calculamos la distancia (coste) con respecto al punto
-				double dist = HPAstar.costes.get(arco);
+				int dist = HPAstar.costes.get(arco);
 
 				// Además, le añadimos el coste acumulado
 				dist += actual.coste;
 
+				// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
+				int longi = HPAstar.caminos.get(arco).size() - 1;
+
 				// Creamos una estructura tipo datos para el punto
-				Datos d = new Datos(dist, p, actual);
+				Datos d = new Datos(dist, p, longi, actual);
 
 				// Si el punto vecino no está en la cola:
-				if ((!abiertos.contains(d)))
+				if ((!abiertos.contains(d))) {
+					// Pintamos el mapa
+					if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
+						mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
+					}
 					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
 					abiertos.add(d);
-
+					// Incrementamos la cantidad de nodos expandidos
+					HPAstar.refmemoria++;
+				}
 				// O si está en la cola comprobamos si ya tiene menos pasos:
 				else {
 					Iterator<Datos> it = abiertos.iterator();
@@ -298,13 +334,21 @@ public class Astar {
 					}
 				}
 			}
+			// Incrementamos las iteraciones
+			HPAstar.refiters++;
 
+			// Y vamos mostrando esos datos
+			if (HPAstar.modo == 0)
+				Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
+						+ "Iteraciones: " + HPAstar.refiters);
 		}
 
 		// Imprimimos el resultado
 		// 1. Si la encuentra: Muestra el camino y te lo indica.
 		if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
 			Datos d = abiertos.poll();
+			HPAstar.longitud = d.longitud;
+
 			while (d.p_anterior != null) {
 				// Vamos a pintar todo el recorrido
 				// 1. Cogemos el punto anterior
@@ -316,8 +360,9 @@ public class Astar {
 				// siguiente
 				for (Punto pt : HPAstar.caminos.get(new Arco(p, d.p))) {
 					// Coloreamos de rosa si no es un nodo
-					if (!HPAstar.sucesores.containsKey(pt))
+					if (!HPAstar.sucesores.containsKey(pt)) {
 						mapa.pintarMapa(Mapa.cRecorrido, pt.getFila(), pt.getCol());
+					}
 
 					// Si es un nodo y no es punto inicial ni final, pintamos de rosa oscuro
 					if (HPAstar.sucesores.keySet().contains(pt)
@@ -326,15 +371,202 @@ public class Astar {
 
 				}
 			}
-
-			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución.");
+			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + HPAstar.longitud);
 		}
 
 		// 2. Si no la encuentra: simplemente lo indica
 		else if (abiertos.isEmpty()) {
 			JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
 		}
+	}
 
+	/**
+	 * Método para aplicar Astar desde la clase Test (sin Timers) y sin dibujar
+	 * 
+	 * @param mapa
+	 */
+	protected static void testAstar(Mapa mapa, int modo, boolean debug) {
+		// Se crea la lista de puntos cerrados (ya visitados)
+		ArrayList<Datos> cerrados = new ArrayList<>();
+
+		// Se crea una lista de sucesores ordenada según el coste que tenga
+		PriorityQueue<Datos> abiertos = crearAbiertos(mapa, modo);
+
+		// Inicialmente, añadimos el punto inicial
+		abiertos.add(new Datos(0, mapa.pto_inicial));
+
+		iteraciones = 0;
+		memoria = 1;
+
+		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
+		// encontremos el punto final
+		while (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
+			// El punto con el menor coste
+			Datos actual = abiertos.poll();
+
+			// Lo añadimos a los puntos ya visitados (cerrados)
+			cerrados.add(actual);
+
+			// Pintamos el mapa según lo que vamos explorando (con excepción del pto_inicial
+			// que se queda en verde
+			if (debug && !actual.p.equals(mapa.pto_inicial)) {
+				mapa.pintarMapa(Mapa.cCerrado, actual.p.getFila(), actual.p.getCol());
+			}
+
+			// Cogemos los sucesores del punto
+			ArrayList<Punto> sucesores = actual.p.vecinos_8(mapa.getFilas(), mapa.getCols());
+
+			sucesores.removeAll(mapa.obstaculos);
+			// Descartamos los puntos ya analizados
+			for (Datos d : cerrados)
+				sucesores.remove(d.p);
+
+			// Creamos un contador de memoria
+			int cantMem = 0;
+			// Vamos comprobando los sucesores
+			for (Punto p : sucesores) {
+				// Calculamos la distancia (coste) con respecto al punto
+				int dist = p.distOctil(actual.p);
+
+				// Además, le añadimos el coste acumulado
+				dist += actual.coste;
+
+				// Creamos una estructura tipo datos para el punto
+				Datos d = new Datos(dist, p, actual);
+
+				// Si el punto vecino no está en la cola (se abre un nuevo nodo)
+				if ((!abiertos.contains(d))) {
+					// Pintamos el mapa
+					if (debug && !p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
+						mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
+					}
+					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
+					abiertos.add(d);
+					// Incrementamos el contador de nodos abiertos
+					cantMem++;
+				}
+
+				// O si está en la cola comprobamos si ya tiene menos pasos:
+				else {
+					Iterator<Datos> it = abiertos.iterator();
+					Datos d2 = it.next();
+
+					while (!d2.p.equals(p) && it.hasNext())
+						d2 = it.next();
+
+					// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
+					// la lista
+					if (dist < d2.coste) {
+						abiertos.remove(d2);
+						abiertos.add(d);
+					}
+				}
+
+			}
+			// Sumamos los nodos abiertos a la memoria usada
+			memoria += cantMem;
+			iteraciones++;
+		}
+
+		// Recogemos la longitud del camino
+		Datos d = abiertos.peek();
+		longitud = d != null ? d.longitud : 0;
+
+		if (debug && d != null) {
+			d = abiertos.poll();
+			longitud = d.longitud;
+			while (!d.p_anterior.p.equals(mapa.pto_inicial)) {
+				d = d.p_anterior;
+				mapa.pintarMapa(Mapa.cRecorrido, d.p.getFila(), d.p.getCol());
+			}
+			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + longitud);
+		}
+
+	}
+
+	/**
+	 * Método que será llamado en HPAstar para aplicar A* en Test una vez que
+	 * tenemos definidos los nodos y arcos
+	 * 
+	 * @param mapa
+	 * @param modo
+	 */
+	protected static void testEnHPAstar(Mapa mapa, int modo) {
+		// Se crea la lista de puntos cerrados (ya visitados)
+		ArrayList<Datos> cerrados = new ArrayList<>();
+
+		// Se crea una lista de sucesores ordenada según el coste que tenga
+		PriorityQueue<Datos> abiertos = crearAbiertos(mapa, modo);
+
+		// Inicialmente, añadimos el punto inicial
+		abiertos.add(new Datos(0, mapa.pto_inicial));
+
+		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
+		// encontremos el punto final
+		while (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
+			// El punto con el menor coste
+			Datos actual = abiertos.poll();
+
+			// Lo añadimos a los puntos ya visitados (cerrados)
+			cerrados.add(actual);
+
+			// Cogemos los sucesores del punto
+			ArrayList<Punto> sucesores = new ArrayList<>();
+			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
+
+			// Descartamos los puntos ya analizados
+			for (Datos d : cerrados)
+				sucesores.remove(d.p);
+
+			// Vamos comprobando los sucesores
+			for (Punto p : sucesores) {
+				// Creamos el arco entre los dos puntos
+				Arco arco = new Arco(actual.p, p);
+				// Calculamos la distancia (coste) con respecto al punto
+				int dist = HPAstar.costes.get(arco);
+
+				// Además, le añadimos el coste acumulado
+				dist += actual.coste;
+
+				// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
+				int longi = HPAstar.caminos.get(arco).size() - 1;
+
+				// Creamos una estructura tipo datos para el punto
+				Datos d = new Datos(dist, p, longi, actual);
+
+				// Si el punto vecino no está en la cola:
+				if ((!abiertos.contains(d))) {
+					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
+					abiertos.add(d);
+					// Incrementamos la cantidad de nodos expandidos
+					HPAstar.refmemoria++;
+				}
+
+				// O si está en la cola comprobamos si ya tiene menos pasos:
+				else {
+					Iterator<Datos> it = abiertos.iterator();
+					Datos d2 = it.next();
+
+					while (!d2.p.equals(p) && it.hasNext())
+						d2 = it.next();
+
+					// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
+					// la lista
+					if (dist < d2.coste) {
+						abiertos.remove(d2);
+						abiertos.add(d);
+					}
+				}
+
+			}
+
+			// Incrementamos las iteraciones
+			HPAstar.refiters++;
+		}
+
+		// Recogemos la longitud del camino
+		Datos d = abiertos.peek();
+		HPAstar.longitud = d != null ? d.longitud : 0;
 	}
 
 	/**
@@ -349,9 +581,9 @@ public class Astar {
 		PriorityQueue<Datos> abiertos = new PriorityQueue<>(new Comparator<Datos>() {
 			@Override
 			public int compare(Datos d1, Datos d2) {
-				// Primero, se tiene en cuenta e lque menos coste tiene
-				double c1 = d1.coste;
-				double c2 = d2.coste;
+				// Primero, se tiene en cuenta el que menos coste tiene
+				int c1 = d1.coste;
+				int c2 = d2.coste;
 
 				Punto p1 = d1.p;
 				Punto p2 = d2.p;
