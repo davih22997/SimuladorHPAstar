@@ -282,6 +282,10 @@ public class Astar {
 			// Lo añadimos a los puntos ya visitados (cerrados)
 			cerrados.add(actual);
 
+			if (!actual.p.equals(mapa.pto_inicial)) 
+				mapa.pintarMapa(Mapa.cCerrado, actual.p.getFila(), actual.p.getCol());
+			
+
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
 			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
