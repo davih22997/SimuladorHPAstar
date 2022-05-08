@@ -176,30 +176,6 @@ public class Test {
 			}
 
 			// 3. Gráficas:
-			// Son 2 gráficas. En ambas debe obtenerse:
-			// -> La longitud de la solución (se puede usar el coste total)
-			// Gráfica 1: Comparativa entre el número de nodos expandidos y la longitud de
-			// la solución
-			// Debe obtenerse:
-			// -> El número de nodos expandidos (memoria)
-			// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
-			// primer nivel)
-
-			// Gráfica 2: Compara los tiempos de CPU
-			// Debe obtenerse:
-			// -> El tiempo de ejecución
-			// -> Para HPA*, deben sumarse el preprocesado y el refinamiento (sería el
-			// primer nivel)
-
-			// Gráfica 3: Calidad de la solución
-			// Debe obtenerse:
-			// -> El porcentaje de error
-
-			// 3. Mostrar gráficas -> JFreeChart
-			// mostrarGraficas();
-			// 4. Guardar en fichero los resultados
-			// guardarFichero();
-
 			// Guardamos el fichero con formato para MatLab
 			guardarResultados();
 			break;

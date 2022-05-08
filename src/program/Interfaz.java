@@ -61,7 +61,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
 	// Lista de las dimensiones de mapa posibles a escoger
-	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50", "100x100" };
+	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50" };
 
 	// Lista de números de vecinos para el algoritmo A*
 	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
@@ -1142,7 +1142,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				// Si en cambio, ya fue iniciada la simulación
 				else {
 					// Si se ha pulsado el botón de start para pausar la simulación
-					if (start == true) {
+					if (start) {
 						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 						start = false;
 						Astar.timer.stop();
@@ -1310,20 +1310,35 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					break;
 				// Cuarto paso -> Aplicar A*
 				case 3:
-					// Bloqueamos el botón de start
-					btnStart2.setEnabled(false);
 					// Activamos el datosAstar
 					datosAstar.setVisible(true);
+					// Ponemos el icono de pause
+					btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+					// Y ponemos la variable start a true
+					start = true;
+
 					// Aplicamos A*
 					HPAstar.aplicarAstar(mapa);
 
 					log.append("Aplicado A* para calcular el menor coste entre los nodos" + newline);
 					// Incrementamos un "step"
 					step++;
+					break;
+				// Para controlar el botón de pausa:
+				case 4:
+					// Si se ha pulsado el botón de start para pausar la simulación
+					if (start) {
+						btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+						start = false;
+						Astar.timer.stop();
+					}
+					// Si se ha pulsado y la simulación continúa en marcha
+					else {
+						btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+						start = true;
+						Astar.timer.restart();
+					}
 
-					// Dejamos bloqueado el botón de start
-					// Desbloqueamos el botón de start
-					// btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
@@ -1347,6 +1362,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+			// Ponemos de nuevo el botón start como estaba por defecto
+			btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 			// Bloqueamos el botón de ver tabla
 			chbVerTabla.setEnabled(false);
 			// Y provocamos que no esté seleccionado por defecto
@@ -1565,8 +1582,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						mapaNuevo(30, 20);
 					} else if (option.equals(dimensiones[3])) { // 50x50
 						mapaNuevo(50, 50);
-					} else if (option.equals(dimensiones[4])) { // 100x100
-						mapaNuevo(100, 100);
 					}
 
 					// 2. Desbloqueamos el botón de borrar contenido del mapa

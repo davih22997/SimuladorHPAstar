@@ -268,98 +268,106 @@ public class HPAstar {
 		panel.setLayout(new BorderLayout());
 		panel.setBackground(Color.WHITE);
 
-		// Creamos el título para mostrar la lista de nodos
-		JLabel lnodos = new JLabel("Lista de nodos");
-		lnodos.setAlignmentX(JFrame.LEFT_ALIGNMENT);
-		lnodos.setFont(new Font("Verdana", Font.BOLD, 18));
+		if (tam >= 1) {
+			// Creamos el título para mostrar la lista de nodos
+			JLabel lnodos = new JLabel("Lista de nodos");
+			lnodos.setAlignmentX(JFrame.LEFT_ALIGNMENT);
+			lnodos.setFont(new Font("Verdana", Font.BOLD, 18));
 
-		// Le introducimos un margen inferior
-		Border marginbottom = new EmptyBorder(0, 0, 5, 0);
-		lnodos.setBorder(new CompoundBorder(lnodos.getBorder(), marginbottom));
+			// Le introducimos un margen inferior
+			Border marginbottom = new EmptyBorder(0, 0, 5, 0);
+			lnodos.setBorder(new CompoundBorder(lnodos.getBorder(), marginbottom));
 
-		// Creamos un array con los datos de cada nodo
-		JLabel[] nodes = new JLabel[tam];
+			// Creamos un array con los datos de cada nodo
+			JLabel[] nodes = new JLabel[tam];
 
-		// Vamos añadiendo
-		for (int i = 0; i < tam; i++) {
-			nodes[i] = new JLabel(new String("n" + index + "," + i + ": " + nodos.get(i)));
-			nodes[i].setAlignmentX(JFrame.LEFT_ALIGNMENT);
-		}
-		nodes[tam - 1].setBorder(new CompoundBorder(nodes[tam - 1].getBorder(), marginbottom));
-
-		// Creamos el título para la tabla
-		JLabel ltabla = new JLabel("Arcos internos");
-		ltabla.setAlignmentX(JFrame.LEFT_ALIGNMENT);
-		ltabla.setFont(new Font("Verdana", Font.BOLD, 18));
-		ltabla.setBorder(new CompoundBorder(ltabla.getBorder(), marginbottom));
-
-		// Creamos una caja vertical para agrupar los datos:
-		Box bNodos = Box.createVerticalBox();
-		bNodos.add(lnodos);
-		for (JLabel node : nodes)
-			bNodos.add(node);
-
-		bNodos.add(ltabla);
-
-		// Añadimos los datos al panel
-		panel.add(bNodos, BorderLayout.WEST);
-
-		// Creamos los datos de la tabla
-		Object[][] data = new Object[tam][tam + 1];
-		String[] columns = new String[tam + 1];
-
-		columns[0] = "";
-		ArrayList<Punto> visitados = new ArrayList<>();
-
-		for (int i = 0; i < nodos.size(); i++) {
-			Punto p = nodos.get(i);
-			visitados.add(p);
-			String name = "n" + index + "," + i;
-			columns[i + 1] = name;
-			data[i][0] = name;
-
-			ArrayList<Edge> edges = p.getArcosInternos();
-
-			for (int j = 1; j <= i + 1; j++) {
-				data[i][j] = "X";
+			// Vamos añadiendo
+			for (int i = 0; i < tam; i++) {
+				nodes[i] = new JLabel(new String("n" + index + "," + i + ": " + nodos.get(i)));
+				nodes[i].setAlignmentX(JFrame.LEFT_ALIGNMENT);
 			}
-			int idx = i + 2;
-			for (Edge edge : edges) {
-				if (!visitados.contains(edge.pfin)) {
-					if (edge.coste != Integer.MAX_VALUE)
-						data[i][idx++] = edge.coste;
-					else
-						data[i][idx++] = "Infinito";
+
+			nodes[tam - 1].setBorder(new CompoundBorder(nodes[tam - 1].getBorder(), marginbottom));
+
+			// Creamos el título para la tabla
+			JLabel ltabla = new JLabel("Arcos internos");
+			ltabla.setAlignmentX(JFrame.LEFT_ALIGNMENT);
+			ltabla.setFont(new Font("Verdana", Font.BOLD, 18));
+			ltabla.setBorder(new CompoundBorder(ltabla.getBorder(), marginbottom));
+
+			// Creamos una caja vertical para agrupar los datos:
+			Box bNodos = Box.createVerticalBox();
+			bNodos.add(lnodos);
+			for (JLabel node : nodes)
+				bNodos.add(node);
+
+			bNodos.add(ltabla);
+
+			// Añadimos los datos al panel
+			panel.add(bNodos, BorderLayout.WEST);
+
+			// Creamos los datos de la tabla
+			Object[][] data = new Object[tam][tam + 1];
+			String[] columns = new String[tam + 1];
+
+			columns[0] = "";
+			ArrayList<Punto> visitados = new ArrayList<>();
+
+			for (int i = 0; i < nodos.size(); i++) {
+				Punto p = nodos.get(i);
+				visitados.add(p);
+				String name = "n" + index + "," + i;
+				columns[i + 1] = name;
+				data[i][0] = name;
+
+				ArrayList<Edge> edges = p.getArcosInternos();
+
+				for (int j = 1; j <= i + 1; j++) {
+					data[i][j] = "X";
 				}
+				int idx = i + 2;
+				for (Edge edge : edges) {
+					if (!visitados.contains(edge.pfin)) {
+						if (edge.coste != Integer.MAX_VALUE)
+							data[i][idx++] = edge.coste;
+						else
+							data[i][idx++] = "Infinito";
+					}
+				}
+
 			}
 
+			// Creamos la tabla con los datos
+			JTable tabla = new JTable(data, columns);
+
+			// Configuramos para que el tamaño sea suficiente para mostrar todos los datos
+			tabla.setFillsViewportHeight(true);
+			tabla.setPreferredScrollableViewportSize(tabla.getPreferredScrollableViewportSize());
+			tabla.setFillsViewportHeight(true);
+			// Cancelamos que se pueda modificar el tamaño de las columnas
+			tabla.getTableHeader().setResizingAllowed(false);
+
+			// Centramos el texto dentro de la tabla
+			DefaultTableCellRenderer center = new DefaultTableCellRenderer();
+			center.setHorizontalAlignment(SwingConstants.CENTER);
+			tabla.setDefaultRenderer(Object.class, center);
+
+			// Agrupamos la tabla y su título en una caja vertical
+			Box bTabla = Box.createVerticalBox();
+			// bTabla.add(ltabla);
+			bTabla.add(tabla.getTableHeader());
+			bTabla.add(tabla);
+			bTabla.setAlignmentX(JFrame.CENTER_ALIGNMENT);
+
+			// Añadimos la tabla al panel
+			panel.add(bTabla, BorderLayout.SOUTH);
+
+		} else {
+			JLabel text = new JLabel("No hay nodos");
+			text.setAlignmentX(JFrame.LEFT_ALIGNMENT);
+			text.setFont(new Font("Verdana", Font.BOLD, 18));
+			panel.add(text);
 		}
-
-		// Creamos la tabla con los datos
-		JTable tabla = new JTable(data, columns);
-
-		// Configuramos para que el tamaño sea suficiente para mostrar todos los datos
-		tabla.setFillsViewportHeight(true);
-		tabla.setPreferredScrollableViewportSize(tabla.getPreferredScrollableViewportSize());
-		tabla.setFillsViewportHeight(true);
-		// Cancelamos que se pueda modificar el tamaño de las columnas
-		tabla.getTableHeader().setResizingAllowed(false);
-
-		// Centramos el texto dentro de la tabla
-		DefaultTableCellRenderer center = new DefaultTableCellRenderer();
-		center.setHorizontalAlignment(SwingConstants.CENTER);
-		tabla.setDefaultRenderer(Object.class, center);
-
-		// Agrupamos la tabla y su título en una caja vertical
-		Box bTabla = Box.createVerticalBox();
-		// bTabla.add(ltabla);
-		bTabla.add(tabla.getTableHeader());
-		bTabla.add(tabla);
-		bTabla.setAlignmentX(JFrame.CENTER_ALIGNMENT);
-
-		// Añadimos la tabla al panel
-		panel.add(bTabla, BorderLayout.SOUTH);
-
 		// Creamos la ventana
 		JFrame frame = new JFrame("Nodos internos");
 		frame.setResizable(false);
@@ -718,13 +726,10 @@ public class HPAstar {
 				c.add(pl2_1);
 				meterDatosHash(pl1_1, pl2_1, 100, c);
 
-				if (modo == 0) {
+				if (modo != 1) {
 					// Pintamos en los nodos
 					oscurecerMapa(pl1_1, mapa);
 					oscurecerMapa(pl2_1, mapa);
-				} else if (modo == 2) {
-					mapa.pintarMapa(Color.YELLOW, pl1_1);
-					mapa.pintarMapa(Color.YELLOW, pl2_1);
 				}
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
@@ -757,17 +762,12 @@ public class HPAstar {
 					c2.add(pl2_2);
 					meterDatosHash(pl1_2, pl2_2, 100, c2);
 
-					if (modo == 0) {
+					if (modo != 1) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl1_2, mapa);
 						oscurecerMapa(pl2_1, mapa);
 						oscurecerMapa(pl2_2, mapa);
-					} else if (modo == 2) {
-						mapa.pintarMapa(Color.YELLOW, pl1_1);
-						mapa.pintarMapa(Color.YELLOW, pl1_2);
-						mapa.pintarMapa(Color.YELLOW, pl2_1);
-						mapa.pintarMapa(Color.YELLOW, pl2_2);
 					}
 
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
@@ -796,13 +796,10 @@ public class HPAstar {
 					c1.add(pl2_1);
 					meterDatosHash(pl1_1, pl2_1, 100, c1);
 
-					if (modo == 0) {
+					if (modo != 1) {
 						// Pintamos en los nodos
 						oscurecerMapa(pl1_1, mapa);
 						oscurecerMapa(pl2_1, mapa);
-					} else if (modo == 2) {
-						mapa.pintarMapa(Color.YELLOW, pl1_1);
-						mapa.pintarMapa(Color.YELLOW, pl2_1);
 					}
 
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya

@@ -15,6 +15,7 @@ public class Simulador {
 				try {
 					new Interfaz();
 					// new Test();
+					// new Test(2, new Punto(35,148), new Punto(267,86));
 
 				} catch (Exception e) {
 					e.printStackTrace();
