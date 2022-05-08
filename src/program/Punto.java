@@ -11,8 +11,8 @@ import java.util.Scanner;
 public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 	// Coordenadas del punto (fila y columna)
-	private int f;
-	private int c;
+	private int f; // Fila
+	private int c; // Columna
 	// Constante para el coste en diagonal
 	protected static final Integer DIAGONAL = 141;
 
@@ -178,7 +178,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	}
 
 	/**
-	 * Método que te indica si otro punto es adyacente
+	 * Método que te indica si otro punto es adyacente (4-vecinos)
 	 * 
 	 * @param p
 	 * @return
@@ -272,7 +272,7 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 	/**
 	 * Devuelve el arco externo (se usa para depurar código)
 	 */
-	public String toStringEdges() {
+	protected String toStringEdges() {
 		StringBuilder sb = new StringBuilder();
 
 		int tam = interedges.size();
@@ -372,16 +372,22 @@ public class Punto implements Cloneable, Comparable<Punto>, Comparator<Punto> {
 
 		return val;
 	}
-	
-	public Edge getEdge (Punto p) {
+
+	/**
+	 * Devuelve el intraedge entre este punto y otro dado (null de no haberlo)
+	 * 
+	 * @param p
+	 * @return
+	 */
+	public Edge getEdge(Punto p) {
 		Edge e = null;
-		
-		for (Edge eg : intraedges) 
+
+		for (Edge eg : intraedges)
 			if (eg.pfin.equals(p)) {
 				e = eg;
 				break;
 			}
-		
+
 		return e;
 	}
 

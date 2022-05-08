@@ -181,6 +181,8 @@ public class Dijkstra {
 
 		// Añadimos el punto inicial
 		Datos par = new Datos(0, 0, p1);
+		// Incrementamos la memoria usada, según corresponda a la fase de
+		// preprocesamiento o de introducción de los puntos inicial y final
 		if (es)
 			HPAstar.esmemoria++;
 		else

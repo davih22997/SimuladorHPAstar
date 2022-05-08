@@ -61,7 +61,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	private static final Pattern patfile = Pattern.compile(".+[.]+[^.]+$");
 
 	// Lista de las dimensiones de mapa posibles a escoger
-	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50", "100x100" };
+	private static final String[] dimensiones = { "40x40", "20x30", "30x20", "50x50" };
 
 	// Lista de números de vecinos para el algoritmo A*
 	private static final String[] numVecinos = { "4-vecinos", "8-vecinos" };
@@ -176,14 +176,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Lista de frames abiertos
 	private static ArrayList<JFrame> frames = new ArrayList<>();
 
-	// Para la creación de puntos desde el fichero
-	// private Punto pto_inicial;
-	// private Punto pto_final;
-	// private ArrayList<Punto> obstaculos;
-
 	public Interfaz() {
-		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
-
 		// Inicializamos el formato decimal (para la velocidad)
 		frmt = new DecimalFormat();
 		frmt.setMaximumFractionDigits(2);
@@ -201,7 +194,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
-		// log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
 
 		Box vB0 = Box.createVerticalBox();
@@ -212,7 +204,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		this.add(vB0, BorderLayout.SOUTH);
 
-		// Definimos el apartado para GESTIÓN DE ARCHIVOS
+		// Definimos el apartado para GESTIÓN DE ARCHIVOS:
 
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
@@ -383,8 +375,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
 		boxizda.add(upPanel);
-		// boxizda.add(pAstar);
-		// pCentral.add(vB2, BorderLayout.WEST);
 
 		// Definimos el apartado para el CONTROL SIMULACIÓN
 		titulo3 = new JLabel("Control de la simulación");
@@ -687,7 +677,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						// Son 5 líneas
 						// Linea mapa (inutil)
 						sc.nextLine();
-						// String linea1 = sc.nextLine();
 						// Linea Dimensiones: Filas x Columnas
 						String linea2 = sc.nextLine().toUpperCase();
 						try (Scanner scan = new Scanner(linea2)) {
@@ -803,7 +792,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
 													else {
 														mapa.pintarMapa(Mapa.cFinal, f, c);
-														// mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
 														mapa.pto_final = pto_final;
 													}
 												}
@@ -832,7 +820,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 								// { lista_ptos }
 								String lista = scan.next();
 								// Comprobamos que siga el patrón lista
-								// Matcher matlist = patlist2.matcher(lista);
 								// -> Vemos que los patrones fallan si la lista es demasiado larga, por lo que
 								// vamos a hacerlo de otra forma
 								// 1. Comprobamos si el primer carácter es "{"
@@ -958,10 +945,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					if (!mat.matches()) {
 						file = new File(file.getAbsolutePath() + ".txt");
 					}
-					/*
-					 * if (!name.endsWith(".txt") || !name.endsWith(".TXT")) { file = new
-					 * File(file.getAbsolutePath() + ".txt"); }
-					 */
 
 					if (file.exists()) {
 						int result = JOptionPane.showConfirmDialog(this, "El archivo ya existe, ¿sobreescribir?",
@@ -1072,21 +1055,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				mapa.pto_inicial = aux;
 				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
 				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
-				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
-				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 
 				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
 			} else if (mapa.pto_final != null) {
 				mapa.pto_inicial = mapa.pto_final.clone();
 				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
-				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 				mapa.pto_final = null;
 
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
 				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
-				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
 				mapa.pto_inicial = null;
 
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
@@ -1163,7 +1142,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				// Si en cambio, ya fue iniciada la simulación
 				else {
 					// Si se ha pulsado el botón de start para pausar la simulación
-					if (start == true) {
+					if (start) {
 						btnStart.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 						start = false;
 						Astar.timer.stop();
@@ -1293,7 +1272,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
-					
+
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
 					// También metemos los puntos E/S (inicio/fin)
@@ -1331,20 +1310,35 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					break;
 				// Cuarto paso -> Aplicar A*
 				case 3:
-					// Bloqueamos el botón de start
-					btnStart2.setEnabled(false);
 					// Activamos el datosAstar
 					datosAstar.setVisible(true);
+					// Ponemos el icono de pause
+					btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+					// Y ponemos la variable start a true
+					start = true;
+
 					// Aplicamos A*
 					HPAstar.aplicarAstar(mapa);
 
 					log.append("Aplicado A* para calcular el menor coste entre los nodos" + newline);
 					// Incrementamos un "step"
 					step++;
+					break;
+				// Para controlar el botón de pausa:
+				case 4:
+					// Si se ha pulsado el botón de start para pausar la simulación
+					if (start) {
+						btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
+						start = false;
+						Astar.timer.stop();
+					}
+					// Si se ha pulsado y la simulación continúa en marcha
+					else {
+						btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.pause16)));
+						start = true;
+						Astar.timer.restart();
+					}
 
-					// Dejamos bloqueado el botón de start
-					// Desbloqueamos el botón de start
-					// btnStart2.setEnabled(true);
 					break;
 				default:
 					log.append("Estás en el paso " + step + ", todavía está el algoritmo en desarrollo." + newline);
@@ -1368,6 +1362,8 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 			// Bloqueamos el botón de stop
 			btnStop2.setEnabled(false);
+			// Ponemos de nuevo el botón start como estaba por defecto
+			btnStart2.setIcon(new ImageIcon(getClass().getResource(Direccion.start16)));
 			// Bloqueamos el botón de ver tabla
 			chbVerTabla.setEnabled(false);
 			// Y provocamos que no esté seleccionado por defecto
@@ -1586,8 +1582,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						mapaNuevo(30, 20);
 					} else if (option.equals(dimensiones[3])) { // 50x50
 						mapaNuevo(50, 50);
-					} else if (option.equals(dimensiones[4])) { // 100x100
-						mapaNuevo(100, 100);
 					}
 
 					// 2. Desbloqueamos el botón de borrar contenido del mapa

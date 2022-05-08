@@ -6,7 +6,7 @@ import java.util.Objects;
 public class Arco {
 	protected Punto p1;
 	protected Punto p2;
-	boolean externo;
+	boolean externo; // Indica si el arco es externo (no se usa)
 
 	public Arco(Punto p1, Punto p2) {
 		this.p1 = p1;

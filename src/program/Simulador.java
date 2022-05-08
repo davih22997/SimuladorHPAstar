@@ -13,8 +13,9 @@ public class Simulador {
 			public void run() {
 				// TODO Auto-generated method stub
 				try {
-					// new Interfaz();
-					new Test();
+					new Interfaz();
+					// new Test();
+					// new Test(2, new Punto(35,148), new Punto(267,86));
 
 				} catch (Exception e) {
 					e.printStackTrace();

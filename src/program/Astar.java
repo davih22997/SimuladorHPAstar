@@ -273,111 +273,142 @@ public class Astar {
 		// Inicialmente, añadimos el punto inicial
 		abiertos.add(new Datos(0, mapa.pto_inicial));
 
-		// Vamos recorriendo hasta que nos quedemos sin nodos por recorrer o hasta que
-		// encontremos el punto final
-		while (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
-			// El punto con el menor coste
-			Datos actual = abiertos.poll();
+		// Si estamos en modo Test, no vemos paso a paso
+		int delay = 0;
 
-			// Lo añadimos a los puntos ya visitados (cerrados)
-			cerrados.add(actual);
+		// En cambio, si estamos con la interfaz, sí
+		if (HPAstar.modo == 0)
+			delay = 125;
 
-			// Cogemos los sucesores del punto
-			ArrayList<Punto> sucesores = new ArrayList<>();
-			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
+		// Generamos un temporizador para ver paso por paso
+		timer = new Timer(delay, new ActionListener() {
 
-			// Descartamos los puntos ya analizados
-			for (Datos d : cerrados)
-				sucesores.remove(d.p);
+			@Override
+			public void actionPerformed(ActionEvent e) {
 
-			// Vamos comprobando los sucesores
-			for (Punto p : sucesores) {
-				// Creamos el arco entre los dos puntos
-				Arco arco = new Arco(actual.p, p);
+				// Si pulsamos el botón de stop, detenemos la simulación
+				if (HPAstar.modo == 0 && !Interfaz.btnStop2.isEnabled())
+					timer.stop();
 
-				// Calculamos la distancia (coste) con respecto al punto
-				int dist = HPAstar.costes.get(arco);
+				else if (!abiertos.isEmpty() && !abiertos.peek().p.equals(mapa.pto_final)) {
+					// El punto con el menor coste
+					Datos actual = abiertos.poll();
 
-				// Además, le añadimos el coste acumulado
-				dist += actual.coste;
+					// Lo añadimos a los puntos ya visitados (cerrados)
+					cerrados.add(actual);
 
-				// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
-				int longi = HPAstar.caminos.get(arco).size() - 1;
+					if (!actual.p.equals(mapa.pto_inicial))
+						mapa.pintarMapa(Mapa.cCerrado, actual.p.getFila(), actual.p.getCol());
 
-				// Creamos una estructura tipo datos para el punto
-				Datos d = new Datos(dist, p, longi, actual);
+					// Cogemos los sucesores del punto
+					ArrayList<Punto> sucesores = new ArrayList<>();
+					sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
 
-				// Si el punto vecino no está en la cola:
-				if ((!abiertos.contains(d))) {
-					// Pintamos el mapa
-					if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
-						mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
+					// Descartamos los puntos ya analizados
+					for (Datos d : cerrados)
+						sucesores.remove(d.p);
+
+					// Vamos comprobando los sucesores
+					for (Punto p : sucesores) {
+						// Creamos el arco entre los dos puntos
+						Arco arco = new Arco(actual.p, p);
+
+						// Calculamos la distancia (coste) con respecto al punto
+						int dist = HPAstar.costes.get(arco);
+
+						// Además, le añadimos el coste acumulado
+						dist += actual.coste;
+
+						// Calculamos la longitud (restamos 1 porque ya hemos visitado el punto)
+						int longi = HPAstar.caminos.get(arco).size() - 1;
+
+						// Creamos una estructura tipo datos para el punto
+						Datos d = new Datos(dist, p, longi, actual);
+
+						// Si el punto vecino no está en la cola:
+						if ((!abiertos.contains(d))) {
+							// Pintamos el mapa
+							if (!p.equals(mapa.pto_inicial) && !p.equals(mapa.pto_final)) {
+								mapa.pintarMapa(Mapa.cAbierto, p.getFila(), p.getCol());
+							}
+							// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
+							abiertos.add(d);
+							// Incrementamos la cantidad de nodos expandidos
+							HPAstar.refmemoria++;
+						}
+						// O si está en la cola comprobamos si ya tiene menos pasos:
+						else {
+							Iterator<Datos> it = abiertos.iterator();
+							Datos d2 = it.next();
+
+							while (!d2.p.equals(p) && it.hasNext())
+								d2 = it.next();
+
+							// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
+							// la lista
+							if (dist < d2.coste) {
+								abiertos.remove(d2);
+								abiertos.add(d);
+							}
+						}
 					}
-					// Finalmente, lo añadimos (el coste es la distancia + el coste acumulado)
-					abiertos.add(d);
-					// Incrementamos la cantidad de nodos expandidos
-					HPAstar.refmemoria++;
+					// Incrementamos las iteraciones
+					HPAstar.refiters++;
+
+					// Y vamos mostrando esos datos
+					if (HPAstar.modo == 0)
+						Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
+								+ "Iteraciones: " + HPAstar.refiters);
 				}
-				// O si está en la cola comprobamos si ya tiene menos pasos:
-				else {
-					Iterator<Datos> it = abiertos.iterator();
-					Datos d2 = it.next();
 
-					while (!d2.p.equals(p) && it.hasNext())
-						d2 = it.next();
+				// Imprimimos el resultado
+				// 1. Si la encuentra: Muestra el camino y te lo indica.
+				if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
+					Datos d = abiertos.poll();
+					HPAstar.longitud = d.longitud;
 
-					// Si tiene menos pasos "tachamos" de abiertos el anterior y metemos el nuevo en
-					// la lista
-					if (dist < d2.coste) {
-						abiertos.remove(d2);
-						abiertos.add(d);
+					while (d.p_anterior != null) {
+						// Vamos a pintar todo el recorrido
+						// 1. Cogemos el punto anterior
+						Punto p = d.p;
+						// Cogemos los datos anteriores para sacar el siguiente punto
+						d = d.p_anterior;
+
+						// Cogemos cada punto del camino existente entre el punto anterior y su
+						// siguiente
+						for (Punto pt : HPAstar.caminos.get(new Arco(p, d.p))) {
+							// Coloreamos de rosa si no es un nodo
+							if (!HPAstar.sucesores.containsKey(pt)) {
+								mapa.pintarMapa(Mapa.cRecorrido, pt.getFila(), pt.getCol());
+							}
+
+							// Si es un nodo y no es punto inicial ni final, pintamos de rosa oscuro
+							if (HPAstar.sucesores.keySet().contains(pt)
+									&& !(pt.equals(mapa.pto_inicial) || pt.equals(mapa.pto_final)))
+								mapa.pintarMapa(Mapa.cRecorrido.darker(), pt);
+
+						}
 					}
+					timer.stop();
+					if (HPAstar.modo == 0)
+						Interfaz.btnStart2.setEnabled(false);
+					JOptionPane.showMessageDialog(new JFrame(),
+							"Se encontró solución. Su longitud es de " + HPAstar.longitud);
+				}
+
+				// 2. Si no la encuentra: simplemente lo indica
+				else if (abiertos.isEmpty()) {
+					timer.stop();
+					if (HPAstar.modo == 0)
+						Interfaz.btnStart2.setEnabled(false);
+					JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
 				}
 			}
-			// Incrementamos las iteraciones
-			HPAstar.refiters++;
 
-			// Y vamos mostrando esos datos
-			if (HPAstar.modo == 0)
-				Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
-						+ "Iteraciones: " + HPAstar.refiters);
-		}
+		});
 
-		// Imprimimos el resultado
-		// 1. Si la encuentra: Muestra el camino y te lo indica.
-		if (!abiertos.isEmpty() && abiertos.peek().p.equals(mapa.pto_final)) {
-			Datos d = abiertos.poll();
-			HPAstar.longitud = d.longitud;
-
-			while (d.p_anterior != null) {
-				// Vamos a pintar todo el recorrido
-				// 1. Cogemos el punto anterior
-				Punto p = d.p;
-				// Cogemos los datos anteriores para sacar el siguiente punto
-				d = d.p_anterior;
-
-				// Cogemos cada punto del camino existente entre el punto anterior y su
-				// siguiente
-				for (Punto pt : HPAstar.caminos.get(new Arco(p, d.p))) {
-					// Coloreamos de rosa si no es un nodo
-					if (!HPAstar.sucesores.containsKey(pt)) {
-						mapa.pintarMapa(Mapa.cRecorrido, pt.getFila(), pt.getCol());
-					}
-
-					// Si es un nodo y no es punto inicial ni final, pintamos de rosa oscuro
-					if (HPAstar.sucesores.keySet().contains(pt)
-							&& !(pt.equals(mapa.pto_inicial) || pt.equals(mapa.pto_final)))
-						mapa.pintarMapa(Mapa.cRecorrido.darker(), pt);
-
-				}
-			}
-			JOptionPane.showMessageDialog(new JFrame(), "Se encontró solución. Su longitud es de " + HPAstar.longitud);
-		}
-
-		// 2. Si no la encuentra: simplemente lo indica
-		else if (abiertos.isEmpty()) {
-			JOptionPane.showMessageDialog(new JFrame(), "No se encontró solución.");
-		}
+		// Una vez definido el temporizador, lo iniciamos
+		timer.start();
 	}
 
 	/**
