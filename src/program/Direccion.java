@@ -14,7 +14,6 @@ public class Direccion {
 	public final static String open16 = "/images/Open16.gif";
 	public final static String new16 = "/images/New16.gif";
 
-
 	// Botones para gestionar la velocidad
 	public final static String minus16 = "/images/sign_minus.gif";
 	public final static String plus16 = "/images/sign_plus.gif";
@@ -32,11 +31,9 @@ public class Direccion {
 
 	// Imágenes no utilizadas
 	public final static String help16 = "/images/Help16.gif";
-	public final static String loader32 = "/images/loader.gif";
-	
+
 	// Direcciones de mapas para test:
 	// Por el momento solo se va a usar el primero (320x320)
-	public final static String[] maps = {"/maps/AR0300SR.map", "/maps/AR0020SR.map", "/maps/AR0072SR.map"};
-	
-	
+	public final static String[] maps = { "/maps/AR0300SR.map", "/maps/AR0020SR.map", "/maps/AR0072SR.map" };
+
 }

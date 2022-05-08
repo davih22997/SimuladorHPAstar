@@ -176,14 +176,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 	// Lista de frames abiertos
 	private static ArrayList<JFrame> frames = new ArrayList<>();
 
-	// Para la creación de puntos desde el fichero
-	// private Punto pto_inicial;
-	// private Punto pto_final;
-	// private ArrayList<Punto> obstaculos;
-
 	public Interfaz() {
-		// ImageIcon st = new ImageIcon(getClass().getResource("/images/play.png"));
-
 		// Inicializamos el formato decimal (para la velocidad)
 		frmt = new DecimalFormat();
 		frmt.setMaximumFractionDigits(2);
@@ -201,7 +194,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
-		// log.append("Registro de acciones:" + newline + newline);
 		JScrollPane logScrollPane = new JScrollPane(log);
 
 		Box vB0 = Box.createVerticalBox();
@@ -212,7 +204,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		this.add(vB0, BorderLayout.SOUTH);
 
-		// Definimos el apartado para GESTIÓN DE ARCHIVOS
+		// Definimos el apartado para GESTIÓN DE ARCHIVOS:
 
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
@@ -383,8 +375,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Creamos una caja y le añadimos los elementos
 		Box boxizda = Box.createVerticalBox();
 		boxizda.add(upPanel);
-		// boxizda.add(pAstar);
-		// pCentral.add(vB2, BorderLayout.WEST);
 
 		// Definimos el apartado para el CONTROL SIMULACIÓN
 		titulo3 = new JLabel("Control de la simulación");
@@ -687,7 +677,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						// Son 5 líneas
 						// Linea mapa (inutil)
 						sc.nextLine();
-						// String linea1 = sc.nextLine();
 						// Linea Dimensiones: Filas x Columnas
 						String linea2 = sc.nextLine().toUpperCase();
 						try (Scanner scan = new Scanner(linea2)) {
@@ -803,7 +792,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 																"El punto final definido coincide con el punto inicial definido. Se le asignará el valor null.");
 													else {
 														mapa.pintarMapa(Mapa.cFinal, f, c);
-														// mapa.MatrizBotones[f][c].setBackground(Mapa.cFinal);
 														mapa.pto_final = pto_final;
 													}
 												}
@@ -832,7 +820,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 								// { lista_ptos }
 								String lista = scan.next();
 								// Comprobamos que siga el patrón lista
-								// Matcher matlist = patlist2.matcher(lista);
 								// -> Vemos que los patrones fallan si la lista es demasiado larga, por lo que
 								// vamos a hacerlo de otra forma
 								// 1. Comprobamos si el primer carácter es "{"
@@ -958,10 +945,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					if (!mat.matches()) {
 						file = new File(file.getAbsolutePath() + ".txt");
 					}
-					/*
-					 * if (!name.endsWith(".txt") || !name.endsWith(".TXT")) { file = new
-					 * File(file.getAbsolutePath() + ".txt"); }
-					 */
 
 					if (file.exists()) {
 						int result = JOptionPane.showConfirmDialog(this, "El archivo ya existe, ¿sobreescribir?",
@@ -1072,21 +1055,17 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 				mapa.pto_inicial = aux;
 				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
 				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
-				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
-				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 
 				log.append("Se han intercambiado las posiciones de los puntos inicial y final." + newline);
 			} else if (mapa.pto_final != null) {
 				mapa.pto_inicial = mapa.pto_final.clone();
 				mapa.pintarMapa(Mapa.cInicial, mapa.pto_inicial);
-				// mapa.MatrizBotones[mapa.pto_inicial.getFila()][mapa.pto_inicial.getCol()].setBackground(Mapa.cInicial);
 				mapa.pto_final = null;
 
 				log.append("Se ha convertido el punto final en un punto inicial." + newline);
 			} else if (mapa.pto_inicial != null) {
 				mapa.pto_final = mapa.pto_inicial.clone();
 				mapa.pintarMapa(Mapa.cFinal, mapa.pto_final);
-				// mapa.MatrizBotones[mapa.pto_final.getFila()][mapa.pto_final.getCol()].setBackground(Mapa.cFinal);
 				mapa.pto_inicial = null;
 
 				log.append("Se ha convertido el punto inicial en un punto final." + newline);
@@ -1293,7 +1272,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 					log.append("Se van a crear los nodos y arcos con un umbral valor " + vumbral + "." + newline);
 					// Bloqueamos el botón de start
 					btnStart2.setEnabled(false);
-					
+
 					// Realizamos la siguiente fase
 					HPAstar.definirEdges(mapa, vumbral);
 					// También metemos los puntos E/S (inicio/fin)

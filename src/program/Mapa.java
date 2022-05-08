@@ -4,7 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -16,10 +15,8 @@ import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
-import javax.swing.plaf.DimensionUIResource;
 
 public class Mapa {
 
@@ -64,9 +61,6 @@ public class Mapa {
 	// Elementos del mapa
 	protected JPanel tablero;
 	private GroupLayout tableroLayout;
-
-	// Variables de gestión del mapa (por ahora no lo usamos):
-	private JTextField tbxDimX, tbxDimY;
 
 	// Matriz de botones
 	private JButton[][] MatrizBotones;
@@ -188,10 +182,11 @@ public class Mapa {
 	public void crearTablero() {
 
 		// Si hay parámetros de texto, los validamos, si no, validamos los numéricos
-		boolean val = (this.tbxDimX == null || this.tbxDimY == null) ? validarDims2() : validarDims();
+		// boolean val = (this.tbxDimX == null || this.tbxDimY == null) ? validarDims2()
+		// : validarDims();
 
 		// Si las dimensiones son válidas
-		if (val) {
+		if (validarDims()) {
 			// Se genera el tamaño de la matriz de botones
 			MatrizBotones = new JButton[dY][dX];
 			// Se crea el tamaño de gridLayout de nuestro panel del tablero
@@ -413,7 +408,7 @@ public class Mapa {
 
 			break;
 		case TIPO_TEST:
-			
+
 			JOptionPane.showMessageDialog(new JFrame(), "Posición: (" + btn.getToolTipText() + ")");
 			// Cogemos la lista de clusters de HPAstar
 			ArrayList<Cluster> clusts = HPAstar.clusters;
@@ -431,58 +426,11 @@ public class Mapa {
 	}
 
 	/**
-	 * Función que determina si un String corresponde a un número
-	 * 
-	 * @param s
-	 * @return
-	 */
-	private boolean isNumeric(String s) {
-		boolean res = true;
-
-		try {
-			Integer.parseInt(s);
-		} catch (NumberFormatException e) {
-			res = false;
-		}
-
-		return res;
-	}
-
-	/**
-	 * Función que valida si los parámetros de entrada son válidos
-	 * 
-	 * @return
-	 */
-	private boolean validarDims() {
-		// Vble de retorno
-		boolean res = false;
-
-		String cols = tbxDimX.getText();
-
-		// Comprobamos que las filas y las columnas sean dadas en numérico
-		if (isNumeric(cols)) {
-			String fils = tbxDimY.getText();
-			if (isNumeric(cols)) {
-				// Cantidad de columnas
-				dX = Integer.parseInt(cols);
-				// Cantidad de filas
-				dY = Integer.parseInt(fils);
-				// Se verifica que las dimensiones sean mayores que 0
-				if (dX > 0 && dY > 0)
-					res = true;
-
-			}
-		}
-
-		return res;
-	}
-
-	/**
 	 * Igual que el anterior pero sin los parámetros de texto
 	 * 
 	 * @return
 	 */
-	private boolean validarDims2() {
+	private boolean validarDims() {
 		boolean res = false;
 
 		if (this.dX > 0 && dY > 0)

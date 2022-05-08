@@ -180,22 +180,8 @@ public class HPAstar {
 			// 2. Creamos los edges por la derecha
 			rigthEdge(c, clusters, mapa);
 
-			// 3. Añadimos los puntos inicial y final en caso de no estar y corresponder con
-			// el cluster:
-			/*
-			 * if (c.inCluster(mapa.pto_inicial) &&
-			 * !c.getNodos().contains(mapa.pto_inicial)) {
-			 * ptos_interes.put(mapa.pto_inicial, c); c.addNodo(mapa.pto_inicial, false); if
-			 * (modo != 1) oscurecerMapa(mapa.pto_inicial, mapa); }
-			 * 
-			 * if (c.inCluster(mapa.pto_final) && !c.getNodos().contains(mapa.pto_final)) {
-			 * c.addNodo(mapa.pto_final, false); if (modo != 1)
-			 * oscurecerMapa(mapa.pto_final, mapa); }
-			 */
-
 			// CREACIÓN DE ARCOS INTERNOS
-			// 4. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
-			// (edges)
+			// 3. Ordenamos los nodos de cada cluster tras finalizar con los arcos externos
 			ArrayList<Punto> nodos = nodos_cluster.get(c);
 			Collections.sort(nodos);
 			nodos_cluster.put(c, nodos);
@@ -212,13 +198,12 @@ public class HPAstar {
 	 * @param mapa
 	 */
 	public static void meterES(Mapa mapa) {
+		// Iniciamos las variables de introducción de puntos inicial y final
 		esiters = 0;
 		esmemoria = 0;
+		// Llamamos a los métodos para introducir los puntos inicial y final
 		meterPuntosInteres(mapa);
 		ESEdges(mapa);
-		refiters = 0;
-		refmemoria = 0;
-		longitud = 0;
 	}
 
 	/**
@@ -441,6 +426,12 @@ public class HPAstar {
 	 */
 	public static void aplicarAstar(Mapa mapa) {
 
+		// Iniciamos las varibales de la parte de búsqueda en grafo abstracto y
+		// refinamiento
+		refiters = 0;
+		refmemoria = 0;
+		longitud = 0;
+
 		// Aplicamos A* para hallar el camino de menor coste
 		if (modo != 1)
 			Astar.busquedaEnHPAstar(mapa, Astar.VECINOS_8);
@@ -460,6 +451,11 @@ public class HPAstar {
 
 		// 2. Punto final
 		removePunto(mapa.pto_final);
+
+		// 3. Reiniciamos las variables de iteraciones y memoria correspondientes a la
+		// introducción de puntos inicial y final
+		esiters = 0;
+		esmemoria = 0;
 	}
 
 	/**
@@ -599,29 +595,6 @@ public class HPAstar {
 		return cont;
 	}
 
-	private static ArrayList<Integer> contarPtosConsecutivos2(ArrayList<Punto> ptos) {
-		ArrayList<Integer> ints = new ArrayList<>();
-
-		int i = 0;
-
-		int cont = 1;
-		while (i < ptos.size()) {
-			if (i < ptos.size() - 1)
-				if (ptos.get(i).adyacente(ptos.get(i + 1)))
-					cont++;
-				else {
-					ints.add(cont);
-					cont = 1;
-				}
-			else
-				ints.add(cont);
-
-			i++;
-		}
-
-		return ints;
-	}
-
 	/**
 	 * Método que realiza la creación de edges por la derecha de un cluster
 	 * 
@@ -646,7 +619,6 @@ public class HPAstar {
 			cls[1] = cRight;
 			// Dejamos que se haga el trabajo de creación de edges para los límites
 			// izquierdo y derecho obtenidos
-
 			workEdges(lRigh, lLeft, cls, mapa);
 		}
 	}
@@ -709,9 +681,9 @@ public class HPAstar {
 			}
 		}
 
-		if (!l1.isEmpty()) {
+		// Si quedan nodos para unir, se sigue
+		if (!l1.isEmpty())
 			pintarEdges(l1, l2, cls, mapa);
-		}
 
 	}
 
@@ -757,10 +729,8 @@ public class HPAstar {
 				// Añadimos el punto a la lista de nodos del cluster (no ordenamos porque los
 				// puntos ya vienen ordenados)
 				// Al cluster original
-				// cls[0].addNodo(pl1_1, false);
 				addNodo(cls[0], pl1_1, false);
 				// Al cluster adyacente
-				// cls[1].addNodo(pl2_1, false);
 				addNodo(cls[1], pl2_1, false);
 			}
 			// En caso de que haya más puntos consecutivos, comprobamos cuántos edges se van
@@ -803,14 +773,10 @@ public class HPAstar {
 					// Los añadimos a los respectivos clusters (no ordenamos porque los puntos ya
 					// vienen ordenados)
 					// Al cluster original
-					// cls[0].addNodo(pl1_1, false);
-					// cls[0].addNodo(pl1_2, false);
 					addNodo(cls[0], pl1_1, false);
 					addNodo(cls[0], pl1_2, false);
 
 					// Al cluster adyacente
-					// cls[1].addNodo(pl2_1, false);
-					// cls[1].addNodo(pl2_2, false);
 					addNodo(cls[1], pl2_1, false);
 					addNodo(cls[1], pl2_2, false);
 				}
@@ -842,10 +808,8 @@ public class HPAstar {
 					// Los añadimos como nodos a cada cluster (no ordenamos porque los puntos ya
 					// vienen ordenados)
 					// Al cluster original
-					// cls[0].addNodo(pl1_1, false);
 					addNodo(cls[0], pl1_1, false);
 					// Al cluster adyacente
-					// cls[1].addNodo(pl2_1, false);
 					addNodo(cls[1], pl2_1, false);
 
 				}
@@ -884,7 +848,6 @@ public class HPAstar {
 		ArrayList<Punto> submapa = c.getSubMapa(mapa);
 
 		// Se van creando arcos entre cada par de nodos del cluster
-		// ArrayList<Punto> nodos = c.getNodos();
 		ArrayList<Punto> nodos = nodos_cluster.get(c);
 		// Copiamos la lista
 		ArrayList<Punto> nodos2 = (ArrayList<Punto>) nodos.clone();
@@ -909,13 +872,7 @@ public class HPAstar {
 				// Añadimos los datos a las HashTables
 				meterDatosHash(p1, p2, edge.coste, edge.camino, symm.camino);
 			}
-			// meterSucesores(c, p1);
 		}
-
-		/*
-		 * if (nodos.size() > 0) meterSucesores(c, nodos.get(nodos.size() - 1));
-		 */
-
 	}
 
 	/**
@@ -947,9 +904,7 @@ public class HPAstar {
 					// Añadimos los datos a las HashTables
 					meterDatosHash(p, nodo, edge.coste, edge.camino, symm.camino);
 				}
-				// meterSucesores(c, nodo);
 			}
-			// meterSucesores(c, p);
 		}
 	}
 
@@ -1091,34 +1046,20 @@ public class HPAstar {
 		}
 	}
 
+	/**
+	 * Método para introducir los valores a las tablas hash
+	 * 
+	 * @param p1
+	 * @param p2
+	 * @param coste
+	 * @param c1
+	 */
 	private static void meterDatosHash(Punto p1, Punto p2, int coste, ArrayList<Punto> c1) {
+		// Copiamos el camino de p1 a p2
 		ArrayList<Punto> c2 = (ArrayList<Punto>) c1.clone();
+		// Y la invertimos para que sea de p2 a p1
 		Collections.reverse(c2);
 		meterDatosHash(p1, p2, coste, c1, c2);
-	}
-
-	/**
-	 * Se introducen los sucesores
-	 * 
-	 * @param c
-	 * @param p
-	 */
-	private static void meterSucesores(Cluster c, Punto p) {
-		ArrayList<Punto> nodos = new ArrayList<>();
-
-		for (Punto nodo : nodos_cluster.get(c)) {
-			Arco a = new Arco(p, nodo);
-			if (costes.containsKey(a))
-				nodos.add(nodo);
-		}
-
-		for (Punto pt : p.getArcosExternos())
-			nodos.add(pt);
-
-		Collections.sort(nodos);
-
-		sucesores.put(p, nodos);
-
 	}
 
 	/**

@@ -102,32 +102,34 @@ tref = trefHPAsort(~isnan(trefHPAsort));
 n = length(xs);
 % Dividimos entre 5 para agrupar 5 veces
 n2 = n / 5;
+y(:,1) = tes;
+y(:,2) = tref;
 
-xs2 = zeros(5,1);
+[counts, centers] = hist(xs, 5);
+
+
+
 y = zeros(5,2);
+
+val = (centers(1) + centers(2))/ 2;
+val = val - centers(1);
 
 % Agrupamos
 for i = 1:5
-    if (i == 1)
-        xs2(i) = mean(xs(i:n2));
-        % y(i,1) = mean(tpre(i:n2));
-        y(i,1) = mean(tes(i:n2));
-        y(i,2) = mean(tref(i:n2));
-    else
-        i1 = (i-1) * n2
-        i2 = i * n2
-        xs2(i) = mean(xs(i1: i2));
-        % y(i,1) = mean(tpre(i1:i2));
-        y(i,1) = mean(tes(i1 : i2));
-        y(i,2) = mean(tref(i1: i2));
-    end
+    % Cogemos los índices de los valores que corresponden al primer
+    % intervalo
+    v1 = centers(i) - val;
+    v2 = centers(i) + val;
+    k = find(xs >= v1 & xs < v2);
+    % Agrupamos los valores
+    y(i,1) = mean(tes(k));
+    y(i,2) = mean(tref(k));
+
 end
 
-xs = xs2;
-
 % Mostramos la gráfica con los resultados
-p4 = bar(xs, y, 'stacked');
-legend('Introducción de puntos inicio/fin', 'Refinamiento');
+p4 = bar(centers, y, 1.0, 'stacked');
+legend('Introducción de puntos inicio/fin', 'Búsqueda en grafo abstracto + refinamiento');
 title('Comparativa de tiempo por fase');
 xlabel('Longitud de la solución');
 ylabel('Tiempo de CPU (segundos)');
