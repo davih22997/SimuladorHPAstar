@@ -302,7 +302,10 @@ public class Astar {
 
 					// Cogemos los sucesores del punto
 					ArrayList<Punto> sucesores = new ArrayList<>();
-					sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
+
+					// Si tiene sucesores
+					if (HPAstar.sucesores.get(actual.p) != null)
+						sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
 
 					// Descartamos los puntos ya analizados
 					for (Datos d : cerrados)
@@ -352,9 +355,9 @@ public class Astar {
 							}
 						}
 					}
+
 					// Incrementamos las iteraciones
 					HPAstar.refiters++;
-
 					// Y vamos mostrando esos datos
 					if (HPAstar.modo == 0)
 						Interfaz.datosAstar.setText(new String("Memoria usada: ") + HPAstar.refmemoria + "    "
@@ -543,7 +546,10 @@ public class Astar {
 
 			// Cogemos los sucesores del punto
 			ArrayList<Punto> sucesores = new ArrayList<>();
-			sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
+
+			// Si tiene sucesores
+			if (HPAstar.sucesores.get(actual.p) != null)
+				sucesores = (ArrayList<Punto>) HPAstar.sucesores.get(actual.p).clone();
 
 			// Descartamos los puntos ya analizados
 			for (Datos d : cerrados)
