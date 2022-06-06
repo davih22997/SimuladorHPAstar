@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -850,6 +851,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 									else {
 										// Cogemos la lista sin los corchetes
 										lista = lista.substring(0, i + 1);
+
 										try (Scanner scan2 = new Scanner(lista.substring(1))) {
 											// booleano para comprobar si hay puntos ya definidos
 											boolean rep = false;
@@ -859,16 +861,20 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 											while (scan2.hasNext()) {
 												String p = scan2.next();
-												Matcher matpoint = patpoint.matcher(p + ")");
-												if (!matpoint.matches()) {
-													throw new Exception();
-												} else {
-													Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
-													if (obs.equals(pto_inicial) || obs.equals(pto_final)
-															|| obstaculos.contains(obs)) {
-														rep = true;
-													} else
-														obstaculos.add(obs);
+												Matcher matvacio = Pattern.compile(space + "*[}]" + space + "*")
+														.matcher(p);
+												if (!matvacio.matches()) {
+													Matcher matpoint = patpoint.matcher(p + ")");
+													if (!matpoint.matches()) {
+														throw new Exception();
+													} else {
+														Punto obs = new Punto(p.substring(cuentaEspacios(p) + 1));
+														if (obs.equals(pto_inicial) || obs.equals(pto_final)
+																|| obstaculos.contains(obs)) {
+															rep = true;
+														} else
+															obstaculos.add(obs);
+													}
 												}
 											}
 
@@ -883,7 +889,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 														"Alguno de los puntos dados ya se ha definido, no se añadirá como nuevo obstáculo.");
 											}
 
-											if (obstaculos.size() == 1)
+											if (obstaculos.size() == 0)
+												log.append(
+														"La lista de obstáculos estaba vacía. No se añaden obstáculos."
+																+ newline);
+											else if (obstaculos.size() == 1)
 												log.append("Se ha añadido 1 obstáculo." + newline);
 											else
 												log.append("Se ha añadido un total de " + obstaculos.size()
@@ -911,8 +921,20 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 					} catch (FileNotFoundException e1) {
 						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						log.append("Fichero no encontrado, no se creará el mapa");
+					} catch (NoSuchElementException e2) {
+						dims.setSelectedItem(selDims);
+						log.append("Parámetros definidos de forma incorrecta, no se creará el mapa");
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
+						
+					} catch (Exception e3) {
+						dims.setSelectedItem(selDims);
+						log.append("Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
 					}
+					
 
 				}
 			} else {
