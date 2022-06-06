@@ -921,10 +921,20 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 					} catch (FileNotFoundException e1) {
 						// TODO Auto-generated catch block
-						e1.printStackTrace();
+						log.append("Fichero no encontrado, no se creará el mapa");
 					} catch (NoSuchElementException e2) {
+						dims.setSelectedItem(selDims);
 						log.append("Parámetros definidos de forma incorrecta, no se creará el mapa");
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
+						
+					} catch (Exception e3) {
+						dims.setSelectedItem(selDims);
+						log.append("Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
+						JOptionPane.showMessageDialog(new JFrame(),
+								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
 					}
+					
 
 				}
 			} else {
