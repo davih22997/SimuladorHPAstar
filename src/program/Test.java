@@ -17,9 +17,9 @@ import javax.swing.JPanel;
 public class Test {
 
 	// Variables estáticas para definir el modo de operación
-	private static final int MODO_GRAFICAS = 0; // Modo de creación de gráficas
-	private static final int MODO_ERROR_Astar = 1; // Modo para probar puntos que dan error en A*
-	private static final int MODO_ERROR_HPAstar = 2; // Modo para probar puntos que dan error en HPA*
+	protected static final int MODO_GRAFICAS = 0; // Modo de creación de gráficas
+	protected static final int MODO_ERROR_Astar = 1; // Modo para probar puntos que dan error en A*
+	protected static final int MODO_ERROR_HPAstar = 2; // Modo para probar puntos que dan error en HPA*
 
 	// Cogemos el mapa de 320x320, que vamos a usar para la prueba
 	private static final String map = Direccion.maps[0];
