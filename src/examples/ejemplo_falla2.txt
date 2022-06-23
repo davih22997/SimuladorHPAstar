@@ -1,0 +1,13 @@
+Mapa:
+Dimensiones: 40 x 40
+Punto inicial: (36,30)
+Punto final: (2,4)
+Obstáculos: 
+
+{(0, 18), (0, 19), 
+(0, 20)}
+
+
+
+
+
