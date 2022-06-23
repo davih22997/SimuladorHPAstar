@@ -1,0 +1,5 @@
+Mapa:
+Dimensiones: 40 x 40
+Punto inicial: (12, 5)
+Punto final: (10, 25)
+Obstáculos: {(11, 24), (10, 24), (9, 24), (9, 25)}
