@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -77,6 +78,7 @@ public class Mapa {
 	}
 
 	public Mapa(int fils, int cols, int tipo) {
+		definirDimensiones();
 		dY = fils;
 		dX = cols;
 		setTipo(tipo);
@@ -197,9 +199,13 @@ public class Mapa {
 			// Se obtiene las dimensiones de cada botón
 			getDimButtons(dX, dY);
 
-			// Se declaran los contadores a utilizar
-			// int contX, contY;
-			// Se recorre la dimensión Y desde 0 hasta dY
+			// Si sale impar alguna las dimensiones, se le resta 1 para que salga par y no
+			// generar huecos
+			if (tamX % 2 == 1)
+				tamX--;
+			if (tamY % 2 == 1)
+				tamY--;
+
 			for (int contY = 0; contY < dY; contY++) {
 				for (int contX = 0; contX < dX; contX++) {
 					// Se crea un nuevo JButton
@@ -209,7 +215,7 @@ public class Mapa {
 
 					// Debe ser un cuadrado:
 					if (tamX == tamY)
-						bNew.setPreferredSize(new Dimension(tamY, tamX));
+						bNew.setPreferredSize(new Dimension(tamX, tamY));
 					else if (tamX < tamY)
 						bNew.setPreferredSize(new Dimension(tamX, tamX));
 					else
@@ -351,6 +357,7 @@ public class Mapa {
 					Interfaz.escribir("Se cambia el punto final de la posición: " + pto_final.toString()
 							+ " a la posición: " + aux.toString() + "." + newline);
 					btn.setBackground(cFinal);
+					btn.setBorder(HPAstar.defaultborder);
 					MatrizBotones[pto_final.getFila()][pto_final.getCol()].setBackground(Mapa.cDefault);
 					pto_final = aux;
 				}
@@ -514,6 +521,16 @@ public class Mapa {
 		// Pintamos los obstáculos
 		for (Punto o : obstaculos)
 			pintarMapa(cObs, o);
+
+	}
+
+	private void definirDimensiones() {
+		// Se obtienen las dimensiones de la pantalla
+		Toolkit tk = Toolkit.getDefaultToolkit();
+		Dimension d = tk.getScreenSize();
+
+		dimY = (int) (d.getHeight() * 650 / 1080);
+		dimX = (int) (d.getWidth() * 600 / 1920);
 
 	}
 
