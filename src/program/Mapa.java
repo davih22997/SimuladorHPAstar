@@ -525,14 +525,24 @@ public class Mapa {
 	}
 
 	private void definirDimensiones() {
-		// Se obtienen las dimensiones de la pantalla
+		// Se obtienen la resolución de la pantalla
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
 
-		dimY = (int) (0.61 * d.getHeight());
-		dimX = (int) (0.35 * d.getWidth());
-		// dimY = (int) (d.getHeight() * 650 / 1080);
-		// dimX = (int) (d.getWidth() * 600 / 1920);
+		// Multiplicador para definir las dimensiones del tablero
+		double pH = 0.61;
+		double pW = 0.35;
+
+		// Hay que adaptar el multiplicador de la altura en caso de reducir aún más la
+		// resolución
+		if (d.getHeight() < 720)
+			pH = 0.43;
+		else if (d.getHeight() <= 800)
+			pH = 0.52;
+
+		// Se asigna el valor a cada dimensión
+		dimY = (int) (pH * d.getHeight());
+		dimX = (int) (pW * d.getWidth());
 
 	}
 

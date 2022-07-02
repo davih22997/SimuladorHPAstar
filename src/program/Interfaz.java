@@ -166,7 +166,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
-	private Box mapaBox = Box.createVerticalBox();
 	// Copia de seguridad del mapa para HPA*
 	// private JButton[][] copiaMapa;
 
@@ -559,25 +558,11 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		pCentral.add(vB4, BorderLayout.CENTER);
 
 		// Parte del Mapa
-		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
-		// vertical
-		mapaBox.add(mapa.tablero);
-		// datosAstar = new JLabel("Texto para ajustar el tamaño");
-		// datosAstar.setAlignmentX(CENTER_ALIGNMENT);
-		// mapaBox.add(datosAstar);
-
-		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
-		// la simulación
-		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
-		// datosAstar.setText("");
-		// Escondemos los datos (se van a mostrar solo en simulación).
-		// datosAstar.setVisible(false);
-
-		// Añadimos la caja al panel central
-		pCentral.add(mapaBox, BorderLayout.SOUTH);
+		// Añadimos el tablero al panel central
+		pCentral.add(mapa.tablero, BorderLayout.SOUTH);
 
 		// Añadimos el panel central
-		this.add(pCentral, BorderLayout.WEST);
+		this.add(pCentral, BorderLayout.CENTER);
 
 		// Empaquetamos y hacemos visible
 		log.append("Iniciamos la interfaz con los valores por defecto." + newline);
