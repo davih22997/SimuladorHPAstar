@@ -86,7 +86,8 @@ public class Mapa {
 		pto_final = null;
 		obstaculos = new ArrayList<>();
 
-		initComponents();
+		if (tipo != TIPO_TEST)
+			initComponents();
 	}
 
 	/**
@@ -143,7 +144,6 @@ public class Mapa {
 	public void setSize(int height, int width) {
 		this.dimX = width;
 		this.dimY = height;
-		tipo = TIPO_TEST;
 
 		initComponents();
 		destruirTablero();
@@ -201,9 +201,9 @@ public class Mapa {
 
 			// Si sale impar alguna las dimensiones, se le resta 1 para que salga par y no
 			// generar huecos
-			if (tamX % 2 == 1)
+			if (tamX > 3 && tamX % 2 == 1)
 				tamX--;
-			if (tamY % 2 == 1)
+			if (tamY > 3 && tamY % 2 == 1)
 				tamY--;
 
 			for (int contY = 0; contY < dY; contY++) {
@@ -529,8 +529,10 @@ public class Mapa {
 		Toolkit tk = Toolkit.getDefaultToolkit();
 		Dimension d = tk.getScreenSize();
 
-		dimY = (int) (d.getHeight() * 650 / 1080);
-		dimX = (int) (d.getWidth() * 600 / 1920);
+		dimY = (int) (0.61 * d.getHeight());
+		dimX = (int) (0.35 * d.getWidth());
+		// dimY = (int) (d.getHeight() * 650 / 1080);
+		// dimX = (int) (d.getWidth() * 600 / 1920);
 
 	}
 
