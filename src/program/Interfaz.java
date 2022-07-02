@@ -22,6 +22,7 @@ import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
@@ -81,6 +82,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Control de todas las acciones
 	private static JTextArea log;
+	private JPanel pLog;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
@@ -192,19 +194,36 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		this.setContentPane(panel);
 
 		// Creamos el logger de la aplicación
+		pLog = new JPanel(new BorderLayout());
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
 		JScrollPane logScrollPane = new JScrollPane(log);
 
 		Box vB0 = Box.createVerticalBox();
+
+		Box vB = Box.createVerticalBox();
+		vB.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+		datosAstar = new JLabel("Texto para ajustar el tamaño");
+		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
+		vB.add(datosAstar);
+		vB.setPreferredSize(vB.getPreferredSize());
+		pLog.add(vB, BorderLayout.NORTH);
+
 		JLabel reg = new JLabel("Registro de acciones");
 		reg.setAlignmentX(CENTER_ALIGNMENT);
 		vB0.add(reg);
 		vB0.add(logScrollPane);
 		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		this.add(vB0, BorderLayout.SOUTH);
-
+		vB0.setPreferredSize(vB0.getPreferredSize());
+		pLog.add(vB0, BorderLayout.SOUTH);
+		this.add(pLog, BorderLayout.SOUTH);
+		pLog.setPreferredSize(pLog.getPreferredSize());
+		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
+		// la simulación
+		datosAstar.setText("");
+		// Escondemos los datos (se van a mostrar solo en simulación).
+		datosAstar.setVisible(false);
 		// Definimos el apartado para GESTIÓN DE ARCHIVOS:
 
 		// Creamos el gestor de archivos
@@ -543,16 +562,16 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
 		// vertical
 		mapaBox.add(mapa.tablero);
-		datosAstar = new JLabel("Texto para ajustar el tamaño");
-		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
-		mapaBox.add(datosAstar);
+		// datosAstar = new JLabel("Texto para ajustar el tamaño");
+		// datosAstar.setAlignmentX(CENTER_ALIGNMENT);
+		// mapaBox.add(datosAstar);
 
 		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
 		// la simulación
 		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
-		datosAstar.setText("");
+		// datosAstar.setText("");
 		// Escondemos los datos (se van a mostrar solo en simulación).
-		datosAstar.setVisible(false);
+		// datosAstar.setVisible(false);
 
 		// Añadimos la caja al panel central
 		pCentral.add(mapaBox, BorderLayout.SOUTH);
@@ -927,14 +946,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 						log.append("Parámetros definidos de forma incorrecta, no se creará el mapa");
 						JOptionPane.showMessageDialog(new JFrame(),
 								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
-						
+
 					} catch (Exception e3) {
 						dims.setSelectedItem(selDims);
 						log.append("Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
 						JOptionPane.showMessageDialog(new JFrame(),
 								"Se ha producido un error a la hora de cargar los datos. No se creará el mapa");
 					}
-					
 
 				}
 			} else {

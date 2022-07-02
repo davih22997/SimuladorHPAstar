@@ -461,7 +461,7 @@ public class Test {
 		frame.setContentPane(panel);
 		panel.setPreferredSize(new Dimension(ANCHO + 50, ALTO + 50));
 
-		mapa = new Mapa(height, width);
+		mapa = new Mapa(height, width, Mapa.TIPO_TEST);
 		mapa.setSize(ALTO, ANCHO);
 
 		// Asigno los puntos de interés:
