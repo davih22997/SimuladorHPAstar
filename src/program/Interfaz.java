@@ -82,7 +82,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Control de todas las acciones
 	private static JTextArea log;
-	private JPanel pLog;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
@@ -166,8 +165,7 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Parte del Mapa
 	protected Mapa mapa = new Mapa(0, 0);
-	// Copia de seguridad del mapa para HPA*
-	// private JButton[][] copiaMapa;
+	private Box mapaBox = Box.createVerticalBox();
 
 	// Parte de datos para la simulación A* (incluye a HPA*)
 	protected static JLabel datosAstar;
@@ -193,7 +191,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		this.setContentPane(panel);
 
 		// Creamos el logger de la aplicación
-		pLog = new JPanel(new BorderLayout());
 		log = new JTextArea(5, 20);
 		log.setMargin(new Insets(5, 5, 5, 5));
 		log.setEditable(false);
@@ -201,30 +198,14 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 		Box vB0 = Box.createVerticalBox();
 
-		Box vB = Box.createVerticalBox();
-		vB.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		datosAstar = new JLabel("Texto para ajustar el tamaño");
-		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
-		vB.add(datosAstar);
-		vB.setPreferredSize(vB.getPreferredSize());
-		pLog.add(vB, BorderLayout.NORTH);
-
 		JLabel reg = new JLabel("Registro de acciones");
 		reg.setAlignmentX(CENTER_ALIGNMENT);
 		vB0.add(reg);
 		vB0.add(logScrollPane);
 		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		vB0.setPreferredSize(vB0.getPreferredSize());
-		pLog.add(vB0, BorderLayout.SOUTH);
-		this.add(pLog, BorderLayout.SOUTH);
-		pLog.setPreferredSize(pLog.getPreferredSize());
-		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
-		// la simulación
-		datosAstar.setText("");
-		// Escondemos los datos (se van a mostrar solo en simulación).
-		datosAstar.setVisible(false);
+		this.add(vB0, BorderLayout.SOUTH);
 		// Definimos el apartado para GESTIÓN DE ARCHIVOS:
-
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
 
@@ -558,8 +539,22 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 		pCentral.add(vB4, BorderLayout.CENTER);
 
 		// Parte del Mapa
-		// Añadimos el tablero al panel central
-		pCentral.add(mapa.tablero, BorderLayout.SOUTH);
+		// Añadimos el mapa y el texto con los datos de la simulación dentro de una caja
+		// vertical
+		mapaBox.add(mapa.tablero);
+		datosAstar = new JLabel("Texto para ajustar el tamaño");
+		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
+		mapaBox.add(datosAstar);
+
+		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
+		// la simulación
+		mapaBox.setPreferredSize(mapaBox.getPreferredSize());
+		datosAstar.setText("");
+		// Escondemos los datos (se van a mostrar solo en simulación).
+		datosAstar.setVisible(false);
+
+		// Añadimos la caja al panel central
+		pCentral.add(mapaBox, BorderLayout.SOUTH);
 
 		// Añadimos el panel central
 		this.add(pCentral, BorderLayout.CENTER);
