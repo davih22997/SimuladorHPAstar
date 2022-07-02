@@ -82,7 +82,6 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 	// Control de todas las acciones
 	private static JTextArea log;
-	// private JPanel pLog;
 
 	// Dimensión para los botones con iconos
 	private Dimension dIcons = new Dimension(16, 16);
@@ -200,30 +199,13 @@ public class Interfaz extends JFrame implements ActionListener, ChangeListener, 
 
 		Box vB0 = Box.createVerticalBox();
 
-		/*
-		Box vB = Box.createVerticalBox();
-		vB.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
-		datosAstar = new JLabel("Texto para ajustar el tamaño");
-		datosAstar.setAlignmentX(CENTER_ALIGNMENT);
-		vB.add(datosAstar);
-		vB.setPreferredSize(vB.getPreferredSize());
-		// pLog.add(vB, BorderLayout.NORTH);
-		*/
-
 		JLabel reg = new JLabel("Registro de acciones");
 		reg.setAlignmentX(CENTER_ALIGNMENT);
 		vB0.add(reg);
 		vB0.add(logScrollPane);
 		vB0.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
 		vB0.setPreferredSize(vB0.getPreferredSize());
-		// pLog.add(vB0, BorderLayout.SOUTH);
 		this.add(vB0, BorderLayout.SOUTH);
-		// pLog.setPreferredSize(pLog.getPreferredSize());
-		// Definimos el tamaño de la caja con el mapa y los datos, para que no afecte a
-		// la simulación
-		//datosAstar.setText("");
-		// Escondemos los datos (se van a mostrar solo en simulación).
-		//datosAstar.setVisible(false);
 		// Definimos el apartado para GESTIÓN DE ARCHIVOS:
 		// Creamos el gestor de archivos
 		fc = new JFileChooser();
